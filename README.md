@@ -15,8 +15,18 @@ To run this project, you need to have Node.js and npm installed on your computer
     npm install
     ```
 
-3. Run the development server
+3. To run the frontend, follow these steps:
     ```bash
     npm run dev
     ```
 And you should have a local version of the frontend running!
+
+4. To run the backend, follow these steps:
+    ```bash
+    cd server
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip3 install -r requirements.txt
+    python3 main.py
+    ```
+And you should have a local version of the backend running!

@@ -5,6 +5,8 @@ from fastapi import FastAPI, Body, HTTPException, status
 from fastapi.responses import Response
 from pydantic import ConfigDict, BaseModel, Field, EmailStr
 from pydantic.functional_validators import BeforeValidator
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 from typing_extensions import Annotated
 
@@ -15,6 +17,13 @@ from pymongo import ReturnDocument
 app = FastAPI(
     title="Card Game API",
     summary="Test version",
+)
+cors = CORSMiddleware(
+    app,
+    allow_origins=["http://localhost:*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
 db = client.game

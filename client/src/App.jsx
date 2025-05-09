@@ -15,7 +15,7 @@ function ProtectedLayout({ onSignOut }) {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
+  
   return (
     <>
       <Navbar onSignOut={onSignOut} onToggleSidebar={toggleSidebar} />

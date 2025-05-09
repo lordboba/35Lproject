@@ -1,21 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
+import { auth, googleProvider } from './firebase'; 
+import { signInWithPopup, signOut } from 'firebase/auth'; 
 
 function App() {
-  const [username, setUsername] = useState('');
+  const [user, setUser] = useState(null); 
+
+  const handleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      setUser(result.user);
+      console.log(result.user);
+    } catch (error) {
+      console.error("Error signing in: ", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
   return (
     <>
       <div>
       </div>
       <h1>multiplayer card games :D</h1>
-      <button>join game</button>
-      <button>create game</button>
-      <button>sign in</button>
-      <button onClick={() => fetch('http://localhost:8000/')}>test connection</button>
+      {user ? (
+        <>
+          <p>Welcome, {user.displayName || user.email}!</p>
+          <button onClick={handleSignOut}>Sign Out</button>
+        </>
+      ) : (
+        <button onClick={handleSignIn}>Sign In with Google</button> 
+      )}
     </>
-  )
+  );
 }
 
-export default App
+export default App;

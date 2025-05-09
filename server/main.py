@@ -14,6 +14,9 @@ from bson import ObjectId
 import motor.motor_asyncio
 from pymongo import ReturnDocument
 
+from dotenv import load_dotenv
+load_dotenv()
+
 app = FastAPI(
     title="Card Game API",
     summary="Test version",

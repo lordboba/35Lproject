@@ -40,3 +40,14 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Optional: Adjust content area when sidebar is open */
+.content-area {
+  transition: margin-left 0.3s ease-in-out;
+  padding: 20px; /* Add some padding to content */
+  margin-top: 60px; /* Adjust if Navbar height is fixed and pushing content down */
+}
+
+.content-area.sidebar-open {
+  margin-left: 250px; /* Same as sidebar width, adjust as needed */
+}

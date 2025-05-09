@@ -17,6 +17,8 @@ To run this project, you need to have Node.js, npm, and python3 installed on you
     chmod +x frontend
     ./frontend
     ```
+    You will be prompted to enter your Firebase API Key. This key is necessary for the application to connect to Firebase services.
+
 And you should have a local version of the frontend running!
 
 4. To run the backend, follow these steps:

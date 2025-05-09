@@ -1,4 +1,12 @@
-#/bin/bash
+#!/bin/bash
+
+# Prompt for Firebase API Key
+echo "Insert Firebase API Key:"
+read firebase_api_key
+
+# Export the API key as an environment variable for Vite
+export VITE_FIREBASE_API_KEY="$firebase_api_key"
+
 cd client
 npm install
 npm run dev

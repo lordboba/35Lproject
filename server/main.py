@@ -12,7 +12,6 @@ from bson import ObjectId
 import motor.motor_asyncio
 from pymongo import ReturnDocument
 
-
 app = FastAPI(
     title="Card Game API",
     summary="Test version",
@@ -25,6 +24,36 @@ user_collection = db.get_collection("users")
 # It will be represented as a `str` on the model so that it can be serialized to JSON.
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
+class CardModel(BaseModel):
+    """
+    Container for a single card.
+    """
+    rank: int = Field(...)
+    suit: int = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )
+
+class TransactionModel(BaseModel):
+    """
+    Container for a single transaction.
+    """
+    sender: str = Field(...)
+    receiver: str = Field(...)
+    card: CardModel = Field(...)
+    success: bool = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )
+
+class TurnModel(BaseModel):
+    """
+    Container for a single turn.
+    """
+    player: str = Field(...)
+    transactions: List[TransactionModel] = Field(default_factory=list)
 
 class UserModel(BaseModel):
     """

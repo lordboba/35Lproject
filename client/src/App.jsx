@@ -8,6 +8,9 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import UserStats from './screens/UserStats';
 import GameInstructions from './screens/GameInstructions';
+import UsernameScreen from './screens/UsernameScreen';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function ProtectedLayout({ onSignOut }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -29,12 +32,40 @@ function ProtectedLayout({ onSignOut }) {
 
 function App() {
   const [user, setUser] = useState(null);
+  const [backendUser, setBackendUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/users/initialize`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ firebase_uid: currentUser.uid }),
+            }
+          );
+          if (!response.ok) {
+            console.error('Failed to initialize or get user from backend:', response.status);
+            const errorData = await response.json();
+            console.error('Error details:', errorData.detail);
+            setBackendUser(null);
+          } else {
+            const userData = await response.json();
+            setBackendUser(userData);
+          }
+        } catch (error) {
+          console.error("Error initializing user:", error);
+          setBackendUser(null);
+        }
+      } else {
+        setBackendUser(null);
+      }
+      setAuthChecked(true);
       setLoading(false);
     });
     return () => unsubscribe();
@@ -51,20 +82,36 @@ function App() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      setUser(null);
+      setBackendUser(null);
       navigate('/');
     } catch (error) {
       console.error("Error signing out: ", error);
     }
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
+  const handleRegistrationSuccess = (updatedBackendUser) => {
+    setBackendUser(updatedBackendUser);
+  };
+
+  if (!authChecked) {
+    return <p>Authenticating...</p>;
   }
 
   return (
     <Routes>
       <Route path="/" element={
-        user ? <Navigate to="/app" /> : (
+        user ? (
+          backendUser ? (
+            backendUser.username_set ? (
+              <Navigate to="/app" />
+            ) : (
+              <Navigate to="/set-username" />
+            )
+          ) : (
+            <p>Loading user data...</p>
+          )
+        ) : (
           <>
             <div>
             </div>
@@ -73,7 +120,20 @@ function App() {
           </>
         )
       } />
-      <Route path="/app" element={user ? <ProtectedLayout onSignOut={handleSignOut} /> : <Navigate to="/" />}>
+      <Route path="/set-username" element={
+        user && backendUser && !backendUser.username_set ? (
+          <UsernameScreen firebaseUser={user} onRegistrationSuccess={handleRegistrationSuccess} />
+        ) : (
+          <Navigate to={user && backendUser && backendUser.username_set ? "/app" : "/"} />
+        )
+      } />
+      <Route path="/app" element={
+        user && backendUser && backendUser.username_set ? (
+          <ProtectedLayout onSignOut={handleSignOut} />
+        ) : (
+          <Navigate to="/" />
+        )
+      }>
         <Route index element={<Navigate to="lobby" />} />
         <Route path="lobby" element={<Lobby />} />
         <Route path="stats" element={<UserStats />} />

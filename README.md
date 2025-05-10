@@ -1,7 +1,5 @@
 # 35Lproject
 
-Please like and subscribe
-
 
 To run this project, you need to have Node.js, npm, and python3 installed on your computer.
 1. Install Node.js, npm, and python3

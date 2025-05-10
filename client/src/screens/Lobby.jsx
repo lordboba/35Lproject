@@ -1,5 +1,5 @@
 import React from 'react';
-import './lobby.css';
+import './Lobby.css';
 
 function Lobby() {
     return (

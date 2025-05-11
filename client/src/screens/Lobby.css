@@ -19,7 +19,15 @@
       animation: logo-spin infinite 20s linear;
     }
   }
-  
+  .create-game-button {
+    background-color: #007bff; /* Same as signout for now */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 15px; /* Add some spacing */
+  }
   .card {
     padding: 2em;
   }

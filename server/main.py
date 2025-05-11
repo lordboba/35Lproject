@@ -8,13 +8,13 @@ from pydantic import ConfigDict, BaseModel, Field, EmailStr
 from pydantic.functional_validators import BeforeValidator
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-
+import certifi
 from typing_extensions import Annotated
 
 from bson import ObjectId
 import motor.motor_asyncio
 from pymongo import ReturnDocument
-
+import pymongo
 from dotenv import load_dotenv
 load_dotenv()
 

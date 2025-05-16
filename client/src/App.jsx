@@ -50,10 +50,26 @@ function App() {
             }
           );
           if (!response.ok) {
-            console.error('Failed to initialize or get user from backend:', response.status);
-            const errorData = await response.json();
-            console.error('Error details:', errorData.detail);
-            setBackendUser(null);
+            console.error('Failed to initialize or get user from backend:', response.status, response.statusText);
+            if (response.status === 500) {
+              console.log("Backend returned 500 error. Signing out user to re-authenticate.");
+              await handleSignOut(); 
+            } else {
+              let errorDetailMessage = `Error ${response.status}: ${response.statusText}.`;
+              try {
+                const errorData = await response.json();
+                errorDetailMessage += ` Details: ${errorData.detail || JSON.stringify(errorData)}`;
+              } catch (jsonParseError) {
+                try {
+                  const textError = await response.text();
+                  errorDetailMessage += ` Response body: ${textError}`;
+                } catch (textParseError) {
+                  errorDetailMessage += " Could not read error response body.";
+                }
+              }
+              console.error(errorDetailMessage);
+              setBackendUser(null);
+            }
           } else {
             const userData = await response.json();
             setBackendUser(userData);

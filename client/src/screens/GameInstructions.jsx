@@ -1,12 +1,13 @@
 import React from 'react';
 
 const VietcongRules = () => (
+  
   <div>
-    <h1>Vietcong Card Game Rules</h1>
-
+    <h1>Vietcong Rules</h1>
+  
     <h2>Objective</h2>
     <p>
-      Be the first player to discard all your cards. Afterwards, continue to discard cards to place high. 
+      <strong>Be the first player to discard all your cards. Afterwards, continue to discard cards to place high. </strong>
     </p>
 
     <h2>Setup</h2>
@@ -68,16 +69,6 @@ const VietcongRules = () => (
       <li>Bombs/slams can only be beaten by higher bombs/slams of the same type.</li>
     </ul>
 
-    <h2>Additional Rules</h2>
-    <ul>
-      <li>2s cannot be used in sequences (runs).</li>
-      <li>
-        After the first hand, the winner of the previous round starts the next round and may open with any combination.
-      </li>
-      <li>
-        In some variants, card trading is allowed before the first lead by mutual agreement.
-      </li>
-    </ul>
 
     <h2>End of Game</h2>
     <ul>

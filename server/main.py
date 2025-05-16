@@ -16,7 +16,6 @@ import motor.motor_asyncio
 from pymongo import ReturnDocument
 import pymongo
 from dotenv import load_dotenv
-
 load_dotenv()
 
 app = FastAPI(
@@ -45,37 +44,36 @@ user_collection = db.get_collection("users")
 # It will be represented as a `str` on the model so that it can be serialized to JSON.
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
-
 class CardModel(BaseModel):
     """
     Container for a single card.
     """
-
     rank: int = Field(...)
     suit: int = Field(...)
-    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
-
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )
 
 class TransactionModel(BaseModel):
     """
     Container for a single transaction.
     """
-
     sender: str = Field(...)
     receiver: str = Field(...)
     card: CardModel = Field(...)
     success: bool = Field(...)
-    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
-
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )
 
 class TurnModel(BaseModel):
     """
     Container for a single turn.
     """
-
     player: str = Field(...)
     transactions: List[TransactionModel] = Field(default_factory=list)
-
 
 class UserModel(BaseModel):
     """
@@ -103,7 +101,8 @@ class UpdateUserModel(BaseModel):
     games: Optional[int] = None
     wins: Optional[int] = None
     model_config = ConfigDict(
-        arbitrary_types_allowed=True, json_encoders={ObjectId: str}
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str}
     )
 
 
@@ -263,49 +262,6 @@ async def create_user(user: UserModel = Body(...)):
     )
     if not created_user:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create and retrieve user.")
-    `firebase_uid` is mandatory. If `name` (username) is provided, it will be checked for uniqueness.
-    `username_set` will be set to True if `name` is provided, False otherwise.
-    Consider if this endpoint is still the primary way to create users vs. /users/initialize.
-    """
-<<<<<<< HEAD
-    # firebase_uid is now mandatory in UserModel, Pydantic validation handles its presence.
-
-    # Check for existing user by firebase_uid, as it should be unique
-    existing_by_fb_uid = await user_collection.find_one({"firebase_uid": user.firebase_uid})
-    if existing_by_fb_uid:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"User with Firebase UID {user.firebase_uid} already exists.")
-
-    # Handle username (name field) if provided
-    if user.name:
-        if not re.match(r"^[a-zA-Z0-9_]{3,20}$", user.name):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username format invalid.")
-        
-        existing_by_name = await user_collection.find_one({"name": user.name})
-        if existing_by_name:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Username '{user.name}' already taken.")
-        user.username_set = True # If name is provided, username is considered set
-    else:
-        user.username_set = False # If name is not provided, it's not set
-
-    # Ensure default values for games and wins are present if not supplied by client
-    # Pydantic model now has defaults, so this explicit setting might be redundant but safe
-    new_user_doc_data = user.model_dump(by_alias=True, exclude={"id"})
-    new_user_doc_data.setdefault("games", 0)
-    new_user_doc_data.setdefault("wins", 0)
-    # username_set is handled above based on presence of 'name'
-
-    insert_result = await user_collection.insert_one(new_user_doc_data)
-    created_user = await user_collection.find_one(
-        {"_id": insert_result.inserted_id}
-    )
-    if not created_user:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create and retrieve user.")
-=======
-    new_user = await user_collection.insert_one(
-        user.model_dump(by_alias=True, exclude=["id"])
-    )
-    created_user = await user_collection.find_one({"_id": new_user.inserted_id})
->>>>>>> c8beb73 (Fix card_abstraction and create game.py)
     return created_user
 
 
@@ -334,7 +290,9 @@ async def show_user(id: str):
     """
     Get the record for a specific user, looked up by `id`.
     """
-    if (user := await user_collection.find_one({"_id": ObjectId(id)})) is not None:
+    if (
+        user := await user_collection.find_one({"_id": ObjectId(id)})
+    ) is not None:
         return user
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")
@@ -388,50 +346,6 @@ async def update_user(id: str, user_update_payload: UpdateUserModel = Body(...))
     else:
         # If find_one_and_update returns None, it means the document with 'id' was not found
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found during update attempt.")
-    Update individual fields of an existing user record, looked up by `id` (MongoDB _id).
-    If 'name' (username) is being updated, it's checked for uniqueness and format.
-    If 'name' is updated, 'username_set' is automatically set to True.
-    Note: This endpoint doesn't use firebase_uid for lookup or updates directly.
-    """
-<<<<<<< HEAD
-    update_data = {
-        k: v for k, v in user_update_payload.model_dump(by_alias=False).items() if v is not None
-    } # use by_alias=False if Pydantic model uses aliases like _id
-=======
-    user = {k: v for k, v in user.model_dump(by_alias=True).items() if v is not None}
->>>>>>> c8beb73 (Fix card_abstraction and create game.py)
-
-    if not update_data:
-        # No actual updates provided, try to return existing user or 404
-        existing_user = await user_collection.find_one({"_id": ObjectId(id)})
-        if existing_user:
-            return existing_user
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found.")
-
-    # If username (name field) is being updated, check for uniqueness and format
-    if "name" in update_data:
-        new_name = update_data["name"]
-        if not re.match(r"^[a-zA-Z0-9_]{3,20}$", new_name):
-             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username format invalid.")
-        
-        # Check if the new username is taken by *another* user
-        conflicting_user = await user_collection.find_one({"name": new_name, "_id": {"$ne": ObjectId(id)}})
-        if conflicting_user:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Username '{new_name}' already taken.")
-        # If name is being set/updated, imply username_set is true for this user.
-        update_data["username_set"] = True 
-
-    updated_user_doc = await user_collection.find_one_and_update(
-        {"_id": ObjectId(id)},
-        {"$set": update_data},
-        return_document=ReturnDocument.AFTER,
-    )
-    
-    if updated_user_doc is not None:
-        return updated_user_doc
-    else:
-        # If find_one_and_update returns None, it means the document with 'id' was not found
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found during update attempt.")
 
 
 @app.delete("/users/{id}", response_description="Delete a user")
@@ -446,9 +360,6 @@ async def delete_user(id: str):
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
 @app.put(
     "/game/transaction",
     response_description="Force a transaction",
@@ -460,3 +371,6 @@ async def apply_transaction(id: str, user: TransactionModel = Body(...)):
     This causes a transaction between two deck objects
     """
     print("something")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

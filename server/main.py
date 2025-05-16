@@ -16,6 +16,7 @@ import motor.motor_asyncio
 from pymongo import ReturnDocument
 import pymongo
 from dotenv import load_dotenv
+
 load_dotenv()
 
 app = FastAPI(
@@ -44,42 +45,44 @@ user_collection = db.get_collection("users")
 # It will be represented as a `str` on the model so that it can be serialized to JSON.
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
+
 class CardModel(BaseModel):
     """
     Container for a single card.
     """
+
     rank: int = Field(...)
     suit: int = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True
-    )
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+
 
 class TransactionModel(BaseModel):
     """
     Container for a single transaction.
     """
+
     sender: str = Field(...)
     receiver: str = Field(...)
     card: CardModel = Field(...)
     success: bool = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True
-    )
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+
 
 class TurnModel(BaseModel):
     """
     Container for a single turn.
     """
+
     player: str = Field(...)
     transactions: List[TransactionModel] = Field(default_factory=list)
+
 
 class UserModel(BaseModel):
     """
     Container for a single user record.
     """
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
+<<<<<<< HEAD
     firebase_uid: str = Field(...)
     name: Optional[str] = Field(default=None)
     games: int = Field(default=0)
@@ -91,6 +94,12 @@ class UserModel(BaseModel):
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str}
     )
+=======
+    name: str = Field(...)
+    games: int = Field(...)
+    wins: int = Field(...)
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+>>>>>>> c8beb73 (Fix card_abstraction and create game.py)
 
 class UpdateUserModel(BaseModel):
     """
@@ -101,8 +110,7 @@ class UpdateUserModel(BaseModel):
     games: Optional[int] = None
     wins: Optional[int] = None
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        json_encoders={ObjectId: str}
+        arbitrary_types_allowed=True, json_encoders={ObjectId: str}
     )
 
 
@@ -230,6 +238,7 @@ async def create_user(user: UserModel = Body(...)):
     `username_set` will be set to True if `name` is provided, False otherwise.
     Consider if this endpoint is still the primary way to create users vs. /users/initialize.
     """
+<<<<<<< HEAD
     # firebase_uid is now mandatory in UserModel, Pydantic validation handles its presence.
 
     # Check for existing user by firebase_uid, as it should be unique
@@ -262,6 +271,12 @@ async def create_user(user: UserModel = Body(...)):
     )
     if not created_user:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create and retrieve user.")
+=======
+    new_user = await user_collection.insert_one(
+        user.model_dump(by_alias=True, exclude=["id"])
+    )
+    created_user = await user_collection.find_one({"_id": new_user.inserted_id})
+>>>>>>> c8beb73 (Fix card_abstraction and create game.py)
     return created_user
 
 
@@ -290,9 +305,7 @@ async def show_user(id: str):
     """
     Get the record for a specific user, looked up by `id`.
     """
-    if (
-        user := await user_collection.find_one({"_id": ObjectId(id)})
-    ) is not None:
+    if (user := await user_collection.find_one({"_id": ObjectId(id)})) is not None:
         return user
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")
@@ -311,9 +324,13 @@ async def update_user(id: str, user_update_payload: UpdateUserModel = Body(...))
     If 'name' is updated, 'username_set' is automatically set to True.
     Note: This endpoint doesn't use firebase_uid for lookup or updates directly.
     """
+<<<<<<< HEAD
     update_data = {
         k: v for k, v in user_update_payload.model_dump(by_alias=False).items() if v is not None
     } # use by_alias=False if Pydantic model uses aliases like _id
+=======
+    user = {k: v for k, v in user.model_dump(by_alias=True).items() if v is not None}
+>>>>>>> c8beb73 (Fix card_abstraction and create game.py)
 
     if not update_data:
         # No actual updates provided, try to return existing user or 404
@@ -360,5 +377,20 @@ async def delete_user(id: str):
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")
 
+<<<<<<< HEAD
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+=======
+
+@app.put(
+    "/game/transaction",
+    response_description="Force a transaction",
+    response_model=TransactionModel,
+    response_model_by_alias=False,
+)
+async def apply_transaction(id: str, user: TransactionModel = Body(...)):
+    """
+    This causes a transaction between two deck objects
+    """
+    print("something")
+>>>>>>> c8beb73 (Fix card_abstraction and create game.py)

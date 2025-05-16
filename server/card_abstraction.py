@@ -12,19 +12,18 @@ class Suit(Enum):
 
 # Base Card
 class Card(ABC):
-    def __init__(self, number=0, suit=Suit.SPEC, owner: "Owner" = None):
+    def __init__(self, number=0, suit=Suit.SPEC):
         self.number = number
         self.suit = suit
-        self.owner = owner
 
 
 # Base Owner
 class Owner(ABC):
-    def __init__(self, cards: List[Card] = None):
-        self.cards: List[Card] = []
+    def __init__(self, cards: list[Card] = None):
+        self.cards: list[Card] = []
         self.isPlayer: bool = False
 
-    def get_cards() -> List[Card]:
+    def get_cards() -> list[Card]:
         return self.cards
 
     def contains_card(card: Card):
@@ -39,12 +38,18 @@ class Owner(ABC):
 
 
 class Game(ABC):
-    def __init__(self, owners: List[Owner], cards: List[Card]):
+    def __init__(self, owners: dict[str, Owner], cards: list[Card]):
         self.owners = owners
         self.cards = cards
 
+        self.belongsTo: dict[Card, str] = {}
+
+        for owner_id, card_list in self.owners:
+            for c in card_list:
+                belongsTo[c] = owner_id
+
     class Transaction:
-        def __init__(card: Card = 0, from_: Owner = None, to_: Owner = None):
+        def __init__(card: Card = 0, from_: str = None, to_: str = None):
             self.card = card
             self.from_ = from_
             self.to_ = to_
@@ -52,15 +57,16 @@ class Game(ABC):
     # Perform transaction of card between two owners
     def transact(trans: Transaction) -> bool:
         # Check if it's possible to transfer the card
-        if (not trans.from_.contains_card(trans.card)) or (
-            trans.to_.contains_card(trans.card)
-        ):
+        if self.belongsTo[c] != trans.from_:
             return False
 
         # Remove card from from_ and append to to_
-        trans.from_.remove(trans.card)
-        trans.to_.append(trans.card)
+        self.owners[trans.from_].remove(trans.card)
+        self.owners[trans.to_].remove(trans.card)
+
+        self.belongsTo[trans.card] = trans.to_
 
     # TODO Implement a logging feature
-    def add_to_log(trans: List[Transaction]):
+    @abstractmethod
+    def add_to_log(trans: list[Transaction]):
         pass

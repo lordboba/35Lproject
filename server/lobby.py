@@ -7,6 +7,7 @@
 
 # Each lobby has: list of users, game(either fish or vietcong(vc))
 from fastapi import APIRouter
+import motor, os
 
 router = APIRouter()
 client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])

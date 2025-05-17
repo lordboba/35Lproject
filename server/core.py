@@ -21,6 +21,7 @@ client = motor.motor_asyncio.AsyncIOMotorClient(
 db = client.game
 user_collection = db.get_collection("users")
 cards_collection = db.get_collection("cards")
+game_collection = db.get_collection("games")
 
 
 class CardModel(BaseModel):
@@ -94,6 +95,7 @@ class UserCollection(BaseModel):
 
     users: List[UserModel]
 
+# Firebase Models
 
 class FirebaseUserRegistrationRequest(BaseModel):
     firebase_uid: str = Field(...)
@@ -104,3 +106,27 @@ class CheckUsernameResponse(BaseModel):
 class CompleteRegistrationRequest(BaseModel):
     firebase_uid: str = Field(...)
     username: str = Field(..., min_length=3, max_length=20, pattern="^[a-zA-Z0-9_]+$")
+
+# Game Models
+
+class GameModel(BaseModel):
+    """
+    Container for a single game.
+    """
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    name: str = Field(...)
+    type: str = Field(...)
+    players: List[PyObjectId] = Field(default_factory=dict)
+    active: bool = Field(...)
+    timestamp: int = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )
+
+class GameCreateModel(BaseModel):
+    name: str
+    type: str
+    
+class GameCollection(BaseModel):
+    games: List[GameModel]

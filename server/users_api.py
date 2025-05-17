@@ -2,18 +2,34 @@ from fastapi import APIRouter, Body, HTTPException, status
 from bson import ObjectId
 import re
 from pymongo import ReturnDocument
+import time
 
 from core import (
     user_collection,
+    game_collection,
     UserModel,
     UpdateUserModel,
     FirebaseUserRegistrationRequest,
     CheckUsernameResponse,
     CompleteRegistrationRequest,
     UserCollection,
+    GameModel,
+    GameCreateModel,
+    GameCollection
 )
 
 router = APIRouter()
+
+# Temporary Game Rule Dict
+
+GAME_RULES = {
+    "Viet Cong": {
+        "max_players": 4
+    },
+    "Fish": {
+        "max_players": 6
+    },
+}
 
 # --- ENDPOINTS ---
 
@@ -249,3 +265,114 @@ async def delete_user(id: str):
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")
+
+@router.get(
+    "/games/",
+    response_description="List all games",
+    response_model=GameCollection,
+    response_model_by_alias=False,
+)
+async def list_games():
+    """
+    List all games in the database (max 1000).
+    """
+    games = await game_collection.find().to_list(1000)
+    return GameCollection(games=games)
+
+@router.post(
+    "/games/",
+    response_description="Create a new game",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def create_game(game: GameCreateModel):
+    """
+    Create a new game.
+    """
+    game_dict = game.dict()
+    game_dict["players"] = []
+    game_dict["active"] = game_dict.get("active", False)
+    game_dict["timestamp"] = game_dict.get("timestamp", int(time.time()))
+    
+    result = await game_collection.insert_one(game_dict)
+    new_game = await game_collection.find_one({"_id": result.inserted_id})
+    return new_game
+
+@router.patch(
+    "/games/{game_id}/add_user/{user_id}",
+    response_description="Add a user to a game",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def add_user_to_game(game_id: str, user_id: str):
+    """
+    Add a user to the game's players list.
+    """
+    game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    if game["active"]:
+        raise HTTPException(status_code=400, detail="Game already started")
+    
+    if len(game["players"]) >= GAME_RULES[game["type"]]["max_players"]:
+        raise HTTPException(status_code=400, detail="Game is already full")
+
+    if ObjectId(user_id) in game["players"]:
+        raise HTTPException(status_code=400, detail="User already in game")
+
+    await game_collection.update_one(
+        {"_id": ObjectId(game_id)},
+        {"$addToSet": {"players": ObjectId(user_id)}}
+    )
+    return await game_collection.find_one({"_id": ObjectId(game_id)})
+
+
+@router.patch(
+    "/games/{game_id}/remove_user/{user_id}",
+    response_description="Remove a user from a game",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def remove_user_from_game(game_id: str, user_id: str):
+    """
+    Remove a user from the game's players list.
+    """
+    game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    if game["active"]:
+        raise HTTPException(status_code=400, detail="Game already started")
+
+    if ObjectId(user_id) not in game["players"]:
+        raise HTTPException(status_code=400, detail="User not in game")
+
+    await game_collection.update_one(
+        {"_id": ObjectId(game_id)},
+        {"$pull": {"players": ObjectId(user_id)}}
+    )
+    return await game_collection.find_one({"_id": ObjectId(game_id)})
+
+@router.patch(
+    "/games/{game_id}/start",
+    response_description="Start game",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def remove_user_from_game(game_id: str, user_id: str):
+    """
+    Start game
+    """
+    game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    if len(game["players"]) != GAME_RULES[game["type"]]["max_players"]:
+        raise HTTPException(status_code=400, detail="Game not full yet")
+
+    await game_collection.update_one(
+        {"_id": ObjectId(game_id)},
+        {"$pull": {"players": ObjectId(user_id)}}
+    )
+    return await game_collection.find_one({"_id": ObjectId(game_id)})

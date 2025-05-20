@@ -1,7 +1,7 @@
 from fastapi import Body, HTTPException, status
 from bson import ObjectId
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List
+from typing import Optional, List, Dict
 from typing_extensions import Annotated
 from pydantic.functional_validators import BeforeValidator
 from dotenv import load_dotenv
@@ -42,7 +42,7 @@ class TransactionModel(BaseModel):
     sender: str = Field(...)
     receiver: str = Field(...)
     card: CardModel = Field(...)
-    success: bool = Field(...)
+    status: int = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True
@@ -54,6 +54,20 @@ class TurnModel(BaseModel):
     """
     player: str = Field(...)
     transactions: List[TransactionModel] = Field(default_factory=list)
+
+class ReplayModel(BaseModel):
+    """
+    Container for a single replay.
+    """
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    name: str = Field(...)
+    players: Dict[PyObjectId,int] = Field(default_factory=dict)
+    turns: List[TurnModel] = Field(default_factory=list)
+    timestamp: int = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )
 
 class UserModel(BaseModel):
     """
@@ -118,7 +132,6 @@ class GameModel(BaseModel):
     type: str = Field(...)
     players: List[PyObjectId] = Field(default_factory=dict)
     active: bool = Field(...)
-    timestamp: int = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True

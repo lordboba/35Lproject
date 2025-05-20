@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status, WebSocket, WebSocketDisconnect, Depends
 from bson import ObjectId
 import re
 from pymongo import ReturnDocument
 import time
+from game_manager import GameTracker
+import asyncio
+from main import get_tracker
 
 from core import (
     user_collection,
@@ -254,17 +257,21 @@ async def update_user(id: str, user_update_payload: UpdateUserModel = Body(...))
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found during update attempt.")
 
 
-@router.delete("/users/{id}", response_description="Delete a user")
+@router.delete(
+    "/users/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_description="Delete a user"
+)
 async def delete_user(id: str):
     """
-    Remove a single user record from the database.
+    Delete a single user. 
     """
     delete_result = await user_collection.delete_one({"_id": ObjectId(id)})
 
-    if delete_result.deleted_count == 1:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    if delete_result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail=f"User {id} not found")
 
-    raise HTTPException(status_code=404, detail=f"User {id} not found")
+# Games
 
 @router.get(
     "/games/",
@@ -292,7 +299,6 @@ async def create_game(game: GameCreateModel):
     game_dict = game.dict()
     game_dict["players"] = []
     game_dict["active"] = game_dict.get("active", False)
-    game_dict["timestamp"] = game_dict.get("timestamp", int(time.time()))
     
     result = await game_collection.insert_one(game_dict)
     new_game = await game_collection.find_one({"_id": result.inserted_id})
@@ -360,9 +366,9 @@ async def remove_user_from_game(game_id: str, user_id: str):
     response_model=GameModel,
     response_model_by_alias=False,
 )
-async def remove_user_from_game(game_id: str, user_id: str):
+async def start_game(game_id: str, user_id: str):
     """
-    Start game
+    Start game by ID
     """
     game = await game_collection.find_one({"_id": ObjectId(game_id)})
     if not game:
@@ -373,6 +379,31 @@ async def remove_user_from_game(game_id: str, user_id: str):
 
     await game_collection.update_one(
         {"_id": ObjectId(game_id)},
-        {"$pull": {"players": ObjectId(user_id)}}
+        {"$set": {"active": True}}
     )
     return await game_collection.find_one({"_id": ObjectId(game_id)})
+
+@router.delete(
+    "/games/{game_id}",
+    response_description="Delete game",
+    status_code=204,
+)
+async def delete_game(game_id: str):
+    """
+    Delete a game by ID
+    """
+    result = await game_collection.delete_one({"_id": ObjectId(game_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+# WebSocket
+
+@router.websocket("/game/ws/{game_id}")
+async def game_ws(websocket: WebSocket, game_id: str,tracker: GameTracker = Depends(get_tracker)):
+    await tracker.websocket_manager.connect(game_id, websocket)
+    try:
+        while True:
+            await asyncio.sleep(60)
+    except WebSocketDisconnect:
+        tracker.websocket_manager.disconnect(game_id, websocket)

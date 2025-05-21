@@ -28,6 +28,9 @@ class Card(ABC):
         self.number = number
         self.suit = suit
 
+    def __eq__(self, other):
+        return isinstance(other, Card) and self.number == other.number and self.suit == other.suit
+
 # Base Owner
 class Owner(ABC):
     def __init__(self, cards: list[Card] = None):
@@ -38,13 +41,13 @@ class Owner(ABC):
         return self.cards
 
     def contains_card(self,card: Card):
-        return any(c == card for c in self.cards)
-
-    def find_cards(self,number: int = 0, suit: Suit = Suit.SPEC) -> Card:
-        for c in self.cards:
-            if c.number == number and c.suit == suit:
-                return c
-        return None
+        return card in self.cards
+    
+    def add_card(self,card: Card):
+        self.cards.append(card)
+    
+    def remove_card(self,card: Card):
+        self.cards.remove(card)
 
 class Transaction:
     def __init__(self, card: Card = None, from_: str = None, to_: str = None):
@@ -53,9 +56,10 @@ class Transaction:
         self.to_ = to_
 
 class Turn:
-    def __init__(self, player_id: str, transactions: list[Transaction]):
+    def __init__(self, player_id: str, turn_type: int, transactions: list[Transaction]):
         self.player = player_id
         self.transactions = transactions
+        self.turn_type = turn_type
 
 class Game(ABC):
     def __init__(self, manager, owners: dict[str, Owner], cards: list[Card]):
@@ -76,13 +80,13 @@ class Game(ABC):
             return False
 
         # Remove card from from_ and append to to_
-        self.owners[trans.from_].remove(trans.card)
+        self.owners[trans.from_].remove_card(trans.card)
+        self.owners[trans.to_].add_card(trans.card)
         self.belongsTo[trans.card] = trans.to_
 
-    # TODO Implement a logging feature
-    @abstractmethod
-    def add_to_log(self, trans: list[Transaction]):
-        pass
+    def play_turn(self, turn: Turn) -> bool:
+        for trans in turn.transactions:
+            self.transact(trans)
 
 class SimpleGame(Game):
     def __init__(self, manager, players):
@@ -99,7 +103,7 @@ class SimpleGame(Game):
             players[1]: Owner(cardsB),
         }
 
-        super().__init__(manager, owners, cards)
+        super().__init__(manager, owners, cards)     
 
 class VietCongGame(Game):
     pass

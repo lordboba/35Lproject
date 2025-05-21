@@ -26,18 +26,6 @@ from game import Card, Transaction, Turn, GAME_RULES
 
 router = APIRouter()
 
-# Convert TurnModel to Turn
-
-def turn_model_to_turn(turn_model: TurnModel) -> Turn:
-    transactions = [
-        Transaction(
-            card=Card(number=t.card.rank, suit=t.card.suit),
-            from_=t.sender,
-            to_=t.receiver
-        ) for t in turn_model.transactions
-    ]
-    return Turn(player_id=turn_model.player, transactions=transactions)
-
 # --- ENDPOINTS ---
 
 @router.post(
@@ -386,6 +374,17 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
     """
     Play a turn in an ongoing game by ID
     """
+    # Convert TurnModel to Turn
+    def turn_model_to_turn(turn_model: TurnModel) -> Turn:
+        transactions = [
+            Transaction(
+                card=Card(number=t.card.rank, suit=t.card.suit),
+                from_=t.sender,
+                to_=t.receiver,
+            ) for t in turn_model.transactions
+        ]
+        return Turn(player_id=turn_model.player, turn_type=turn_model.type, transactions=transactions)
+    
     game = await game_collection.find_one({"_id": ObjectId(game_id)})
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
@@ -397,6 +396,20 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
     success = tracker.play_turn(game_id, turn_internal)
     if not success:
         raise HTTPException(status_code=400, detail="Invalid turn or game state")
+    
+@router.delete(
+    "/games/{game_id}",
+    response_description="Delete game",
+    status_code=204,
+)
+async def delete_game(game_id: str):
+    """
+    Delete a game by ID
+    """
+    result = await game_collection.delete_one({"_id": ObjectId(game_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Game not found")
     
 # WebSocket
 

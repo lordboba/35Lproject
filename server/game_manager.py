@@ -1,6 +1,8 @@
 from game import *
 import time
 from fastapi import WebSocket
+from core import CardModel, TransactionModel, TurnModel, ReplayModel, replay_collection
+from bson import ObjectId
 
 # This holds multiple game managers
 class GameTracker:
@@ -16,6 +18,9 @@ class GameTracker:
     
     def broadcast(self, game_id: str, message: dict):
         self.websocket_manager.broadcast(game_id, message)
+
+    def delete_game(self, game_id: str):
+        self.game_managers.pop(game_id)
 
 # Handles non-game logic for a single game
 class GameManager:
@@ -42,6 +47,11 @@ class GameManager:
     def broadcast(self,message: dict):
         self.tracker.broadcast(self.game_id, message)
 
+    def end_game(self, results: dict):
+        self.game_log.save_replay(results)
+        self.tracker.delete_game(self.game_id)
+
+
 
 # Handles logging turns for replay
 class GameLog:
@@ -55,6 +65,33 @@ class GameLog:
 
     def log_turn(self, turn: Turn):
         self.turns.append(turn)
+
+    async def save_replay(self, results: dict):
+        """
+        Save the game replay to MongoDB.
+        """
+        def convert_turn(turn: Turn) -> TurnModel:
+            return TurnModel(
+                player=turn.player,
+                transactions=[
+                    TransactionModel(
+                        sender=txn.from_,
+                        receiver=txn.to_,
+                        card=CardModel(rank=txn.card.number, suit=txn.card.suit)
+                    ) for txn in turn.transactions
+                ]
+            )
+
+        player_obj_ids = {ObjectId(pid): score for pid, score in results.items()}
+
+        replay = ReplayModel(
+            name=self.name,
+            players=player_obj_ids,
+            turns=[convert_turn(t) for t in self.turns],
+            timestamp=self.timestamp,
+        )
+
+        await replay_collection.insert_one(replay.model_dump(by_alias=True))
 
 # Handles WebSocket for all games
 class GameWebSocketManager:

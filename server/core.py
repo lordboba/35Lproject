@@ -20,8 +20,8 @@ client = motor.motor_asyncio.AsyncIOMotorClient(
 )
 db = client.game
 user_collection = db.get_collection("users")
-cards_collection = db.get_collection("cards")
 game_collection = db.get_collection("games")
+replay_collection = db.get_collection("replays")
 
 
 class CardModel(BaseModel):
@@ -42,7 +42,6 @@ class TransactionModel(BaseModel):
     sender: str = Field(...)
     receiver: str = Field(...)
     card: CardModel = Field(...)
-    status: int = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True
@@ -54,6 +53,7 @@ class TurnModel(BaseModel):
     """
     player: str = Field(...)
     transactions: List[TransactionModel] = Field(default_factory=list)
+    type: int = Field(...)
 
 class ReplayModel(BaseModel):
     """

@@ -131,7 +131,6 @@ class GameModel(BaseModel):
     name: str = Field(...)
     type: str = Field(...)
     players: List[PyObjectId] = Field(default_factory=dict)
-    active: bool = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True

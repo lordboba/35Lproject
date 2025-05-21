@@ -1,8 +1,53 @@
 #!/usr/bin/env python3
-from card_abstraction import *
+from abc import ABC, abstractmethod
+from enum import Enum
+
+GAME_RULES = {
+    "Viet Cong": {
+        "max_players": 4
+    },
+    "Fish": {
+        "max_players": 6
+    },
+    "Simple": {
+        "max_players": 2
+    }
+}
+
+class Suit(Enum):
+    SPEC = 0
+    CLUB = 1
+    DIAMOND = 2
+    HEART = 3
+    SPADE = 4
+
+
+# Base Card
+class Card(ABC):
+    def __init__(self, number=0, suit=Suit.SPEC):
+        self.number = number
+        self.suit = suit
+
+# Base Owner
+class Owner(ABC):
+    def __init__(self, cards: list[Card] = None):
+        self.cards: list[Card] = []
+        self.isPlayer: bool = False
+
+    def get_cards(self) -> list[Card]:
+        return self.cards
+
+    def contains_card(self,card: Card):
+        return any(c == card for c in self.cards)
+
+    def find_cards(self,number: int = 0, suit: Suit = Suit.SPEC) -> Card:
+        for c in self.cards:
+            if c.number == number and c.suit == suit:
+                return c
+        return None
 
 class Transaction:
-    def __init__(self, card: Card = 0, from_: str = None, to_: str = None):
+    def __init__(self, card: Card = None, from_: str = None, to_: str = None):
         self.card = card
         self.from_ = from_
         self.to_ = to_

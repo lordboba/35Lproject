@@ -18,21 +18,25 @@ from core import (
     UserCollection,
     GameModel,
     GameCreateModel,
-    GameCollection
+    GameCollection,
+    TurnModel,
 )
+
+from game import Card, Transaction, Turn, GAME_RULES
 
 router = APIRouter()
 
-# Temporary Game Rule Dict
+# Convert TurnModel to Turn
 
-GAME_RULES = {
-    "Viet Cong": {
-        "max_players": 4
-    },
-    "Fish": {
-        "max_players": 6
-    },
-}
+def turn_model_to_turn(turn_model: TurnModel) -> Turn:
+    transactions = [
+        Transaction(
+            card=Card(number=t.card.rank, suit=t.card.suit),
+            from_=t.sender,
+            to_=t.receiver
+        ) for t in turn_model.transactions
+    ]
+    return Turn(player_id=turn_model.player, transactions=transactions)
 
 # --- ENDPOINTS ---
 
@@ -298,7 +302,6 @@ async def create_game(game: GameCreateModel):
     """
     game_dict = game.dict()
     game_dict["players"] = []
-    game_dict["active"] = game_dict.get("active", False)
     
     result = await game_collection.insert_one(game_dict)
     new_game = await game_collection.find_one({"_id": result.inserted_id})
@@ -317,9 +320,6 @@ async def add_user_to_game(game_id: str, user_id: str):
     game = await game_collection.find_one({"_id": ObjectId(game_id)})
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
-    
-    if game["active"]:
-        raise HTTPException(status_code=400, detail="Game already started")
     
     if len(game["players"]) >= GAME_RULES[game["type"]]["max_players"]:
         raise HTTPException(status_code=400, detail="Game is already full")
@@ -347,9 +347,6 @@ async def remove_user_from_game(game_id: str, user_id: str):
     game = await game_collection.find_one({"_id": ObjectId(game_id)})
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
-    
-    if game["active"]:
-        raise HTTPException(status_code=400, detail="Game already started")
 
     if ObjectId(user_id) not in game["players"]:
         raise HTTPException(status_code=400, detail="User not in game")
@@ -363,10 +360,9 @@ async def remove_user_from_game(game_id: str, user_id: str):
 @router.patch(
     "/games/{game_id}/start",
     response_description="Start game",
-    response_model=GameModel,
-    response_model_by_alias=False,
+    status_code=204,
 )
-async def start_game(game_id: str, user_id: str):
+async def start_game(game_id: str, tracker: GameTracker = Depends(get_tracker)):
     """
     Start game by ID
     """
@@ -376,26 +372,31 @@ async def start_game(game_id: str, user_id: str):
 
     if len(game["players"]) != GAME_RULES[game["type"]]["max_players"]:
         raise HTTPException(status_code=400, detail="Game not full yet")
+    
+    tracker.create_game(game_id, game["name"], game["type"], game["players"])
 
-    await game_collection.update_one(
-        {"_id": ObjectId(game_id)},
-        {"$set": {"active": True}}
-    )
-    return await game_collection.find_one({"_id": ObjectId(game_id)})
+    await game_collection.delete_one({"_id": ObjectId(game_id)})
 
-@router.delete(
-    "/games/{game_id}",
-    response_description="Delete game",
-    status_code=204,
+@router.patch(
+    "/games/{game_id}/play",
+    response_description="Play turn",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
-async def delete_game(game_id: str):
+async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTracker = Depends(get_tracker)):
     """
-    Delete a game by ID
+    Play a turn in an ongoing game by ID
     """
-    result = await game_collection.delete_one({"_id": ObjectId(game_id)})
-
-    if result.deleted_count == 0:
+    game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    if not game:
         raise HTTPException(status_code=404, detail="Game not found")
+
+    if game_id not in tracker.game_managers:
+        raise HTTPException(status_code=400, detail="Game not started or no active manager")
+    
+    turn_internal = turn_model_to_turn(turn)
+    success = tracker.play_turn(game_id, turn_internal)
+    if not success:
+        raise HTTPException(status_code=400, detail="Invalid turn or game state")
     
 # WebSocket
 

@@ -11,14 +11,15 @@ class GameTracker:
     def create_game(self, game_id: str, name: str, game_type: str, players: list[str]):
         self.game_managers[game_id] = GameManager(game_id, name, game_type, players)
 
-    def transact(self, game_id: str, trans: Transaction):
-        self.game_managers[game_id].transact(trans)
-
-    # TODO Add ways to work with the game
+    def play_turn(self, game_id: str, turn: Turn) -> bool:
+        return self.game_managers[game_id].play_turn(turn)
+    
+    def broadcast(self, game_id: str, message: dict):
+        self.websocket_manager.broadcast(game_id, message)
 
 # Handles non-game logic for a single game
 class GameManager:
-    def __init__(self, game_id: str, name: str, game_type: str, players: list[str]):
+    def __init__(self, tracker: GameTracker, game_id: str, name: str, game_type: str, players: list[str]):
         mapping = {
             "fish": FishGame,
             "vietcong": VietCongGame,
@@ -27,8 +28,20 @@ class GameManager:
         game_class = mapping.get(game_type.lower())
         if not game_class:
             raise ValueError(f"Unknown game type: {game_type}")
+        self.tracker = tracker
+        self.game_id = game_id
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
+
+    def play_turn(self, turn: Turn):
+        if self.game.play_turn(turn):
+            self.game_log.log_turn(turn)
+            return True
+        return False
+    
+    def broadcast(self,message: dict):
+        self.tracker.broadcast(self.game_id, message)
+
 
 # Handles logging turns for replay
 class GameLog:

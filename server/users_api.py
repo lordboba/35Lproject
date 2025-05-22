@@ -3,9 +3,8 @@ from bson import ObjectId
 import re
 from pymongo import ReturnDocument
 import time
-from game_manager import GameTracker
+from game_manager import GameTracker, get_tracker
 import asyncio
-from main import get_tracker
 
 from core import (
     user_collection,
@@ -374,17 +373,7 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
     """
     Play a turn in an ongoing game by ID
     """
-    # Convert TurnModel to Turn
-    def turn_model_to_turn(turn_model: TurnModel) -> Turn:
-        transactions = [
-            Transaction(
-                card=Card(number=t.card.rank, suit=t.card.suit),
-                from_=t.sender,
-                to_=t.receiver,
-            ) for t in turn_model.transactions
-        ]
-        return Turn(player_id=turn_model.player, turn_type=turn_model.type, transactions=transactions)
-    
+
     game = await game_collection.find_one({"_id": ObjectId(game_id)})
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
@@ -392,8 +381,7 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
     if game_id not in tracker.game_managers:
         raise HTTPException(status_code=400, detail="Game not started or no active manager")
     
-    turn_internal = turn_model_to_turn(turn)
-    success = tracker.play_turn(game_id, turn_internal)
+    success = tracker.play_turn(game_id, turn)
     if not success:
         raise HTTPException(status_code=400, detail="Invalid turn or game state")
     

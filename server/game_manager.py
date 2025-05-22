@@ -11,10 +11,10 @@ class GameTracker:
         self.websocket_manager = GameWebSocketManager()
 
     def create_game(self, game_id: str, name: str, game_type: str, players: list[str]):
-        self.game_managers[game_id] = GameManager(game_id, name, game_type, players)
+        self.game_managers[game_id] = GameManager(self, game_id, name, game_type, players)
 
-    def play_turn(self, game_id: str, turn: Turn) -> bool:
-        return self.game_managers[game_id].play_turn(turn)
+    def play_turn(self, game_id: str, turn: TurnModel) -> bool:
+        return self.game_managers[game_id].play_turn(Turn.from_model(turn))
     
     def broadcast(self, game_id: str, message: dict):
         self.websocket_manager.broadcast(game_id, message)
@@ -70,24 +70,13 @@ class GameLog:
         """
         Save the game replay to MongoDB.
         """
-        def convert_turn(turn: Turn) -> TurnModel:
-            return TurnModel(
-                player=turn.player,
-                transactions=[
-                    TransactionModel(
-                        sender=txn.from_,
-                        receiver=txn.to_,
-                        card=CardModel(rank=txn.card.number, suit=txn.card.suit)
-                    ) for txn in turn.transactions
-                ]
-            )
 
         player_obj_ids = {ObjectId(pid): score for pid, score in results.items()}
 
         replay = ReplayModel(
             name=self.name,
             players=player_obj_ids,
-            turns=[convert_turn(t) for t in self.turns],
+            turns=[t.to_model() for t in self.turns],
             timestamp=self.timestamp,
         )
 
@@ -110,3 +99,8 @@ class GameWebSocketManager:
     async def broadcast(self, game_id: str, message: dict):
         for ws in self.games.get(game_id, []):
             await ws.send_json(message)
+
+tracker = GameTracker()
+
+def get_tracker():
+    return tracker

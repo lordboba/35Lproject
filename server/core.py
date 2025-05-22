@@ -142,3 +142,15 @@ class GameCreateModel(BaseModel):
     
 class GameCollection(BaseModel):
     games: List[GameModel]
+
+# Game State Models
+
+class OwnerModel(BaseModel):
+    cards: List[CardModel]
+    is_player: bool
+
+class GameStateModel(BaseModel):
+    owners: List[OwnerModel]
+    current_player: Optional[str] 
+    last_turn: Optional[TurnModel]
+    status: int

@@ -13,14 +13,17 @@ class GameTracker:
     def create_game(self, game_id: str, name: str, game_type: str, players: list[str]):
         self.game_managers[game_id] = GameManager(self, game_id, name, game_type, players)
 
-    def play_turn(self, game_id: str, turn: TurnModel) -> bool:
-        return self.game_managers[game_id].play_turn(Turn.from_model(turn))
+    async def play_turn(self, game_id: str, turn: TurnModel) -> bool:
+        return await self.game_managers[game_id].play_turn(Turn.from_model(turn))
     
-    def broadcast(self, game_id: str, message: dict):
-        self.websocket_manager.broadcast(game_id, message)
+    async def broadcast(self, game_id: str, message: dict):
+        await self.websocket_manager.broadcast(game_id, message)
 
     def delete_game(self, game_id: str):
         self.game_managers.pop(game_id)
+
+    def get_active_games(self):
+        return list(self.game_managers.keys())
 
 # Handles non-game logic for a single game
 class GameManager:
@@ -38,17 +41,17 @@ class GameManager:
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
 
-    def play_turn(self, turn: Turn):
-        if self.game.play_turn(turn):
+    async def play_turn(self, turn: Turn):
+        if await self.game.play_turn(turn):
             self.game_log.log_turn(turn)
             return True
         return False
     
-    def broadcast(self,message: dict):
-        self.tracker.broadcast(self.game_id, message)
+    async def broadcast(self,message: dict):
+        await self.tracker.broadcast(self.game_id, message)
 
-    def end_game(self, results: dict):
-        self.game_log.save_replay(results)
+    async def end_game(self, results: dict):
+        await self.game_log.save_replay(results)
         self.tracker.delete_game(self.game_id)
 
 

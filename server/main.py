@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from users_api import router as users_router
+from game_manager import GameTracker
 
 app = FastAPI(title="Card Game API")
 

@@ -1,7 +1,7 @@
 from fastapi import Body, HTTPException, status
 from bson import ObjectId
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List
+from typing import Optional, List, Dict
 from typing_extensions import Annotated
 from pydantic.functional_validators import BeforeValidator
 from dotenv import load_dotenv
@@ -20,8 +20,8 @@ client = motor.motor_asyncio.AsyncIOMotorClient(
 )
 db = client.game
 user_collection = db.get_collection("users")
-cards_collection = db.get_collection("cards")
 game_collection = db.get_collection("games")
+replay_collection = db.get_collection("replays")
 
 
 class CardModel(BaseModel):
@@ -42,7 +42,6 @@ class TransactionModel(BaseModel):
     sender: str = Field(...)
     receiver: str = Field(...)
     card: CardModel = Field(...)
-    success: bool = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True
@@ -54,6 +53,21 @@ class TurnModel(BaseModel):
     """
     player: str = Field(...)
     transactions: List[TransactionModel] = Field(default_factory=list)
+    type: int = Field(...)
+
+class ReplayModel(BaseModel):
+    """
+    Container for a single replay.
+    """
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    name: str = Field(...)
+    players: Dict[PyObjectId,int] = Field(default_factory=dict)
+    turns: List[TurnModel] = Field(default_factory=list)
+    timestamp: int = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )
 
 class UserModel(BaseModel):
     """
@@ -117,8 +131,6 @@ class GameModel(BaseModel):
     name: str = Field(...)
     type: str = Field(...)
     players: List[PyObjectId] = Field(default_factory=dict)
-    active: bool = Field(...)
-    timestamp: int = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True
@@ -130,3 +142,16 @@ class GameCreateModel(BaseModel):
     
 class GameCollection(BaseModel):
     games: List[GameModel]
+
+# Game State Models
+
+class OwnerModel(BaseModel):
+    cards: List[CardModel]
+    is_player: bool
+
+class GameStateModel(BaseModel):
+    owners: Dict[str,OwnerModel]
+    current_player: Optional[str] 
+    last_turn: Optional[TurnModel]
+    status: int
+

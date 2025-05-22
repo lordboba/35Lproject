@@ -150,7 +150,7 @@ class OwnerModel(BaseModel):
     is_player: bool
 
 class GameStateModel(BaseModel):
-    owners: List[OwnerModel]
+    owners: Dict[str,OwnerModel]
     current_player: Optional[str] 
     last_turn: Optional[TurnModel]
     status: int

@@ -5,6 +5,7 @@ from pymongo import ReturnDocument
 import time
 from game_manager import GameTracker, get_tracker
 import asyncio
+from typing import List
 
 from core import (
     user_collection,
@@ -308,11 +309,11 @@ async def add_user_to_game(game_id: str, user_id: str):
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
     
-    if len(game["players"]) >= GAME_RULES[game["type"]]["max_players"]:
-        raise HTTPException(status_code=400, detail="Game is already full")
-
     if ObjectId(user_id) in game["players"]:
         raise HTTPException(status_code=400, detail="User already in game")
+    
+    if len(game["players"]) >= GAME_RULES[game["type"]]["max_players"]:
+        raise HTTPException(status_code=400, detail="Game is already full")
 
     await game_collection.update_one(
         {"_id": ObjectId(game_id)},
@@ -360,7 +361,7 @@ async def start_game(game_id: str, tracker: GameTracker = Depends(get_tracker)):
     if len(game["players"]) != GAME_RULES[game["type"]]["max_players"]:
         raise HTTPException(status_code=400, detail="Game not full yet")
     
-    tracker.create_game(game_id, game["name"], game["type"], game["players"])
+    tracker.create_game(game_id, game["name"], game["type"], list(map(str,game["players"])))
 
     await game_collection.delete_one({"_id": ObjectId(game_id)})
 
@@ -374,14 +375,10 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
     Play a turn in an ongoing game by ID
     """
 
-    game = await game_collection.find_one({"_id": ObjectId(game_id)})
-    if not game:
-        raise HTTPException(status_code=404, detail="Game not found")
-
-    if game_id not in tracker.game_managers:
+    if game_id not in tracker.get_active_games():
         raise HTTPException(status_code=400, detail="Game not started or no active manager")
     
-    success = tracker.play_turn(game_id, turn)
+    success = await tracker.play_turn(game_id, turn)
     if not success:
         raise HTTPException(status_code=400, detail="Invalid turn or game state")
     
@@ -409,3 +406,29 @@ async def game_ws(websocket: WebSocket, game_id: str,tracker: GameTracker = Depe
             await asyncio.sleep(60)
     except WebSocketDisconnect:
         tracker.websocket_manager.disconnect(game_id, websocket)
+
+# Dev
+
+@router.get(
+    "/games/active",
+    response_description="Get active game not in DB",
+    response_model=List[str],
+    response_model_by_alias=False,
+)
+async def get_active_games(tracker: GameTracker = Depends(get_tracker)):
+    """
+    Get active game not in DB
+    """
+    return tracker.get_active_games()
+
+@router.get(
+    "/games/active/{game_id}/debug",
+    response_description="Get active game owners",
+    response_model=List[str],
+    response_model_by_alias=False,
+)
+async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get_tracker)):
+    """
+    Get active game owners
+    """
+    return [str(card) for card in list(tracker.game_managers[game_id].game.owners.values())[0].cards]

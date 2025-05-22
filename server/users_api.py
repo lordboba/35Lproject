@@ -432,3 +432,4 @@ async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get
     Get active game owners
     """
     return [str(card) for card in list(tracker.game_managers[game_id].game.owners.values())[0].cards]
+

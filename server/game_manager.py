@@ -3,6 +3,7 @@ import time
 from fastapi import WebSocket
 from core import CardModel, TransactionModel, TurnModel, ReplayModel, replay_collection
 from bson import ObjectId
+import game
 
 # This holds multiple game managers
 class GameTracker:
@@ -14,7 +15,7 @@ class GameTracker:
         self.game_managers[game_id] = GameManager(self, game_id, name, game_type, players)
 
     async def play_turn(self, game_id: str, turn: TurnModel) -> bool:
-        return await self.game_managers[game_id].play_turn(Turn.from_model(turn))
+        return await self.game_managers[game_id].play_turn(game.Turn.from_model(turn))
     
     async def broadcast(self, game_id: str, message: dict):
         await self.websocket_manager.broadcast(game_id, message)
@@ -29,9 +30,9 @@ class GameTracker:
 class GameManager:
     def __init__(self, tracker: GameTracker, game_id: str, name: str, game_type: str, players: list[str]):
         mapping = {
-            "fish": FishGame,
-            "vietcong": VietCongGame,
-            "simple": SimpleGame,
+            "fish": game.FishGame,
+            "vietcong": game.VietCongGame,
+            "simple": game.SimpleGame,
         }
         game_class = mapping.get(game_type.lower())
         if not game_class:
@@ -41,7 +42,7 @@ class GameManager:
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
 
-    async def play_turn(self, turn: Turn):
+    async def play_turn(self, turn: game.Turn):
         if await self.game.play_turn(turn):
             self.game_log.log_turn(turn)
             return True
@@ -66,7 +67,7 @@ class GameLog:
         self.players = players
         self.turns = []
 
-    def log_turn(self, turn: Turn):
+    def log_turn(self, turn: game.Turn):
         self.turns.append(turn)
 
     async def save_replay(self, results: dict):

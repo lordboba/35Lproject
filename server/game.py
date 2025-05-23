@@ -130,6 +130,12 @@ class Game(ABC):
 
     def to_game_state(self, status: int) -> GameStateModel:
         return GameStateModel(owners={owner_id: owner.to_model() for owner_id, owner in self.owners.items()}, current_player=self.current_player, last_turn=self.last_turn.to_model(), status=status)
+    
+    def has_cards(self, turn:Turn): # checks if the player has the cards in the transaction requested
+        for trans in turn.transactions:
+            if (self.belongsTo[trans.card] != trans.from_):
+                return False
+        return True
 
     async def broadcast_state(self, status: int):
         await self.manager.broadcast(self.to_game_state(status).dict())
@@ -152,7 +158,7 @@ class SimpleGame(Game):
         super().__init__(manager, owners, cards)     
 
 class VietCongGame(Game):
-     def __init__(self, manager, players):
+    def __init__(self, manager, players):
         if len(players)!=4:
             raise ValueError("Not the right number of players (4 needed)")
 
@@ -161,6 +167,8 @@ class VietCongGame(Game):
         cards = [Card(i + 1, Suit.CLUB) for i in range(14)]
         cards.extend([Card(i + 1, Suit.SPADE) for i in range(14)])
         
+        self.current_combo = [] #combo on top of deck
+        self.in_game = [True,True,True,True] # people who haven't passed
         random.shuffle(cards)
         owners: dict[str, Owner] = {
             players[0]: Owner(cards[0:13]),
@@ -169,9 +177,15 @@ class VietCongGame(Game):
             players[3]: Owner(cards[39:52]),
             players[4]: Owner([]) # the pile in the middle
         }
-        
 
-        super().__init__(manager, owners, cards)     
+
+        super().__init__(manager, owners, cards)   
+    def valid_move(self, turn:Turn) -> bool:
+        if not super.has_cards(self,turn):
+            return False
+        
+    async def play_turn(self, turn: Turn) -> bool:
+        
 
 class FishGame(Game):
     pass

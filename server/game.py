@@ -183,8 +183,16 @@ class VietCongGame(Game):
     def valid_move(self, turn:Turn) -> bool:
         if not super.has_cards(self,turn):
             return False
-        
+
+
     async def play_turn(self, turn: Turn) -> bool:
+        if not self.valid_move(self,turn):
+            return False
+        self.current_combo = [trans.card for trans in turn.transactions]
+        # sort current combo
+        super.play_turn(self,turn)
+
+
         
 
 class FishGame(Game):

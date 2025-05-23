@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel
+import random
 
 GAME_RULES = {
     "vietcong": {
@@ -151,7 +152,26 @@ class SimpleGame(Game):
         super().__init__(manager, owners, cards)     
 
 class VietCongGame(Game):
-    pass
+     def __init__(self, manager, players):
+        if len(players)!=4:
+            raise ValueError("Not the right number of players (4 needed)")
+
+        cards.extend([Card(i + 1, Suit.HEART) for i in range(14)])
+        cards.extend([Card(i + 1, Suit.DIAMOND) for i in range(14)])
+        cards = [Card(i + 1, Suit.CLUB) for i in range(14)]
+        cards.extend([Card(i + 1, Suit.SPADE) for i in range(14)])
+        
+        random.shuffle(cards)
+        owners: dict[str, Owner] = {
+            players[0]: Owner(cards[0:13]),
+            players[1]: Owner(cards[13:26]),
+            players[2]: Owner(cards[26:39]),
+            players[3]: Owner(cards[39:52]),
+            players[4]: Owner([]) # the pile in the middle
+        }
+        
+
+        super().__init__(manager, owners, cards)     
 
 class FishGame(Game):
     pass

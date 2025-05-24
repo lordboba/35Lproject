@@ -173,12 +173,24 @@ class VietCongGame(Game):
         BOMB_3 = 103
         BOMB_4 = 104
 
-    def cmpValue(card1:Card, card2:Card):
-        card1_rank = card1.rank
-        card1_suit = card1.suit
-        card2_rank = card2.rank
-        card2_suit = card2.suit
+    def getCardValue(card:Card)->int:
+        card1_rank = card.rank
+        card1_suit = card.suit
+        if (card.rank == 1 or card.rank == 2):
+            card1_rank = card.rank + 13
+        if (card.suit == Suit.CLUB):
+            card1_suit = 3 # we currently defined club as the worst and heart as second best, should be reversed
+        elif card.suit == Suit.HEART:
+            card1_suit = 1
+        elif card.suit == Suit.DIAMOND:
+            card1_suit = 2
+        elif card.suit == Suit.SPADE:
+            card1_suit = 4
+        return (card1_rank*10+card1_suit)
         
+    def cmpValue(self,card1:Card, card2:Card)->bool:
+        return self.getCardValue(card1)<self.getCardValue(card2)
+    
     def __init__(self, manager, players):
         if len(players)!=4:
             raise ValueError("Not the right number of players (4 needed)")
@@ -199,9 +211,6 @@ class VietCongGame(Game):
             players[3]: Owner(cards[39:52]),
             players[4]: Owner([]) # the pile in the middle
         }
-
-
-
         super().__init__(manager, owners, cards)   
 
     def get_combo(self, turn:Turn)->Combo:

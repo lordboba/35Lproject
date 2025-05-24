@@ -221,8 +221,10 @@ class VietCongGame(Game):
 
     def get_combo(self, turn:Turn)->Combo:
         #bombs later
-
+        from functools import cmp_to_key
         cards = [trans.card for trans in turn.transactions]
+        sorted(cards, key=cmp_to_key(self.cmpValue)) # sort cards (Hopefully this works)
+        sorted(self.current_combo, key=cmp_to_key(self.cmpValue))
         if len(cards) == 0:
             return self.Combo.NONE
         rank = cards[0].rank - 1
@@ -263,7 +265,7 @@ class VietCongGame(Game):
         if self.get_combo(self,turn)<self.current_combo_type:
             return False
         elif  self.get_combo(self,turn)==self.current_combo_type:
-            return self.getCardValue(self,turn.transactions[0].card) > self.getCardValue(self,self.current_combo[0])
+            return self.getCardValue(self,turn.transactions[0].card) > self.getCardValue(self,self.current_combo[0]) 
         return True
 
 
@@ -271,9 +273,10 @@ class VietCongGame(Game):
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if self.passed[self.current_player]:
             return True
+        
         if not self.valid_move(self,turn):
             return False
-        
+      
         self.current_combo = [trans.card for trans in turn.transactions]
         self.current_combo_type = self.get_combo(self,turn=turn)
         # sort current combo

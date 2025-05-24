@@ -158,6 +158,27 @@ class SimpleGame(Game):
         super().__init__(manager, owners, cards)     
 
 class VietCongGame(Game):
+    class Combo(Enum):
+        NONE = -1
+        SINGLE = 1
+        DOUBLE = 2
+        TRIPLE = 3
+        QUAD = 4
+
+        SEQUENCE = 20
+        DB_SEQUENCE = 21
+
+        BOMB_1 = 101
+        BOMB_2 = 102
+        BOMB_3 = 103
+        BOMB_4 = 104
+
+    def cmpValue(card1:Card, card2:Card):
+        card1_rank = card1.rank
+        card1_suit = card1.suit
+        card2_rank = card2.rank
+        card2_suit = card2.suit
+        
     def __init__(self, manager, players):
         if len(players)!=4:
             raise ValueError("Not the right number of players (4 needed)")
@@ -168,6 +189,7 @@ class VietCongGame(Game):
         cards.extend([Card(i + 1, Suit.SPADE) for i in range(14)])
         
         self.current_combo = [] #combo on top of deck
+        self.current_combo_type = self.Combo.NONE #ID of combo
         self.in_game = [True,True,True,True] # people who haven't passed
         random.shuffle(cards)
         owners: dict[str, Owner] = {
@@ -179,16 +201,63 @@ class VietCongGame(Game):
         }
 
 
+
         super().__init__(manager, owners, cards)   
+
+    def get_combo(self, turn:Turn)->Combo:
+        #bombs later
+
+        cards = [trans.card for trans in turn.transactions]
+        if len(cards) == 0:
+            return self.Combo.NONE
+        rank = cards[0].rank - 1
+        sequence = True
+        if len(cards)%2==0:
+            for i in range(len(cards)/2):
+                if  cards[2*i].rank!=cards[2*i+1].rank or cards[2*i].rank != rank+1:
+                    sequence= False
+                    break
+                rank = cards[2*i].rank
+        if sequence:
+            return self.Combo.DB_SEQUENCE
+        
+        rank = cards[0].rank - 1
+        sequence = True
+
+        for i in range(len(cards)):
+            if cards[i].rank != rank+1:
+                sequence = False
+                break
+            rank = cards[i].rank
+        if sequence:
+            return self.Combo.SEQUENCE
+        
+        same = True
+        for i in range(len(cards)-1):
+            if cards[i].rank!=cards[i+1].rank:
+                same=False
+                break
+        if same:
+            return len(cards)
+        else:
+            return self.Combo.NONE
+        
     def valid_move(self, turn:Turn) -> bool:
         if not super.has_cards(self,turn):
             return False
+        if self.get_combo(self,turn)<self.current_combo_type:
+            return False
+        
+        return True
+
 
 
     async def play_turn(self, turn: Turn) -> bool:
         if not self.valid_move(self,turn):
             return False
+        
         self.current_combo = [trans.card for trans in turn.transactions]
+        self.current_combo_type = self.get_combo(self,turn=turn)
         # sort current combo
         super.play_turn(self,turn)
 

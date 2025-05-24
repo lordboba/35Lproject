@@ -205,13 +205,6 @@ class VietCongGame(Game):
         self.current_combo = [] #combo on top of deck
         self.current_combo_type = self.Combo.NONE #ID of combo
         self.passed = [False,False,False,False] # people who passed are true
-        self.next_player:dict[str,str] = {
-            players[0]: players[1],
-            players[1]: players[2],
-            players[2]: players[3],
-            players[3]: players[0]
-            
-        }
         random.shuffle(cards)
         owners: dict[str, Owner] = {
             players[0]: Owner(cards[0:13]),
@@ -231,7 +224,7 @@ class VietCongGame(Game):
     def get_combo(self, turn:Turn)->Combo:
         #bombs later
         from functools import cmp_to_key
-        cards = [trans.card for trans in turn.transactions]
+        cards = [trans.get_card() for trans in turn.transactions]
         sorted(cards, key=cmp_to_key(self.cmpValue)) # sort cards (Hopefully this works)
         sorted(self.current_combo, key=cmp_to_key(self.cmpValue))
         if len(cards) == 0:
@@ -274,7 +267,7 @@ class VietCongGame(Game):
         if self.get_combo(self,turn) != self.current_combo_type and self.get_combo(self,turn) <100: #100 is a bomb
             return False
         
-        return self.getCardValue(self,turn.transactions[0].card) > self.getCardValue(self,self.current_combo[0]) 
+        return self.getCardValue(self,turn.transactions[0].get_card()) > self.getCardValue(self,self.current_combo[0]) 
 
 
 
@@ -288,7 +281,7 @@ class VietCongGame(Game):
         if not self.valid_move(self,turn):
             return False
       
-        self.current_combo = [trans.card for trans in turn.transactions]
+        self.current_combo = [trans.get_card() for trans in turn.transactions]
         self.current_combo_type = self.get_combo(self,turn=turn)
         # sort current combo
         

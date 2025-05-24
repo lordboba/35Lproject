@@ -202,7 +202,7 @@ class VietCongGame(Game):
         
         self.current_combo = [] #combo on top of deck
         self.current_combo_type = self.Combo.NONE #ID of combo
-        self.in_game = [True,True,True,True] # people who haven't passed
+        self.passed = [True,True,True,True] # people who passed are true
         random.shuffle(cards)
         owners: dict[str, Owner] = {
             players[0]: Owner(cards[0:13]),
@@ -211,6 +211,12 @@ class VietCongGame(Game):
             players[3]: Owner(cards[39:52]),
             players[4]: Owner([]) # the pile in the middle
         }
+        self.current_player = 0
+        for i in range(4):
+            if Card(3, Suit.HEART) in players[i]: # person with the worst card goes first
+                self.current_player = i
+                break
+        
         super().__init__(manager, owners, cards)   
 
     def get_combo(self, turn:Turn)->Combo:
@@ -256,20 +262,25 @@ class VietCongGame(Game):
             return False
         if self.get_combo(self,turn)<self.current_combo_type:
             return False
-        
+        elif  self.get_combo(self,turn)==self.current_combo_type:
+            return self.getCardValue(self,turn.transactions[0].card) > self.getCardValue(self,self.current_combo[0])
         return True
 
 
 
-    async def play_turn(self, turn: Turn) -> bool:
+    async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
+        if self.passed[self.current_player]:
+            return True
         if not self.valid_move(self,turn):
             return False
         
         self.current_combo = [trans.card for trans in turn.transactions]
         self.current_combo_type = self.get_combo(self,turn=turn)
         # sort current combo
+        
         super.play_turn(self,turn)
-
+        self.current_player = (self.current_player)%4
+        
 
         
 

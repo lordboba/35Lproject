@@ -283,6 +283,7 @@ class VietCongGame(Game):
         
         super.play_turn(self,turn)
         self.current_player = (self.current_player)%4
+        await self.broadcast_state(0)
         
 
         

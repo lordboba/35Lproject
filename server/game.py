@@ -101,12 +101,13 @@ class Turn:
         return cls(model.player, model.type, [Transaction.from_model(transact) for transact in model.transactions])
 
 class Game(ABC):
-    def __init__(self, manager, owners: dict[str, Owner], cards: list[Card]):
+    def __init__(self, manager, owners: dict[str, Owner], cards: list[Card], player_ids: list[str]):
         self.manager = manager
         self.owners = owners
         self.cards = cards
-        self.current_player: str = None
+        self.current_player: int = None
         self.last_turn: Turn = None
+        self.player_ids = player_ids
 
         self.belongsTo: dict[Card, str] = {}
 
@@ -195,29 +196,37 @@ class VietCongGame(Game):
         if len(players)!=4:
             raise ValueError("Not the right number of players (4 needed)")
 
+        cards = []
         cards.extend([Card(i + 1, Suit.HEART) for i in range(14)])
         cards.extend([Card(i + 1, Suit.DIAMOND) for i in range(14)])
-        cards = [Card(i + 1, Suit.CLUB) for i in range(14)]
+        cards.extend([Card(i + 1, Suit.CLUB) for i in range(14)])
         cards.extend([Card(i + 1, Suit.SPADE) for i in range(14)])
         
         self.current_combo = [] #combo on top of deck
         self.current_combo_type = self.Combo.NONE #ID of combo
-        self.passed = [True,True,True,True] # people who passed are true
+        self.passed = [False,False,False,False] # people who passed are true
+        self.next_player:dict[str,str] = {
+            players[0]: players[1],
+            players[1]: players[2],
+            players[2]: players[3],
+            players[3]: players[0]
+            
+        }
         random.shuffle(cards)
         owners: dict[str, Owner] = {
             players[0]: Owner(cards[0:13]),
             players[1]: Owner(cards[13:26]),
             players[2]: Owner(cards[26:39]),
             players[3]: Owner(cards[39:52]),
-            players[4]: Owner([]) # the pile in the middle
+            "Pile": Owner([]) # the pile in the middle
         }
-        self.current_player = 0
-        for i in range(4):
-            if Card(3, Suit.HEART) in players[i]: # person with the worst card goes first
-                self.current_player = i
+        
+        for p in players:
+            if Card(3, Suit.HEART) in owners[p].cards: # person with the worst card goes first
+                self.current_player = players.index(p)
                 break
         
-        super().__init__(manager, owners, cards)   
+        super().__init__(manager, owners, cards, players)   
 
     def get_combo(self, turn:Turn)->Combo:
         #bombs later
@@ -262,16 +271,18 @@ class VietCongGame(Game):
     def valid_move(self, turn:Turn) -> bool:
         if not super.has_cards(self,turn):
             return False
-        if self.get_combo(self,turn)<self.current_combo_type:
+        if self.get_combo(self,turn) != self.current_combo_type and self.get_combo(self,turn) <100: #100 is a bomb
             return False
-        elif  self.get_combo(self,turn)==self.current_combo_type:
-            return self.getCardValue(self,turn.transactions[0].card) > self.getCardValue(self,self.current_combo[0]) 
-        return True
+        
+        return self.getCardValue(self,turn.transactions[0].card) > self.getCardValue(self,self.current_combo[0]) 
 
 
 
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if self.passed[self.current_player]:
+            return True
+        elif len(turn.transactions)==0:
+            self.passed[self.current_player] = True
             return True
         
         if not self.valid_move(self,turn):
@@ -282,7 +293,7 @@ class VietCongGame(Game):
         # sort current combo
         
         super.play_turn(self,turn)
-        self.current_player = (self.current_player)%4
+        self.current_player = (self.current_player+1)%4
         await self.broadcast_state(0)
         
 

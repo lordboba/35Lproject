@@ -164,15 +164,17 @@ class VietCongGame(Game):
         SINGLE = 1
         DOUBLE = 2
         TRIPLE = 3
-        QUAD = 4
+        
+        QUAD = 100
 
         SEQUENCE = 13
-        DB_SEQUENCE = 33
+        DB_SEQUENCE = 103
 
-        BOMB_1 = 101
-        BOMB_2 = 102
-        BOMB_3 = 103
-        BOMB_4 = 104
+        #Not used in actually labeling
+        SINGLE_TWO = 21
+        DOUBLE_TWO = 22
+        TRIPLE_TWO = 23
+
 
     def getCardValue(card:Card)->int:
         card1_rank = card.rank
@@ -291,16 +293,29 @@ class VietCongGame(Game):
             return self.Combo.QUAD
         else:
             return self.Combo.SINGLE
+    async def check_twos(self) ->Combo:
+        if (len(self.current_combo)==1) and self.current_combo[0].rank == 15:
+            return self.Combo.SINGLE_TWO
+        elif (len(self.current_combo)==2) and self.current_combo[0].rank == 15 and self.current_combo[1].rank == 15:
+            return self.Combo.DOUBLE_TWO
+        elif (len(self.current_combo)==3) and self.current_combo[0].rank == 15 and self.current_combo[1].rank == 15 and self.current_combo[2].rank == 15  :
+            return self.Combo.TRIPLE_TWO
+        return self.Combo.NONE
         
     async def valid_move(self, turn:Turn) -> bool:
         if not super.has_cards(self,turn):
             return False
-        if self.get_combo(self,turn) != self.current_combo_type and self.get_combo(self,turn) <100: #100 is a bomb
+        test_combo = self.get_combo(self,turn)
+        bomb_potential = self.check_twos(self)
+        if bomb_potential > 0:
+            if bomb_potential == self.Combo.SINGLE_TWO and test_combo == self.Combo.QUAD:
+                return True
+            return test_combo >=self.Combo.DB_SEQUENCE + (bomb_potential - self.Combo.SINGLE_TWO)
+
+        if test_combo != self.current_combo_type:
             return False
         
-        return self.getCardValue(self,turn.transactions[0].get_card()) > self.getCardValue(self,self.current_combo[0]) 
-
-
+        return self.getCardValue(self,turn.transactions[0].get_card()) > self.getCardValue(self,self.current_combo[0]) #check using lowest valued card (the cards are sorted)
 
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if self.passed[self.current_player]:
@@ -314,10 +329,11 @@ class VietCongGame(Game):
         if not self.valid_move(self,turn):
             return False
       
+        if self.check_twos() > 0 and self.get_combo(self,turn) >= 100: #a bomb is played
+            self.current_combo_type = self.get_combo(self,turn=turn)
+            
         self.current_combo = [trans.get_card() for trans in turn.transactions]
-        self.current_combo_type = self.get_combo(self,turn=turn)
         # sort current combo
-        
         super.play_turn(self,turn)
         self.current_player = (self.current_player+1)%4
         await self.broadcast_state(0)

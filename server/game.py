@@ -221,14 +221,14 @@ class VietCongGame(Game):
         
         super().__init__(manager, owners, cards, players)   
 
-    def is_double(self, turn:Turn) ->bool:
+    async def is_double(self, turn:Turn) ->bool:
         cards = [trans.get_card() for trans in turn.transactions]
         if len(cards)!=2:
             return False
         if cards[0].rank == cards[1].rank:
             return True
         return False
-    def is_triple(self, turn:Turn) ->bool:
+    async def is_triple(self, turn:Turn) ->bool:
         cards = [trans.get_card() for trans in turn.transactions]
         if len(cards)!=3:
             return False
@@ -236,7 +236,7 @@ class VietCongGame(Game):
             return True
         return False
     
-    def is_quad(self, turn:Turn) ->bool:
+    async def is_quad(self, turn:Turn) ->bool:
         cards = [trans.get_card() for trans in turn.transactions]
         if len(cards)!=4:
             return False
@@ -244,7 +244,7 @@ class VietCongGame(Game):
             return True
         return False
 
-    def is_sequence(self,turn:Turn)->bool:
+    async def is_sequence(self,turn:Turn)->bool:
         cards = [trans.get_card() for trans in turn.transactions]
         rank = cards[0].rank - 1
         if len(cards)<3:
@@ -256,7 +256,7 @@ class VietCongGame(Game):
                 return False
             rank = cards[i].rank
         return sequence
-    def is_double_sequence(self,turn:Turn)->bool:
+    async def is_double_sequence(self,turn:Turn)->bool:
         cards = [trans.get_card() for trans in turn.transactions]
         rank = cards[0].rank - 1
         if len(cards)<6 or len(cards)%2==1:
@@ -269,7 +269,7 @@ class VietCongGame(Game):
             rank = cards[2*i].rank
         return sequence
     
-    def get_combo(self, turn:Turn)->Combo:
+    async def get_combo(self, turn:Turn)->Combo:
         #bombs later
         from functools import cmp_to_key
         cards = [trans.get_card() for trans in turn.transactions]
@@ -291,7 +291,7 @@ class VietCongGame(Game):
         else:
             return self.Combo.SINGLE
         
-    def valid_move(self, turn:Turn) -> bool:
+    async def valid_move(self, turn:Turn) -> bool:
         if not super.has_cards(self,turn):
             return False
         if self.get_combo(self,turn) != self.current_combo_type and self.get_combo(self,turn) <100: #100 is a bomb

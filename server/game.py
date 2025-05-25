@@ -166,8 +166,8 @@ class VietCongGame(Game):
         TRIPLE = 3
         QUAD = 4
 
-        SEQUENCE = 20
-        DB_SEQUENCE = 21
+        SEQUENCE = 13
+        DB_SEQUENCE = 33
 
         BOMB_1 = 101
         BOMB_2 = 102
@@ -244,30 +244,31 @@ class VietCongGame(Game):
             return True
         return False
 
-    async def is_sequence(self,turn:Turn)->bool:
+    async def is_sequence(self,turn:Turn)->int:
         cards = [trans.get_card() for trans in turn.transactions]
         rank = cards[0].rank - 1
         if len(cards)<3:
             return False
-        sequence = True
+       
 
         for i in range(len(cards)):
             if cards[i].rank != rank+1:
                 return False
             rank = cards[i].rank
-        return sequence
-    async def is_double_sequence(self,turn:Turn)->bool:
+        return self.Combo.SEQUENCE + len(cards) - 3
+     
+    async def is_double_sequence(self,turn:Turn)->int:
         cards = [trans.get_card() for trans in turn.transactions]
         rank = cards[0].rank - 1
         if len(cards)<6 or len(cards)%2==1:
             return False
-        sequence = True
+      
 
         for i in range(len(cards)):
             if cards[2*i].rank != rank+1 or cards[i*2+1].rank != rank+1:
                 return False
             rank = cards[2*i].rank
-        return sequence
+        return self.Combo.DB_SEQUENCE + len(cards) - 3
     
     async def get_combo(self, turn:Turn)->Combo:
         #bombs later
@@ -278,10 +279,10 @@ class VietCongGame(Game):
         if len(cards) == 0:
             return self.Combo.NONE
     
-        if (self.is_double_sequence(self,turn)):
-            return self.Combo.DB_SEQUENCE
-        elif (self.is_sequence(self,turn)):
-            return self.Combo.SEQUENCE
+        if (self.is_double_sequence(self,turn)!=False):
+            return self.is_double_sequence(self,turn)
+        elif (self.is_sequence(self,turn) != False):
+            return self.is_sequence(self,turn)
         elif (self.is_triple(self,turn)):
             return self.Combo.TRIPLE
         elif (self.is_double(self,turn)):

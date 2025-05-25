@@ -221,6 +221,54 @@ class VietCongGame(Game):
         
         super().__init__(manager, owners, cards, players)   
 
+    def is_double(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=2:
+            return False
+        if cards[0].rank == cards[1].rank:
+            return True
+        return False
+    def is_triple(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=3:
+            return False
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank:
+            return True
+        return False
+    
+    def is_quad(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=4:
+            return False
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank and cards[3].rank == cards[2].rank:
+            return True
+        return False
+
+    def is_sequence(self,turn:Turn)->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        rank = cards[0].rank - 1
+        if len(cards)<3:
+            return False
+        sequence = True
+
+        for i in range(len(cards)):
+            if cards[i].rank != rank+1:
+                return False
+            rank = cards[i].rank
+        return sequence
+    def is_double_sequence(self,turn:Turn)->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        rank = cards[0].rank - 1
+        if len(cards)<6 or len(cards)%2==1:
+            return False
+        sequence = True
+
+        for i in range(len(cards)):
+            if cards[2*i].rank != rank+1 or cards[i*2+1].rank != rank+1:
+                return False
+            rank = cards[2*i].rank
+        return sequence
+    
     def get_combo(self, turn:Turn)->Combo:
         #bombs later
         from functools import cmp_to_key
@@ -229,37 +277,19 @@ class VietCongGame(Game):
         sorted(self.current_combo, key=cmp_to_key(self.cmpValue))
         if len(cards) == 0:
             return self.Combo.NONE
-        rank = cards[0].rank - 1
-        sequence = True
-        if len(cards)%2==0:
-            for i in range(len(cards)/2):
-                if  cards[2*i].rank!=cards[2*i+1].rank or cards[2*i].rank != rank+1:
-                    sequence= False
-                    break
-                rank = cards[2*i].rank
-        if sequence:
+    
+        if (self.is_double_sequence(self,turn)):
             return self.Combo.DB_SEQUENCE
-        
-        rank = cards[0].rank - 1
-        sequence = True
-
-        for i in range(len(cards)):
-            if cards[i].rank != rank+1:
-                sequence = False
-                break
-            rank = cards[i].rank
-        if sequence:
+        elif (self.is_sequence(self,turn)):
             return self.Combo.SEQUENCE
-        
-        same = True
-        for i in range(len(cards)-1):
-            if cards[i].rank!=cards[i+1].rank:
-                same=False
-                break
-        if same:
-            return len(cards)
+        elif (self.is_triple(self,turn)):
+            return self.Combo.TRIPLE
+        elif (self.is_double(self,turn)):
+            return self.Combo.DOUBLE
+        elif (self.is_quad(self,turn)):
+            return self.Combo.QUAD
         else:
-            return self.Combo.NONE
+            return self.Combo.SINGLE
         
     def valid_move(self, turn:Turn) -> bool:
         if not super.has_cards(self,turn):
@@ -273,9 +303,11 @@ class VietCongGame(Game):
 
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if self.passed[self.current_player]:
+            self.current_player = (self.current_player+1)%4
             return True
         elif len(turn.transactions)==0:
             self.passed[self.current_player] = True
+            self.current_player = (self.current_player+1)%4
             return True
         
         if not self.valid_move(self,turn):

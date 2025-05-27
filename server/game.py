@@ -44,7 +44,7 @@ class Card(ABC):
             return "JK"
         rank_arr = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
         suit_arr = ["","C","D","H","S"]
-        return rank_arr[self.rank]+suit_arr[self.suit.value]
+        return rank_arr[(self.rank)%14]+suit_arr[self.suit.value]
     
     @classmethod
     def from_model(cls, model: CardModel):

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="837.0066" height="1192.4994" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 837.0066 1192.4994">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #a85c5c;
+      }
+
+      .cls-3 {
+        fill: #cc2121;
+      }
+    </style>
+    <symbol id="Diamond" viewBox="0 0 163.1355 265.8583">
+      <g>
+        <polyline class="cls-3" points="81.5678 265.8583 0 134.2547 81.5678 0"/>
+        <polyline class="cls-3" points="81.5678 0 163.1355 134.2547 81.5678 265.8583"/>
+        <polygon class="cls-2" points="81.5678 0 81.5678 134.2547 0 134.2547 81.5678 0"/>
+        <polygon class="cls-2" points="81.5678 134.2547 81.5678 265.8583 163.1355 134.2547 81.5678 134.2547"/>
+      </g>
+    </symbol>
+    <symbol id="Red_5" data-name="Red 5" viewBox="0 0 158.7974 180.7278">
+      <path class="cls-3" d="M157.5299,106.4465c-11.2746-64.8284-100.5309-42.1738-100.5309-42.1738l3.1317-15.7647h82.9929v-4.7619H44.4299v-10.5329h98.6936V0H17.3251L0,102.6004H62.3228s-.9394-7.7416,19.1042-9.3075c20.0435-1.5659,18.1643,18.7908,18.1643,18.7908,0,0-2.1921,19.7304-20.1927,19.7304s-25.5317-14.0932-25.5317-14.0932L0,133.38c10.648,56.6858,101.1573,46.6639,101.1573,46.6639,0,0,67.6471-8.7691,56.3725-73.5974Z"/>
+    </symbol>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <rect class="cls-1" y="0" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <use width="158.7974" height="180.7278" transform="translate(28.454 48.0998)" xlink:href="#Red_5"/>
+    <use width="158.7974" height="180.7278" transform="translate(804.3264 1123.9511) rotate(-180)" xlink:href="#Red_5"/>
+    <use width="163.1355" height="265.8583" transform="translate(68.0398 252.7917) scale(.4513)" xlink:href="#Diamond"/>
+    <use width="163.1355" height="265.8583" transform="translate(215.3042 165.5115) scale(.6466)" xlink:href="#Diamond"/>
+    <use width="163.1355" height="265.8583" transform="translate(320.7832 997.2391) rotate(-180) scale(.6466)" xlink:href="#Diamond"/>
+    <use width="163.1355" height="265.8583" transform="translate(363.6507 501.2453) scale(.6466)" xlink:href="#Diamond"/>
+    <use width="163.1355" height="265.8583" transform="translate(764.7406 919.2592) rotate(-180) scale(.4513)" xlink:href="#Diamond"/>
+    <use width="163.1355" height="265.8583" transform="translate(617.4762 1006.5394) rotate(-180) scale(.6466)" xlink:href="#Diamond"/>
+    <use width="163.1355" height="265.8583" transform="translate(511.9971 174.8118) scale(.6466)" xlink:href="#Diamond"/>
+  </g>
+</svg>

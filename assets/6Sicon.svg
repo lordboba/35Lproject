@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="837.0066" height="1192.4994" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 837.0066 1192.4994">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #333;
+      }
+    </style>
+    <symbol id="Black_6" data-name="Black 6" viewBox="0 0 153.9497 187.3612">
+      <path d="M103.3641,128.6563c-3.602,8.8977-15.1587,15.411-28.8689,15.411-16.5902,0-30.0391-9.5333-30.0391-21.2933s13.4489-21.2933,30.0391-21.2933c13.7103,0,25.267,6.5133,28.8689,15.411h50.0376c-1.7613-12.6477-7.9715-26.4749-25.5013-34.7481-52.104-24.5905-80.5315-.9958-80.5315-.9958,0,0-7.8649-38.7419,26.8547-37.6087,20.8685,.6811,24.0285,15.8849,24.0285,15.8849l53.3408-14.5495c-2.0703-3.6742-4.2325-7.0831-6.473-10.2527h-62.1642v-6.0608h57.5453c-1.5678-1.9016-3.1688-3.696-4.8002-5.3874H56.6923V10.7155h63.6751C91.5333-7.1046,56.9174-.7302,28.0538,15.4523-2.3568,32.502-.2015,104.0174,.1794,121.9288c.3813,17.9114,8.0574,65.4323,73.2246,65.4323s77.703-34.8204,78.8462-43.5855c.3602-2.7614,1.4433-8.3128,1.6995-15.1194h-50.5855Z"/>
+    </symbol>
+    <symbol id="Club" viewBox="0 0 252.1667 232.5147">
+      <g>
+        <polygon points="178.7168 193.0545 252.1667 119.6046 126.0834 0 0 119.6046 73.4499 193.0545 101.8507 164.6538 70.0905 232.5147 126.0834 232.5147 182.0762 232.5147 150.3161 164.6538 178.7168 193.0545"/>
+        <polygon class="cls-2" points="126.0834 0 73.4499 193.0545 101.8507 164.6538 70.0905 232.5147 126.0834 232.5147 126.0834 0"/>
+        <polygon class="cls-2" points="126.0834 0 178.7168 193.0545 252.1667 119.6046 126.0834 0"/>
+      </g>
+    </symbol>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <rect class="cls-1" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <use width="153.9497" height="187.3612" transform="translate(30.8779 44.7831)" xlink:href="#Black_6"/>
+    <use width="153.9497" height="187.3612" transform="translate(801.9025 1127.2678) rotate(-180)" xlink:href="#Black_6"/>
+    <use width="252.1667" height="232.5147" transform="translate(47.9491 260.316) scale(.4513)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(186.5216 176.2911) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(349.5658 986.4595) rotate(-180) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(186.5215 511.1678) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(784.8313 911.7349) rotate(-180) scale(.4513)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(646.2587 995.7598) rotate(-180) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(483.2145 185.5914) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(483.2145 508.6295) scale(.6466)" xlink:href="#Club"/>
+  </g>
+</svg>

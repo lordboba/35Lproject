@@ -2,7 +2,7 @@ import React from 'react';
 
 const VietcongRules = () => (
   
-  <div>
+  <div style={{maxWidth: '800px', margin: '0 auto', padding: '20px'}}>
     <h1>Vietcong Rules</h1>
   
     <h2>Objective</h2>
@@ -11,7 +11,7 @@ const VietcongRules = () => (
     </p>
 
     <h2>Setup</h2>
-    <ul>
+    <ul style={{textAlign: 'left'}}>
       <li>Use a standard 52-card deck.</li>
       <li>
         4 players is standard; each is dealt 13 cards. For 3 players, 17 cards each is also an option (leave out the 3♠).
@@ -22,13 +22,13 @@ const VietcongRules = () => (
     </ul>
 
     <h2>Gameplay</h2>
-    <ul>
+    <ul style={{textAlign: 'left'}}>
       <li>
         The player with the 3♠ starts the first round, and must play it as part of their opening combination.
       </li>
       <li>
         Play proceeds clockwise. On your turn, you may either:
-        <ul>
+        <ul style={{textAlign: 'left'}}>
           <li>Play a higher combination of the same type as the previous play (see valid combinations below), or</li>
           <li>Pass (if you pass, you cannot play again until the next round).</li>
         </ul>
@@ -42,7 +42,7 @@ const VietcongRules = () => (
     </ul>
 
     <h2>Valid Combinations</h2>
-    <ul>
+    <ul style={{textAlign: 'left'}}>
       <li><strong>Single:</strong> One card.</li>
       <li><strong>Pair:</strong> Two cards of the same rank.</li>
       <li><strong>Triple:</strong> Three cards of the same rank.</li>
@@ -56,7 +56,7 @@ const VietcongRules = () => (
     </ul>
 
     <h2>Special Combinations (Bombs/Slams)</h2>
-    <ul>
+    <ul style={{textAlign: 'left'}}>
       <li>
         Bombs (<strong>Four of a Kind</strong> or <strong>three consecutive pairs</strong>) can beat a single 2.
       </li>
@@ -71,7 +71,7 @@ const VietcongRules = () => (
 
 
     <h2>End of Game</h2>
-    <ul>
+    <ul style={{textAlign: 'left'}}>
       <li>
         The game ends when one player has discarded all their cards. Remaining players can continue to play for lower places if desired.
       </li>
@@ -79,11 +79,95 @@ const VietcongRules = () => (
   </div>
 );
 
+const FishRules = () => (
+  <div style={{maxWidth: '800px', margin: '0 auto', padding: '20px'}}>
+    <h1>Fish Rules</h1>
+    
+    <h2>Objective</h2>
+    <p>
+      <strong>Collect as many half-suits as possible for your team through strategic questioning and card deduction.</strong>
+    </p>
+
+    <h2>Setup</h2>
+    <ul style={{textAlign: 'left'}}>
+      <li>Requires exactly 6 players divided into two teams of 3.</li>
+      <li>Use a standard 52-card deck with all four 8s removed (48 cards total).</li>
+      <li>
+        To choose teams: each player draws a card face-down. The three highest cards form one team, the three lowest form the other team.
+      </li>
+      <li>
+        Removing the 8s creates eight half-suits:
+        <ul style={{textAlign: 'left'}}>
+          <li><strong>Low cards:</strong> 2, 3, 4, 5, 6, 7 of each suit</li>
+          <li><strong>High cards:</strong> 9, 10, J, Q, K, A of each suit</li>
+        </ul>
+      </li>
+      <li>Deal the 48 cards evenly among all 6 players (8 cards each).</li>
+    </ul>
+
+    <h2>Gameplay</h2>
+    <ul style={{textAlign: 'left'}}>
+      <li>The player who drew the highest card during team selection asks the first question.</li>
+      <li>
+        Players take turns asking opponents for specific cards. You may only ask for a card if:
+        <ul style={{textAlign: 'left'}}>
+          <li>The card belongs to a half-suit you already have cards from, AND</li>
+          <li>You don't already have that specific card in your hand</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Honesty is required:</strong> If asked for a card you have, you must give it up immediately.
+      </li>
+      <li>
+        Continue asking until an opponent doesn't have the requested card. Then questioning passes to the most recent player who was asked.
+      </li>
+      <li>
+        <strong>Illegal questions:</strong> If you ask for a card incorrectly (violating the rules above), questioning immediately passes to your opponent if they've already answered. If caught before they answer, you may ask a different question.
+      </li>
+    </ul>
+
+    <h2>Making Claims</h2>
+    <ul style={{textAlign: 'left'}}>
+      <li>
+        You can claim a half-suit when your team has all 6 cards of that half-suit AND you know exactly which teammate holds each card.
+      </li>
+      <li>
+        <strong>Warning:</strong> Claims are binding once you start naming specific cards. You can stop before naming any cards, but once you say "the two of hearts" (for example), you must complete the claim.
+      </li>
+      <li>
+        <strong>Failed claims:</strong> If your claim is incorrect, the opposing team automatically gets that half-suit, regardless of who actually held the cards.
+      </li>
+      <li>Only make claims when you are 100% certain of the card locations!</li>
+    </ul>
+
+    <h2>Special Rules</h2>
+    <ul style={{textAlign: 'left'}}>
+      <li>
+        <strong>Pause Button:</strong> Any player can pause the game to think through strategy or work out card deductions without the pressure of ongoing questioning.
+      </li>
+      <li>
+        <strong>No History Rule:</strong> Only the most recent question can be referenced. Players cannot ask about previous questions, clarifications, or whether cards were successfully obtained. Pay attention or lose the information forever!
+      </li>
+    </ul>
+
+    <h2>Winning</h2>
+    <ul style={{textAlign: 'left'}}>
+      <li>
+        The team that correctly claims the most half-suits (out of 8 total) wins the game.
+      </li>
+      <li>
+        Games require careful attention, memory, and logical deduction to track card locations and identify contradictions in questioning patterns.
+      </li>
+    </ul>
+  </div>
+);
 
 function GameInstructions() {
     return (
         <div>
             <VietcongRules />
+            <hr style={{margin: '40px 0'}} />
+            <FishRules />
         </div>
     );
 }

@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel
+import random
 
 GAME_RULES = {
     "vietcong": {
@@ -43,7 +44,7 @@ class Card(ABC):
             return "JK"
         rank_arr = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
         suit_arr = ["","C","D","H","S"]
-        return rank_arr[self.rank]+suit_arr[self.suit.value]
+        return rank_arr[(self.rank)%14]+suit_arr[self.suit.value]
     
     @classmethod
     def from_model(cls, model: CardModel):
@@ -100,13 +101,14 @@ class Turn:
         return cls(model.player, model.type, [Transaction.from_model(transact) for transact in model.transactions])
 
 class Game(ABC):
-    def __init__(self, manager, owners: dict[str, Owner], cards: list[Card]):
+
+    def __init__(self, manager, owners: dict[str, Owner], cards: list[Card], player_ids: list[str]):
         self.manager = manager
         self.owners = owners
         self.cards = cards
-        self.current_player: str = None
+        self.current_player: int = None
         self.last_turn: Turn = None
-
+        self.player_ids = player_ids
         self.belongsTo: dict[Card, str] = {}
 
         for owner_id, owner in self.owners.items():
@@ -129,6 +131,12 @@ class Game(ABC):
 
     def to_game_state(self, status: int) -> GameStateModel:
         return GameStateModel(owners={owner_id: owner.to_model() for owner_id, owner in self.owners.items()}, current_player=self.current_player, last_turn=self.last_turn.to_model(), status=status)
+    
+    def has_cards(self, turn:Turn): # checks if the player has the cards in the transaction requested
+        for trans in turn.transactions:
+            if (self.belongsTo[trans.card] != trans.from_):
+                return False
+        return True
 
     async def broadcast_state(self, status: int):
         await self.manager.broadcast(self.to_game_state(status).dict())
@@ -144,11 +152,196 @@ class SimpleGame(Game):
         cards = cardsA + cardsB
 
         owners: dict[str, Owner] = {
-            "A": Owner(cardsA),
-            "B": Owner(cardsB),
+
+            players[0]: Owner(cardsA),
+            players[1]: Owner(cardsB),
         }
 
         super().__init__(manager, owners, cards)     
 
 class VietCongGame(Game):
+
+    class Combo(Enum):
+        NONE = -1
+        SINGLE = 1
+        DOUBLE = 2
+        TRIPLE = 3
+        
+        QUAD = 100
+
+        SEQUENCE = 13
+        DB_SEQUENCE = 103
+
+        #Not used in actually labeling
+        SINGLE_TWO = 21
+        DOUBLE_TWO = 22
+        TRIPLE_TWO = 23
+
+
+    def getCardValue(card:Card)->int:
+        card1_rank = card.rank
+        card1_suit = card.suit
+        if (card.rank == 1 or card.rank == 2):
+            card1_rank = card.rank + 13
+        if (card.suit == Suit.CLUB):
+            card1_suit = 3 # we currently defined club as the worst and heart as second best, should be reversed
+        elif card.suit == Suit.HEART:
+            card1_suit = 1
+        elif card.suit == Suit.DIAMOND:
+            card1_suit = 2
+        elif card.suit == Suit.SPADE:
+            card1_suit = 4
+        return (card1_rank*10+card1_suit)
+        
+    def cmpValue(self,card1:Card, card2:Card)->bool:
+        return self.getCardValue(card1)<self.getCardValue(card2)
+    
+    def __init__(self, manager, players):
+        if len(players)!=4:
+            raise ValueError("Not the right number of players (4 needed)")
+
+        cards = []
+        cards.extend([Card(i + 1, Suit.HEART) for i in range(14)])
+        cards.extend([Card(i + 1, Suit.DIAMOND) for i in range(14)])
+        cards.extend([Card(i + 1, Suit.CLUB) for i in range(14)])
+        cards.extend([Card(i + 1, Suit.SPADE) for i in range(14)])
+        
+        self.current_combo = [] #combo on top of deck
+        self.current_combo_type = self.Combo.NONE #ID of combo
+        self.passed = [False,False,False,False] # people who passed are true
+        random.shuffle(cards)
+        owners: dict[str, Owner] = {
+            players[0]: Owner(cards[0:13]),
+            players[1]: Owner(cards[13:26]),
+            players[2]: Owner(cards[26:39]),
+            players[3]: Owner(cards[39:52]),
+            "Pile": Owner([]) # the pile in the middle
+        }
+        
+        for p in players:
+            if Card(3, Suit.HEART) in owners[p].cards: # person with the worst card goes first
+                self.current_player = players.index(p)
+                break
+        
+        super().__init__(manager, owners, cards, players)   
+
+    async def is_double(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=2:
+            return False
+        if cards[0].rank == cards[1].rank:
+            return True
+        return False
+    async def is_triple(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=3:
+            return False
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank:
+            return True
+        return False
+    
+    async def is_quad(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=4:
+            return False
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank and cards[3].rank == cards[2].rank:
+            return True
+        return False
+
+    async def is_sequence(self,turn:Turn)->int:
+        cards = [trans.get_card() for trans in turn.transactions]
+        rank = cards[0].rank - 1
+        if len(cards)<3:
+            return False
+       
+
+        for i in range(len(cards)):
+            if cards[i].rank != rank+1:
+                return False
+            rank = cards[i].rank
+        return self.Combo.SEQUENCE + len(cards) - 3
+     
+    async def is_double_sequence(self,turn:Turn)->int:
+        cards = [trans.get_card() for trans in turn.transactions]
+        rank = cards[0].rank - 1
+        if len(cards)<6 or len(cards)%2==1:
+            return False
+      
+
+        for i in range(len(cards)):
+            if cards[2*i].rank != rank+1 or cards[i*2+1].rank != rank+1:
+                return False
+            rank = cards[2*i].rank
+        return self.Combo.DB_SEQUENCE + len(cards) - 3
+    
+    async def get_combo(self, turn:Turn)->Combo:
+        #bombs later
+        from functools import cmp_to_key
+        cards = [trans.get_card() for trans in turn.transactions]
+        sorted(cards, key=cmp_to_key(self.cmpValue)) # sort cards (Hopefully this works)
+        sorted(self.current_combo, key=cmp_to_key(self.cmpValue))
+        if len(cards) == 0:
+            return self.Combo.NONE
+    
+        if (self.is_double_sequence(self,turn)!=False):
+            return self.is_double_sequence(self,turn)
+        elif (self.is_sequence(self,turn) != False):
+            return self.is_sequence(self,turn)
+        elif (self.is_triple(self,turn)):
+            return self.Combo.TRIPLE
+        elif (self.is_double(self,turn)):
+            return self.Combo.DOUBLE
+        elif (self.is_quad(self,turn)):
+            return self.Combo.QUAD
+        else:
+            return self.Combo.SINGLE
+    async def check_twos(self) ->Combo:
+        if (len(self.current_combo)==1) and self.current_combo[0].rank == 15:
+            return self.Combo.SINGLE_TWO
+        elif (len(self.current_combo)==2) and self.current_combo[0].rank == 15 and self.current_combo[1].rank == 15:
+            return self.Combo.DOUBLE_TWO
+        elif (len(self.current_combo)==3) and self.current_combo[0].rank == 15 and self.current_combo[1].rank == 15 and self.current_combo[2].rank == 15  :
+            return self.Combo.TRIPLE_TWO
+        return self.Combo.NONE
+        
+    async def valid_move(self, turn:Turn) -> bool:
+        if not super.has_cards(self,turn):
+            return False
+        test_combo = self.get_combo(self,turn)
+        bomb_potential = self.check_twos(self)
+        if bomb_potential > 0:
+            if bomb_potential == self.Combo.SINGLE_TWO and test_combo == self.Combo.QUAD:
+                return True
+            return test_combo >=self.Combo.DB_SEQUENCE + (bomb_potential - self.Combo.SINGLE_TWO)
+
+        if test_combo != self.current_combo_type:
+            return False
+        
+        return self.getCardValue(self,turn.transactions[0].get_card()) > self.getCardValue(self,self.current_combo[0]) #check using lowest valued card (the cards are sorted)
+
+    async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
+        if self.passed[self.current_player]:
+            self.current_player = (self.current_player+1)%4
+            return True
+        elif len(turn.transactions)==0:
+            self.passed[self.current_player] = True
+            self.current_player = (self.current_player+1)%4
+            return True
+        
+        if not self.valid_move(self,turn):
+            return False
+      
+        if self.check_twos() > 0 and self.get_combo(self,turn) >= 100: #a bomb is played
+            self.current_combo_type = self.get_combo(self,turn=turn)
+            
+        self.current_combo = [trans.get_card() for trans in turn.transactions]
+        # sort current combo
+        super.play_turn(self,turn)
+        self.current_player = (self.current_player+1)%4
+        await self.broadcast_state(0)
+        
+
+        
+
+class FishGame(Game):
     pass

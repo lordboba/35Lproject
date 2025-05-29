@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="837.0066" height="1192.4994" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 837.0066 1192.4994">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #a85c5c;
+      }
+
+      .cls-3 {
+        fill: #cc2121;
+      }
+    </style>
+    <symbol id="Heart" viewBox="0 0 256.5537 261.0955">
+      <g>
+        <polygon class="cls-3" points="190.097 0 128.2769 50.9069 66.4567 0 0 57.2711 128.2769 261.0955 256.5537 57.2711 190.097 0"/>
+        <polyline class="cls-2" points="66.4567 0 128.2769 261.0955 128.2769 50.9069"/>
+        <polygon class="cls-2" points="190.097 0 128.2769 261.0955 256.5537 57.2711 190.097 0"/>
+      </g>
+    </symbol>
+    <symbol id="Red_A" data-name="Red A" viewBox="0 0 210.6971 179.8614">
+      <path class="cls-3" d="M166.4612,0H45.6703l-3.6612,14.4195H120.854v10.4471H39.3561l-.3887,1.5313h47.6984v10.4471H36.3147l-1.0082,3.971h15.6482v10.4472h-18.3009l-2.2242,8.7597h31.3074v10.4472H27.7766l-4.4399,17.4858h8.9951v10.4472h-11.6478l-1.0082,3.971h29.3933v10.4472H17.0231l-3.836,15.1066H88.518v10.4471H10.5344l-1.0085,3.971H61.737v10.4472H6.8732L0,179.8614H60.8935l7.8937-23.6808h70.612l7.8063,23.6808h63.4915L166.4612,0ZM77.4687,119.508l9.0728-44.1068h36.0137l8.3429,44.1068h-53.4294Z"/>
+    </symbol>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <rect class="cls-1" x="0" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <use width="210.6971" height="179.8614" transform="translate(22.5042 48.533)" xlink:href="#Red_A"/>
+    <use width="210.6971" height="179.8614" transform="translate(810.2762 1123.5179) rotate(-180)" xlink:href="#Red_A"/>
+    <use width="256.5537" height="261.0955" transform="translate(46.9591 253.8665) scale(.4513)" xlink:href="#Heart"/>
+    <use width="256.5537" height="261.0955" transform="translate(218.063 392.2609) scale(1.5626)" xlink:href="#Heart"/>
+    <use width="256.5537" height="261.0955" transform="translate(785.8212 918.1844) rotate(-180) scale(.4513)" xlink:href="#Heart"/>
+  </g>
+</svg>

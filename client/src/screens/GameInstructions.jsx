@@ -95,7 +95,6 @@ const FishRules = () => (
     <ul style={{textAlign: 'left'}}>
       <li>Requires exactly 6 players divided into two teams of 3.</li>
       <li>Use a standard 52-card deck plus both jokers (54 cards total).</li>
-      <li>Use a standard 52-card deck plus both jokers (54 cards total).</li>
       <li>
         Adding two jokers creates nine half-suits:
         <ul style={{textAlign: 'left'}}>
@@ -104,7 +103,7 @@ const FishRules = () => (
           <li><strong>Middle cards:</strong> All 8's and jokers</li>
         </ul>
       </li>
-      <li>Cards are dealt evenly among all 6 players (9 cards each).</li>
+      <li>Deal the 54 cards evenly among all 6 players (9 cards each).</li>
     </ul>
 
     <h2>Gameplay</h2>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="837.0066" height="1192.4994" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 837.0066 1192.4994">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #333;
+      }
+    </style>
+    <symbol id="Black_9" data-name="Black 9" viewBox="0 0 154.0062 187.366">
+      <path d="M153.2101,57.2213h-45.5075c1.1941,2.2955,1.8476,4.7764,1.8476,7.3658,0,11.76-13.4491,21.2933-30.0391,21.2933s-30.0393-9.5333-30.0393-21.2933,13.4489-21.2933,30.0393-21.2933c6.9541,0,13.3512,1.6797,18.4423,4.4917h53.4685C146.0837,26.8442,129.5821,0,80.6023,0,15.4353,0,2.8994,34.8203,1.7559,43.5854c-1.1432,8.7651-9.5896,45.6143,24.3499,61.6321,52.1038,24.5905,80.5316,.9958,80.5316,.9958,0,0,7.8649,38.7419-26.8548,37.6087-20.8685-.6812-24.0285-15.8849-24.0285-15.8849L2.4133,142.4867c31.2907,55.5348,83.0705,52.1109,123.5392,29.4222,30.4107-17.0497,28.2554-88.5651,27.8742-106.4766-.0489-2.3018-.2201-5.095-.6166-8.211Z"/>
+    </symbol>
+    <symbol id="Club" viewBox="0 0 252.1667 232.5147">
+      <g>
+        <polygon points="178.7168 193.0545 252.1667 119.6046 126.0834 0 0 119.6046 73.4499 193.0545 101.8507 164.6538 70.0905 232.5147 126.0834 232.5147 182.0762 232.5147 150.3161 164.6538 178.7168 193.0545"/>
+        <polygon class="cls-2" points="126.0834 0 73.4499 193.0545 101.8507 164.6538 70.0905 232.5147 126.0834 232.5147 126.0834 0"/>
+        <polygon class="cls-2" points="126.0834 0 178.7168 193.0545 252.1667 119.6046 126.0834 0"/>
+      </g>
+    </symbol>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <rect class="cls-1" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <use width="154.0062" height="187.366" transform="translate(30.8496 44.7807)" xlink:href="#Black_9"/>
+    <use width="154.0062" height="187.366" transform="translate(801.9308 1127.2702) rotate(-180)" xlink:href="#Black_9"/>
+    <use width="252.1667" height="232.5147" transform="translate(47.9491 260.316) scale(.4513)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(186.5216 176.2911) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(186.5216 396.2347) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(349.5658 986.4595) rotate(-180) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(349.5658 766.516) rotate(-180) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(336.9812 511.1678) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(784.8313 911.7349) rotate(-180) scale(.4513)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(646.2587 995.7598) rotate(-180) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(646.2588 775.8163) rotate(-180) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(483.2145 185.5914) scale(.6466)" xlink:href="#Club"/>
+    <use width="252.1667" height="232.5147" transform="translate(483.2146 405.535) scale(.6466)" xlink:href="#Club"/>
+  </g>
+</svg>

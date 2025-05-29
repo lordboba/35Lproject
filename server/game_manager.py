@@ -30,6 +30,7 @@ class GameTracker:
 class GameManager:
     def __init__(self, tracker: GameTracker, game_id: str, name: str, game_type: str, players: list[str]):
         mapping = {
+
             "fish": game.FishGame,
             "vietcong": game.VietCongGame,
             "simple": game.SimpleGame,
@@ -41,6 +42,7 @@ class GameManager:
         self.game_id = game_id
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
+
 
     async def play_turn(self, turn: game.Turn):
         if await self.game.play_turn(turn):
@@ -66,6 +68,7 @@ class GameLog:
         self.game_type = game_type
         self.players = players
         self.turns = []
+
 
     def log_turn(self, turn: game.Turn):
         self.turns.append(turn)

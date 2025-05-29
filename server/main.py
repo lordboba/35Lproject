@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
 from users_api import router as users_router
 from game_manager import GameTracker
+from game import TransactionModel
+from fastapi import Body
+import uvicorn
+
 
 app = FastAPI(title="Card Game API")
 
@@ -16,5 +20,4 @@ app.add_middleware(
 app.include_router(users_router)
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

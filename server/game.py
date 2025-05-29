@@ -101,6 +101,7 @@ class Turn:
         return cls(model.player, model.type, [Transaction.from_model(transact) for transact in model.transactions])
 
 class Game(ABC):
+
     def __init__(self, manager, owners: dict[str, Owner], cards: list[Card], player_ids: list[str]):
         self.manager = manager
         self.owners = owners
@@ -108,7 +109,6 @@ class Game(ABC):
         self.current_player: int = None
         self.last_turn: Turn = None
         self.player_ids = player_ids
-
         self.belongsTo: dict[Card, str] = {}
 
         for owner_id, owner in self.owners.items():
@@ -152,6 +152,7 @@ class SimpleGame(Game):
         cards = cardsA + cardsB
 
         owners: dict[str, Owner] = {
+
             players[0]: Owner(cardsA),
             players[1]: Owner(cardsB),
         }
@@ -159,6 +160,7 @@ class SimpleGame(Game):
         super().__init__(manager, owners, cards)     
 
 class VietCongGame(Game):
+
     class Combo(Enum):
         NONE = -1
         SINGLE = 1

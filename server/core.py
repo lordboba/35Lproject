@@ -154,4 +154,3 @@ class GameStateModel(BaseModel):
     current_player: Optional[str] 
     last_turn: Optional[TurnModel]
     status: int
-

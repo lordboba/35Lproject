@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="837.0066" height="1192.4994" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 837.0066 1192.4994">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #333;
+      }
+    </style>
+    <symbol id="Blac_7" data-name="Blac 7" viewBox="0 0 142.5592 177.8389">
+      <g>
+        <polygon points="9.4485 177.8389 69.888 177.8389 120.0591 88.9219 60.3372 88.9219 9.4485 177.8389"/>
+        <polygon points="142.5592 0 0 0 0 36.2279 111.5469 36.2279 111.5469 44.2535 0 44.2535 0 49.6041 82.8393 49.6041 65.718 79.52 125.364 79.52 142.5592 49.0453 142.5592 0"/>
+        <polygon points="142.5592 88.9219 142.5592 79.52 125.364 79.52 120.0591 88.9219 142.5592 88.9219"/>
+        <polygon points="30.3167 79.52 30.3167 88.9219 60.3372 88.9219 65.718 79.52 30.3167 79.52"/>
+      </g>
+    </symbol>
+    <symbol id="Spade" viewBox="0 0 285.5324 271.7601">
+      <g>
+        <polygon points="285.5324 183.2928 242.6122 97.1964 172.6183 128.7681 224.9795 83.6053 142.7661 0 60.5528 83.6053 112.9141 128.7681 42.9201 97.1964 0 183.2928 87.0237 212.3293 112.9141 167.8122 95.6276 271.7601 142.7661 271.7601 189.9048 271.7601 172.6183 167.8122 198.5087 212.3293 285.5324 183.2928"/>
+        <polygon class="cls-2" points="142.7661 0 112.9141 128.7681 60.5528 83.6053 142.7661 0"/>
+        <polygon class="cls-2" points="142.7661 0 142.7661 271.7601 189.9048 271.7601 172.6183 167.8122 198.5087 212.3293 285.5324 183.2928 242.6122 97.1964 172.6183 128.7681 142.7661 0"/>
+      </g>
+    </symbol>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <rect class="cls-1" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <use width="142.5592" height="177.8389" transform="translate(36.5731 49.5443)" xlink:href="#Blac_7"/>
+    <use width="285.5324" height="271.7601" transform="translate(40.4199 251.4599) scale(.4513)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(175.7349 163.6035) scale(.6466)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(360.3525 999.1471) rotate(-180) scale(.6466)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(175.7349 498.4803) scale(.6466)" xlink:href="#Spade"/>
+    <use width="142.5592" height="177.8389" transform="translate(796.2073 1122.5066) rotate(-180)" xlink:href="#Blac_7"/>
+    <use width="285.5324" height="271.7601" transform="translate(792.3605 920.591) rotate(-180) scale(.4513)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(657.0454 1008.4474) rotate(-180) scale(.6466)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(472.4278 172.9038) scale(.6466)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(326.4279 346.62) scale(.6466)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(472.4278 495.9419) scale(.6466)" xlink:href="#Spade"/>
+  </g>
+</svg>

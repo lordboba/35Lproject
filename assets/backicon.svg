@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="837.0066" height="1192.4994" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 837.0066 1192.4994">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-2 {
+        fill: url(#New_Pattern);
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        fill: #333;
+      }
+
+      .cls-5 {
+        fill: #a85c5c;
+      }
+
+      .cls-6 {
+        fill: #cc2121;
+      }
+    </style>
+    <pattern id="New_Pattern" data-name="New Pattern" x="0" y="0" width="495.8811" height="620.5752" patternTransform="translate(-2187.7394 1224.4025)" patternUnits="userSpaceOnUse" viewBox="0 0 495.8811 620.5752">
+      <g>
+        <rect class="cls-1" width="495.8811" height="620.5752"/>
+        <rect class="cls-3" y="42.909" width="495.8811" height="495.8811"/>
+        <rect class="cls-6" y="0" width="247.9405" height="620.5752"/>
+        <rect class="cls-5" x="247.9405" y="0" width="247.9405" height="620.5752"/>
+        <rect class="cls-4" x="0" y="0" width="247.9405" height="310.2876"/>
+        <rect x="247.9405" y="0" width="247.9405" height="310.2876"/>
+      </g>
+    </pattern>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <rect class="cls-2" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+  </g>
+</svg>

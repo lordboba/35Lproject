@@ -28,6 +28,10 @@
     cursor: pointer;
     margin-right: 15px; /* Add some spacing */
   }
+  .create-game-button a {
+    color: white;
+  }
+  
   .card {
     padding: 2em;
   }

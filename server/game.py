@@ -157,7 +157,7 @@ class SimpleGame(Game):
             players[1]: Owner(cardsB),
         }
 
-        super().__init__(manager, owners, cards)     
+        super().__init__(manager, owners, cards, players)     
 
 class VietCongGame(Game):
 
@@ -339,9 +339,7 @@ class VietCongGame(Game):
         super.play_turn(self,turn)
         self.current_player = (self.current_player+1)%4
         await self.broadcast_state(0)
-        
-
-        
 
 class FishGame(Game):
-    pass
+    def __init__(self, manager, players):
+        pass

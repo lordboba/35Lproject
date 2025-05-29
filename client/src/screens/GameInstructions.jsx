@@ -103,7 +103,7 @@ const FishRules = () => (
           <li><strong>Middle cards:</strong> All 8's and jokers</li>
         </ul>
       </li>
-      <li>Deal the 54 cards evenly among all 6 players (9 cards each).</li>
+      <li>Cards are dealt evenly among all 6 players (9 cards each).</li>
     </ul>
 
     <h2>Gameplay</h2>

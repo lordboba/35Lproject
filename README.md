@@ -10,7 +10,15 @@ To run this project, you need to have Node.js, npm, and python3 installed on you
     ```bash
     git clone https://github.com/tylerxiao/35Lproject.git
     ```
-3. To run the frontend, follow these steps:
+3. To run the backend, follow these steps:
+    ```bash
+    chmod +x backend
+    export MONGODB_URL=[INSERT MONGODB URL]
+    ./backend
+    ```
+And you should have a local version of the backend running!
+
+4. To run the frontend, follow these steps:
     ```bash
     chmod +x frontend
     ./frontend
@@ -19,9 +27,3 @@ To run this project, you need to have Node.js, npm, and python3 installed on you
 
 And you should have a local version of the frontend running!
 
-4. To run the backend, follow these steps:
-    ```bash
-    chmod +x backend
-    ./backend
-    ```
-And you should have a local version of the backend running!

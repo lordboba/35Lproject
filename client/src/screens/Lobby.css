@@ -20,7 +20,7 @@
     }
   }
   .create-game-button {
-    background-color: #007bff; /* Same as signout for now */
+    background-color: #ff0000; /* Same as signout for now */
     color: white;
     border: none;
     padding: 8px 15px;
@@ -28,6 +28,10 @@
     cursor: pointer;
     margin-right: 15px; /* Add some spacing */
   }
+  .create-game-button a {
+    color: white;
+  }
+  
   .card {
     padding: 2em;
   }

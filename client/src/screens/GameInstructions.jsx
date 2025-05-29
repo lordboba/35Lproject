@@ -91,18 +91,16 @@ const FishRules = () => (
     <h2>Setup</h2>
     <ul style={{textAlign: 'left'}}>
       <li>Requires exactly 6 players divided into two teams of 3.</li>
-      <li>Use a standard 52-card deck with all four 8s removed (48 cards total).</li>
+      <li>Use a standard 52-card deck plus both jokers (54 cards total).</li>
       <li>
-        To choose teams: each player draws a card face-down. The three highest cards form one team, the three lowest form the other team.
-      </li>
-      <li>
-        Removing the 8s creates eight half-suits:
+        Adding the jokers creates nine half-suits:
         <ul style={{textAlign: 'left'}}>
           <li><strong>Low cards:</strong> 2, 3, 4, 5, 6, 7 of each suit</li>
           <li><strong>High cards:</strong> 9, 10, J, Q, K, A of each suit</li>
+          <li><strong>Middle Cards:</strong> 8s, Jokers</li>
         </ul>
       </li>
-      <li>Deal the 48 cards evenly among all 6 players (8 cards each).</li>
+      <li>Deal the 54 cards evenly among all 6 players (9 cards each).</li>
     </ul>
 
     <h2>Gameplay</h2>
@@ -111,12 +109,9 @@ const FishRules = () => (
       <li>
         Players take turns asking opponents for specific cards. You may only ask for a card if:
         <ul style={{textAlign: 'left'}}>
-          <li>The card belongs to a half-suit you already have cards from, AND</li>
+          <li>The card belongs to a half-suit you already have at least one card from, AND</li>
           <li>You don't already have that specific card in your hand</li>
         </ul>
-      </li>
-      <li>
-        <strong>Honesty is required:</strong> If asked for a card you have, you must give it up immediately.
       </li>
       <li>
         Continue asking until an opponent doesn't have the requested card. Then questioning passes to the most recent player who was asked.

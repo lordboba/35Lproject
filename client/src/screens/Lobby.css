@@ -20,7 +20,7 @@
     }
   }
   .create-game-button {
-    background-color: #007bff; /* Same as signout for now */
+    background-color: #ff0000; /* Same as signout for now */
     color: white;
     border: none;
     padding: 8px 15px;

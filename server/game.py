@@ -172,6 +172,7 @@ class SimpleGame(Game):
 
         super().__init__(manager, owners, cards, players)     
         super().__init__(manager, owners, cards, players)
+        super().__init__(manager, owners, cards, players)     
 
 class VietCongGame(Game):
 

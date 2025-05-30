@@ -44,6 +44,11 @@ class Card():
                 return "JB"
             elif self.suit == Suit.DIAMOND:
                 return "JR"
+        if self.rank == 0:
+            if self.suit == Suit.CLUB:
+                return "JB"
+            elif self.suit == Suit.DIAMOND:
+                return "JR"
         rank_arr = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
         suit_arr = ["","C","D","H","S"]
         return rank_arr[(self.rank)%14]+suit_arr[self.suit.value]
@@ -55,12 +60,17 @@ class Card():
 # Base Owner
 class Owner():
     def __init__(self, cards: list[Card] = None, is_player: bool = True):
+class Owner():
+    def __init__(self, cards: list[Card] = None):
         self.cards: list[Card] = cards
         self.is_player: bool = is_player
 
     def is_empty(self) -> bool:
         return len(self.cards) == 0
-    
+
+    def is_empty(self) -> bool:
+        return len(self.cards) == 0
+        
     def get_cards(self) -> list[Card]:
         return self.cards
 
@@ -102,6 +112,9 @@ class Turn:
     def get_cards(self) -> list[Card]:
         return [trans.get_card() for trans in self.transactions]
 
+    def get_cards(self) -> list[Card]:
+        return [trans.get_card() for trans in self.transactions]
+
     def to_model(self) -> TurnModel:
         return TurnModel(player=self.player, transactions=[transact.to_model() for transact in self.transactions], type=self.turn_type)
     
@@ -109,6 +122,7 @@ class Turn:
     def from_model(cls, model: TurnModel):
         return cls(model.player, model.type, [Transaction.from_model(transact) for transact in model.transactions])
 
+class Game():
 class Game():
 
     def __init__(self, manager, owners: dict[str, Owner], cards: list[Card], player_ids: list[str]):
@@ -124,6 +138,7 @@ class Game():
 
         for owner_id, owner in self.owners.items():
             for c in owner.get_cards():
+                self.belongs_to[c] = owner_id
                 self.belongs_to[c] = owner_id
 
     # Perform transaction of card between two owners
@@ -209,6 +224,15 @@ class VietCongGame(Game):
         cards.extend([Card(i + 1, Suit.CLUB) for i in range(13)])
         cards.extend([Card(i + 1, Suit.SPADE) for i in range(13)])
         random.shuffle(cards)
+
+        # Initializing Owners
+        owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
+        owners["Pile"] = Owner([])
+        
+        # Set player with 3S to start
+        self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
+
+        super().__init__(manager, owners, cards, players)   
 
         # Initializing Owners
         owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}

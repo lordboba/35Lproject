@@ -153,4 +153,5 @@ class GameStateModel(BaseModel):
     owners: Dict[str,OwnerModel]
     current_player: Optional[str] 
     last_turn: Optional[TurnModel]
+    player_status: Dict[str, int]
     status: int

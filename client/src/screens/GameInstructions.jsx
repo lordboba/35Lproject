@@ -108,7 +108,7 @@ const FishRules = () => (
 
     <h2>Gameplay</h2>
     <ul style={{textAlign: 'left'}}>
-      <li>The player who drew the highest card during team selection goes first.</li>
+      <li>A randomly chosen player goes first.</li>
       <li>
         On their turn a players may ask any opponent for a specific card. They may only ask for a card if:
         <ul style={{textAlign: 'left'}}>

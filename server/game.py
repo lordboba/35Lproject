@@ -358,6 +358,7 @@ class VietCongGame(Game):
 
         # Player plays cards
         else:
+            print(f"play_turn called by {turn.player} with turn_type {turn.turn_type}, cards: {getattr(turn, 'cards', None)}")
             cards = sorted(turn.get_cards(), key=VietCongGame.get_card_value)
             print(f"{turn.player} is trying to play: {cards}")
 

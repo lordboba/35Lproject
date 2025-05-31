@@ -6,6 +6,7 @@ import time
 from game_manager import GameTracker, get_tracker
 import asyncio
 from typing import List
+from starlette.websockets import WebSocketState
 
 from core import (
     user_collection,
@@ -286,8 +287,13 @@ async def list_games():
     """
     List all games in the database (max 1000).
     """
-    games = await game_collection.find().to_list(1000)
-    return GameCollection(games=games)
+    games_docs = await game_collection.find().to_list(1000)
+    # Convert raw MongoDB documents to GameModel instances for proper serialization
+    games_models = []
+    for game_doc in games_docs:
+        game_model = GameModel(**game_doc)
+        games_models.append(game_model)
+    return GameCollection(games=games_models)
 
 @router.post(
     "/games/",
@@ -304,7 +310,9 @@ async def create_game(game: GameCreateModel):
     
     result = await game_collection.insert_one(game_dict)
     new_game = await game_collection.find_one({"_id": result.inserted_id})
-    return new_game
+    # Convert to GameModel to ensure proper ObjectId serialization
+    game_model = GameModel(**new_game)
+    return game_model.model_dump(by_alias=True)
 
 @router.get("/games/{game_id}/get_game",
              response_description="Get game by ID",
@@ -319,7 +327,9 @@ async def get_game_by_id(game_id: str):
     print(game)
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
-    return game
+    # Convert to GameModel to ensure proper ObjectId serialization
+    game_model = GameModel(**game)
+    return game_model.model_dump(by_alias=True)
 
 @router.patch(
     "/games/{game_id}/add_user/{user_id}",
@@ -345,7 +355,10 @@ async def add_user_to_game(game_id: str, user_id: str):
         {"_id": ObjectId(game_id)},
         {"$addToSet": {"players": ObjectId(user_id)}}
     )
-    return await game_collection.find_one({"_id": ObjectId(game_id)})
+    updated_game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    # Convert to GameModel to ensure proper ObjectId serialization
+    game_model = GameModel(**updated_game)
+    return game_model.model_dump(by_alias=True)
 
 
 @router.patch(
@@ -369,7 +382,10 @@ async def remove_user_from_game(game_id: str, user_id: str):
         {"_id": ObjectId(game_id)},
         {"$pull": {"players": ObjectId(user_id)}}
     )
-    return await game_collection.find_one({"_id": ObjectId(game_id)})
+    updated_game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    # Convert to GameModel to ensure proper ObjectId serialization
+    game_model = GameModel(**updated_game)
+    return game_model.model_dump(by_alias=True)
 
 @router.patch(
     "/games/{game_id}/start",
@@ -415,13 +431,34 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
 )
 async def delete_game(game_id: str):
     """
-    Delete a game by ID
+    Delete a game from the database.
     """
-    result = await game_collection.delete_one({"_id": ObjectId(game_id)})
+    delete_result = await game_collection.delete_one({"_id": ObjectId(game_id)})
 
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Game not found")
+    if delete_result.deleted_count == 1:
+        return {}
+
+    raise HTTPException(status_code=404, detail=f"Game {game_id} not found")
+
+@router.delete(
+    "/games/all",
+    response_description="Delete all games",
+    status_code=204,
+)
+async def delete_all_games(tracker: GameTracker = Depends(get_tracker)):
+    """
+    Delete all games from both the database and active games in memory.
+    """
+    # Delete all games from the database
+    await game_collection.delete_many({})
     
+    # Delete all active games from the tracker
+    active_game_ids = list(tracker.games.keys())
+    for game_id in active_game_ids:
+        tracker.delete_game(game_id)
+    
+    return {}
+
 # WebSocket
 
 @router.websocket("/game/ws/{game_id}")
@@ -445,17 +482,34 @@ async def waiting_room_ws(websocket: WebSocket, game_id: str, tracker: GameTrack
         tracker.waiting_websocket_manager.disconnect(game_id, websocket)
     pass
 
-# For waiting room
+# For lobby
 @router.websocket("/lobby/ws")
-async def lobby_ws(websocket: WebSocket, game_id: str, tracker: GameTracker = Depends(get_tracker)):
-    # Handle waiting room connections
-    await tracker.lobby_websocket_manager.connect(game_id, websocket)
+async def lobby_ws(websocket: WebSocket, tracker: GameTracker = Depends(get_tracker)):
+    # Handle lobby connections - no specific game_id needed for general lobby
     try:
+        await tracker.lobby_websocket_manager.connect("lobby", websocket)
+        
         while True:
-            await asyncio.sleep(60)
+            # Listen for incoming messages for pagination requests
+            try:
+                # Check if websocket is still connected before trying to receive
+                if websocket.client_state != WebSocketState.CONNECTED:
+                    break
+                    
+                message = await websocket.receive_json()
+                await tracker.lobby_websocket_manager.handle_pagination_request(websocket, message)
+            except WebSocketDisconnect:
+                break
+            except Exception as e:
+                print(f"Error handling lobby websocket message: {e}")
+                # Continue listening for more messages
+                continue
     except WebSocketDisconnect:
-        tracker.lobby_websocket_manager.disconnect(game_id, websocket)
-    pass
+        pass
+    except Exception as e:
+        print(f"Error in lobby WebSocket connection: {e}")
+    finally:
+        tracker.lobby_websocket_manager.disconnect("lobby", websocket)
 
 
 # Dev

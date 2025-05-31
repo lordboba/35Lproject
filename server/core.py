@@ -64,7 +64,7 @@ class VietCongStatsModel(BaseModel):
     Container for Viet Cong game stats.
     """
     games: int = Field(default=0)
-    place_finishes: Dict[int, int] = Field(default_factory=lambda: {"1": 0, "2": 0, "3": 0, "4": 0})
+    place_finishes: Dict[str, int] = Field(default_factory=lambda: {"1": 0, "2": 0, "3": 0, "4": 0})
 
 class FishStatsModel(BaseModel):
     """
@@ -136,7 +136,7 @@ class GameModel(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
     type: str = Field(...)
-    players: List[PyObjectId] = Field(default_factory=dict)
+    players: List[PyObjectId] = Field(default_factory=list)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True

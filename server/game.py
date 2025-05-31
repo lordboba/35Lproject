@@ -214,7 +214,7 @@ class VietCongGame(Game):
         owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
         owners["pile"] = Owner([], False)
 
-        super().__init__(manager, owners, cards, players)   
+        super().__init__(manager, owners, cards, players)
 
         # Set player with 3S to start
         self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
@@ -353,14 +353,17 @@ class VietCongGame(Game):
         # Player plays cards
         else:
             cards = sorted(turn.get_cards(), key=VietCongGame.get_card_value)
+            print(f"{turn.player} is trying to play: {cards}")
 
             # Checks if 3 of Spades is played
             if self.belongs_to[Card(3, Suit.SPADE)] != "pile" and Card(3, Suit.SPADE) not in cards:
+                print("REJECTED PLAY: 3 of Spades must by played first!")
                 return False
 
             combo = self.valid_combo(cards)
-
+            print(f"combo detected: {combo}")
             if combo == self.Combo.NONE:
+                print("REJECTED PLAY: Invalid card combo")
                 return False
             
             await super().play_turn(turn)
@@ -370,8 +373,10 @@ class VietCongGame(Game):
             if self.owners[turn.player].is_empty():
                 self.finished_players += 1
                 self.places[self.current_player] = self.finished_players
+                print(f"{turn.player} finished in place {self.finished_players}!")
                 # Game ends
                 if self.finished_players == 3:
+                    print("Game Finished =D")
                     self.status = 1
                     for i in range(4):
                         self.player_status[self.players[i]] = self.places[i]
@@ -380,6 +385,7 @@ class VietCongGame(Game):
         
         # Pass turn to next player
         if not self.get_next_player():
+            print("No next player. Starting new round.")
             # Start new round if no next player
             for player in self.players:
                 self.player_status[player] = 0
@@ -388,12 +394,15 @@ class VietCongGame(Game):
 
             # Designate starting player
             self.current_player = self.players.index(self.last_turn.player)
+            print(f"New round. Starting player is now {self.current_player}")
 
             # Pass turn to next player if player finished
             if self.places[self.current_player] != 4:
+                print(f"Current player {self.current_player} has already finished. Passing turn.")
                 self.get_next_player()
         
         await self.broadcast_state()
+        print(f"play_turn succeeded for {turn.player}")
         return True
 
 class FishGame(Game):

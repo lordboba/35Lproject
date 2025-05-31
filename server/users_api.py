@@ -183,7 +183,7 @@ async def list_users():
 
 @router.get(
     "/users/{id}",
-    response_description="Get a single user",
+    response_description="Get a single user by id",
     response_model=UserModel,
     response_model_by_alias=False,
 )
@@ -198,6 +198,22 @@ async def show_user(id: str):
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")
 
+@router.get(
+        "/users/name/{name}",
+        response_description="Get a single user by name",
+        response_model=UserModel,
+        response_model_by_alias=False,
+)
+async def get_user_name(name: str):
+    """
+    Get the record for a specific user, looked up by 'name'
+    """
+    if(
+        user := await user_collection.find_one({"name": name})
+    ) is not None:
+        return user
+    
+    raise HTTPException(status_code=404, detail=f"User with name '{name}' not found")
 
 @router.put(
     "/users/{id}", # This endpoint operates on MongoDB's _id
@@ -429,6 +445,18 @@ async def get_active_games(tracker: GameTracker = Depends(get_tracker)):
 )
 async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get_tracker)):
     """
-    Get active game owners
+    Get a list showing each card and its owner (string format)
     """
-    return [str(card) for card in list(tracker.game_managers[game_id].game.owners.values())[0].cards]
+    result = []
+    owners = tracker.game_managers[game_id].game.owners
+    for owner_name, owner_obj in owners.items():
+        for card in owner_obj.cards:
+            result.append(f"{owner_name}: {card}")
+    return result
+
+
+# async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get_tracker)):
+#     """
+#     Get active game owners
+#     """
+#     return [str(card) for card in list(tracker.game_managers[game_id].game.owners.values())[0].cards]

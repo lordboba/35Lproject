@@ -10,6 +10,7 @@ class GameTracker:
     def __init__(self):
         self.game_managers: dict[str, GameManager] = {}
         self.websocket_manager = GameWebSocketManager(self)
+        self.websocket_manager = GameWebSocketManager(self)
 
     def create_game(self, game_id: str, name: str, game_type: str, players: list[str]):
         self.game_managers[game_id] = GameManager(self, game_id, name, game_type, players)
@@ -101,10 +102,12 @@ class GameWebSocketManager:
     def __init__(self, tracker: GameTracker):
         self.games: dict[str, list[WebSocket]] = {}
         self.tracker = tracker
+        self.tracker = tracker
 
     async def connect(self, game_id: str, websocket: WebSocket):
         await websocket.accept()
         self.games.setdefault(game_id, []).append(websocket)
+        await websocket.send_json(self.tracker.get_game_state(game_id).dict())
         await websocket.send_json(self.tracker.get_game_state(game_id).dict())
 
     def disconnect(self, game_id: str, websocket: WebSocket):

@@ -60,13 +60,8 @@ class Card():
 # Base Owner
 class Owner():
     def __init__(self, cards: list[Card] = None, is_player: bool = True):
-class Owner():
-    def __init__(self, cards: list[Card] = None):
         self.cards: list[Card] = cards
         self.is_player: bool = is_player
-
-    def is_empty(self) -> bool:
-        return len(self.cards) == 0
 
     def is_empty(self) -> bool:
         return len(self.cards) == 0
@@ -227,8 +222,10 @@ class VietCongGame(Game):
 
         # Initializing Owners
         owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
-        owners["Pile"] = Owner([])
-        
+        owners["pile"] = Owner([], False)
+
+        super().__init__(manager, owners, cards, players)   
+
         # Set player with 3S to start
         self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
 

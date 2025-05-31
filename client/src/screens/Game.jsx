@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import tableSVG from '../assets/table.svg';
+import tableedgeSVG from '../assets/tableedge.svg';
 
 function Game() {
   const canvasRef = useRef(null);
@@ -34,7 +36,16 @@ function Game() {
         const circle = new window.zim.Circle(75, "blue")
           .pos(200, 200)
           .addTo(stage);
-          
+
+        // Add the SVG table to the center of the canvas
+        const tableBitmap = new window.zim.Bitmap(tableSVG)
+          .center(stage)
+          .mov(0, 60)
+          .addTo(stage);
+
+        // Optionally, scale the table to fit nicely
+        //tableBitmap.sca(0.2); // Adjust scale as needed
+        
         // Add some interactivity
         rect.on("click", () => {
           rect.animate({
@@ -85,6 +96,11 @@ function Game() {
       <h2 style={{ marginBottom: "20px", color: "#333" }}>
         ZIM.js with React - Click the shapes!
       </h2>
+      <div style={{ position: "relative", width: 500, height: 500, marginBottom: 20 }}>
+        <img src={tableedgeSVG} width={600} height={500} alt="table edge" style={{ position: "absolute", left: -50
+          , top: 0, zIndex: 0 }} />
+        <img src={tableSVG} width={500} height={500} alt="table" style={{ position: "absolute", left: 0, top: 0, zIndex: 1 }} />
+      </div>
       <canvas ref={canvasRef} id="canvas" />
     </div>
   );

@@ -14,10 +14,10 @@ const VietcongRules = () => (
     <ul style={{textAlign: 'left'}}>
       <li>Use a standard 52-card deck.</li>
       <li>
-        4 players is standard; each is dealt 13 cards. For 3 players, 17 cards each is also an option (leave out the 3♠).
+        4 players play; each is dealt 13 cards. 
       </li>
       <li>
-        Card rank (low to high): 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A, 2. Suits rank: spades ♠, clubs ♣, diamonds ♦, hearts ♥ (highest).
+        Card rank (low to high): 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A, 2. Suits rank (low to high): spades ♠, clubs ♣, diamonds ♦, hearts ♥.
       </li>
     </ul>
 
@@ -29,15 +29,18 @@ const VietcongRules = () => (
       <li>
         Play proceeds clockwise. On your turn, you may either:
         <ul style={{textAlign: 'left'}}>
-          <li>Play a higher combination of the same type as the previous play (see valid combinations below), or</li>
+          <li>Play a higher combination of the same type as the previous play (a combination is higher if its highest card is higher), or</li>
           <li>Pass (if you pass, you cannot play again until the next round).</li>
         </ul>
       </li>
       <li>
-        When all but one player have passed, the last player to play wins the pile and starts a new round with any valid combination.
+        When all but one player have passed, the last player to play starts a new round with any valid combination.
       </li>
       <li>
-        The first player to discard all their cards wins. Play can continue for lower places.
+        The first player to discard all their cards wins. Play continues for the 2nd and 3rd place.
+      </li>
+      <li>
+        In the case where the last player to not have passed played all their cards, the next player clockwise starts a new round. 
       </li>
     </ul>
 
@@ -93,41 +96,38 @@ const FishRules = () => (
       <li>Requires exactly 6 players divided into two teams of 3.</li>
       <li>Use a standard 52-card deck plus both jokers (54 cards total).</li>
       <li>
-        Adding the jokers creates nine half-suits:
+        Adding two jokers creates nine half-suits:
         <ul style={{textAlign: 'left'}}>
           <li><strong>Low cards:</strong> 2, 3, 4, 5, 6, 7 of each suit</li>
           <li><strong>High cards:</strong> 9, 10, J, Q, K, A of each suit</li>
-          <li><strong>Middle Cards:</strong> 8s, Jokers</li>
+          <li><strong>Middle cards:</strong> All 8's and jokers</li>
         </ul>
       </li>
-      <li>Deal the 54 cards evenly among all 6 players (9 cards each).</li>
+      <li>Cards are dealt evenly among all 6 players (9 cards each).</li>
     </ul>
 
     <h2>Gameplay</h2>
     <ul style={{textAlign: 'left'}}>
-      <li>The player who drew the highest card during team selection asks the first question.</li>
+      <li>A randomly chosen player goes first.</li>
       <li>
-        Players take turns asking opponents for specific cards. You may only ask for a card if:
+        On their turn a players may ask any opponent for a specific card. They may only ask for a card if:
         <ul style={{textAlign: 'left'}}>
           <li>The card belongs to a half-suit you already have at least one card from, AND</li>
           <li>You don't already have that specific card in your hand</li>
         </ul>
       </li>
       <li>
-        Continue asking until an opponent doesn't have the requested card. Then questioning passes to the most recent player who was asked.
+        If a player is asked for card they have, they must give it up immediately.
       </li>
       <li>
-        <strong>Illegal questions:</strong> If you ask for a card incorrectly (violating the rules above), questioning immediately passes to your opponent if they've already answered. If caught before they answer, you may ask a different question.
+        On their turn the player continues to ask until an opponent doesn't have the requested card (the player does not have to always ask the same opponent). Then the turn passes to the most recent player to be asked.
       </li>
     </ul>
 
     <h2>Making Claims</h2>
     <ul style={{textAlign: 'left'}}>
       <li>
-        You can claim a half-suit when your team has all 6 cards of that half-suit AND you know exactly which teammate holds each card.
-      </li>
-      <li>
-        <strong>Warning:</strong> Claims are binding once you start naming specific cards. You can stop before naming any cards, but once you say "the two of hearts" (for example), you must complete the claim.
+        A player may claim a half-suit at any point when they believe their team has all 6 cards of that half-suit AND they believe they know exactly which teammate holds each card.
       </li>
       <li>
         <strong>Failed claims:</strong> If your claim is incorrect, the opposing team automatically gets that half-suit, regardless of who actually held the cards.
@@ -135,23 +135,10 @@ const FishRules = () => (
       <li>Only make claims when you are 100% certain of the card locations!</li>
     </ul>
 
-    <h2>Special Rules</h2>
-    <ul style={{textAlign: 'left'}}>
-      <li>
-        <strong>Pause Button:</strong> Any player can pause the game to think through strategy or work out card deductions without the pressure of ongoing questioning.
-      </li>
-      <li>
-        <strong>No History Rule:</strong> Only the most recent question can be referenced. Players cannot ask about previous questions, clarifications, or whether cards were successfully obtained. Pay attention or lose the information forever!
-      </li>
-    </ul>
-
     <h2>Winning</h2>
     <ul style={{textAlign: 'left'}}>
       <li>
-        The team that correctly claims the most half-suits (out of 8 total) wins the game.
-      </li>
-      <li>
-        Games require careful attention, memory, and logical deduction to track card locations and identify contradictions in questioning patterns.
+        The team that correctly claims 5 half-suits wins the game.
       </li>
     </ul>
   </div>

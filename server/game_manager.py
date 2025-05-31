@@ -9,7 +9,7 @@ import game
 class GameTracker:
     def __init__(self):
         self.game_managers: dict[str, GameManager] = {}
-        self.websocket_manager = GameWebSocketManager()
+        self.websocket_manager = GameWebSocketManager(self)
 
     def create_game(self, game_id: str, name: str, game_type: str, players: list[str]):
         self.game_managers[game_id] = GameManager(self, game_id, name, game_type, players)
@@ -25,6 +25,9 @@ class GameTracker:
 
     def get_active_games(self):
         return list(self.game_managers.keys())
+    
+    def get_game_state(self, game_id: str):
+        return self.game_managers[game_id].game.to_game_state()
 
 # Handles non-game logic for a single game
 class GameManager:
@@ -43,14 +46,11 @@ class GameManager:
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
 
-
     async def play_turn(self, turn: game.Turn):
-        if await self.game.play_turn(turn):
-            self.game_log.log_turn(turn)
-            return True
-        return False
+        return await self.game.play_turn(turn)
     
     async def broadcast(self,message: dict):
+        self.game_log.log_state(message)
         await self.tracker.broadcast(self.game_id, message)
 
     async def end_game(self, results: dict):
@@ -67,11 +67,11 @@ class GameLog:
         self.game_id = game_id
         self.game_type = game_type
         self.players = players
-        self.turns = []
+        self.game_states = []
 
 
-    def log_turn(self, turn: game.Turn):
-        self.turns.append(turn)
+    def log_state(self, game_state):
+        self.game_states.append(GameStateModel(**game_state))
 
     async def save_replay(self, results: dict):
         """
@@ -83,7 +83,7 @@ class GameLog:
         replay = ReplayModel(
             name=self.name,
             players=player_obj_ids,
-            turns=[t.to_model() for t in self.turns],
+            game_states=self.game_states,
             timestamp=self.timestamp,
         )
 
@@ -91,12 +91,14 @@ class GameLog:
 
 # Handles WebSocket for all games
 class GameWebSocketManager:
-    def __init__(self):
+    def __init__(self, tracker: GameTracker):
         self.games: dict[str, list[WebSocket]] = {}
+        self.tracker = tracker
 
     async def connect(self, game_id: str, websocket: WebSocket):
         await websocket.accept()
         self.games.setdefault(game_id, []).append(websocket)
+        await websocket.send_json(self.tracker.get_game_state(game_id).dict())
 
     def disconnect(self, game_id: str, websocket: WebSocket):
         self.games[game_id].remove(websocket)

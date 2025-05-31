@@ -1,7 +1,7 @@
 from fastapi import Body, HTTPException, status
 from bson import ObjectId
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Union
 from typing_extensions import Annotated
 from pydantic.functional_validators import BeforeValidator
 from dotenv import load_dotenv
@@ -23,6 +23,7 @@ user_collection = db.get_collection("users")
 game_collection = db.get_collection("games")
 replay_collection = db.get_collection("replays")
 
+# Game Object Models
 
 class CardModel(BaseModel):
     """
@@ -42,6 +43,7 @@ class TransactionModel(BaseModel):
     sender: str = Field(...)
     receiver: str = Field(...)
     card: CardModel = Field(...)
+    success: bool = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True
@@ -55,19 +57,23 @@ class TurnModel(BaseModel):
     transactions: List[TransactionModel] = Field(default_factory=list)
     type: int = Field(...)
 
-class ReplayModel(BaseModel):
+# Game Stat Models
+
+class VietCongStatsModel(BaseModel):
     """
-    Container for a single replay.
+    Container for Viet Cong game stats.
     """
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    name: str = Field(...)
-    players: Dict[PyObjectId,int] = Field(default_factory=dict)
-    turns: List[TurnModel] = Field(default_factory=list)
-    timestamp: int = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True
-    )
+    games: int = Field(default=0)
+    place_finishes: Dict[int, int] = Field(default_factory=lambda: {"1": 0, "2": 0, "3": 0, "4": 0})
+
+class FishStatsModel(BaseModel):
+    """
+    Container for Fish game stats.
+    """
+    games: int = Field(default=0)
+    wins: int = Field(default=0)
+    claims: int = Field(default=0)
+    successful_claims: int = Field(default=0)
 
 class UserModel(BaseModel):
     """
@@ -76,8 +82,10 @@ class UserModel(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     firebase_uid: str = Field(...)
     name: Optional[str] = Field(default=None)
-    games: int = Field(default=0)
-    wins: int = Field(default=0)
+    stats: Dict[str, Union[VietCongStatsModel, FishStatsModel]] = Field(default_factory=lambda: {
+        "vietcong": VietCongStatsModel(),
+        "fish": FishStatsModel()
+    })
     username_set: bool = Field(default=False)
 
     model_config = ConfigDict(
@@ -92,8 +100,6 @@ class UpdateUserModel(BaseModel):
     """
 
     name: Optional[str] = None
-    games: Optional[int] = None
-    wins: Optional[int] = None
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str}
@@ -150,7 +156,23 @@ class OwnerModel(BaseModel):
     is_player: bool
 
 class GameStateModel(BaseModel):
+    game_type: str
     owners: Dict[str,OwnerModel]
     current_player: Optional[str] 
     last_turn: Optional[TurnModel]
+    player_status: Dict[str, int]
     status: int
+
+class ReplayModel(BaseModel):
+    """
+    Container for a single replay.
+    """
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    name: str = Field(...)
+    players: Dict[PyObjectId,int] = Field(default_factory=dict)
+    game_states: List[GameStateModel] = Field(default_factory=list)
+    timestamp: int = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )

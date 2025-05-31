@@ -474,19 +474,33 @@ class FishGame(Game):
             all(trans.to_ == f"suits_{self.player_status[turn.player]}" for trans in turn.transactions)
     
     def is_valid_question(self, turn: Turn):
+        if len(turn.transactions) != 1:
+            return False
+        
         player = self.players[self.current_player]
-        card = turn.get_cards()[0]
+        card = turn.transactions[0].card
         half_suit = self.card_to_half_suit(card)
-        return len(turn.transactions) == 1 and \
-            half_suit in self.owner_half_suits[player] and \
-            card not in self.owners[player].get_cards() and \
-            turn.transactions[0].from_ == player and \
-            turn.transactions[0].card in self.options_owner.get_cards() and \
-            self.player_status[turn.transactions[0].to_] != self.player_status[player]
+
+        if half_suit not in self.owner_half_suits[player]:
+            return False
+        
+        if card in self.owners[player].get_cards():
+            return False
+        
+        if turn.transactions[0].to_ != player:
+            return False
+        
+        if card in self.options_owner.get_cards():
+            return False
+        
+        if self.player_status[turn.transactions[0].from_] == self.player_status[player]:
+            return False
+        
+        return True
     
     def to_game_state(self):
         game_state = super().to_game_state()
-        game_state.owners["options"] = self.options_owner
+        game_state.owners["options"] = self.options_owner.to_model()
         return game_state
     
     @staticmethod
@@ -505,8 +519,9 @@ class FishGame(Game):
             if not self.has_cards(turn):
                 self.current_player = self.players.index(turn.transactions[0].from_)
                 turn.transactions[0].success = False
-            await super().play_turn()
-            self.options_owner = Owner(self.get_question_options())
+            await super().play_turn(turn)
+            self.options_owner = Owner(self.get_question_options(),False)
+            self.last_turn = turn
             await super().broadcast_state()
             return True
 
@@ -530,7 +545,7 @@ class FishGame(Game):
                     for trans in turn.transactions:
                         trans.success = False
                     turn.transactions += [Transaction(trans.card,self.belongs_to[trans.card],f"suits_{suit_team}") for trans in turn.transactions]
-                await super().play_turn()
+                await super().play_turn(turn)
                 self.last_turn = turn
                 # End Game
                 if len(self.owner_half_suits[turn.transactions[0].to_]) == 5:

@@ -44,13 +44,9 @@ async def initialize_user(payload: FirebaseUserRegistrationRequest = Body(...)):
     if existing_user:
         return existing_user
 
-    new_user_data = {
-        "firebase_uid": payload.firebase_uid,
-        "name": None,
-        "games": 0,
-        "wins": 0,
-        "username_set": False
-    }
+    new_user = UserModel(firebase_uid=payload.firebase_uid)
+    new_user_data = new_user.model_dump(by_alias=True, exclude={"id"})
+
     insert_result = await user_collection.insert_one(new_user_data)
     created_user = await user_collection.find_one({"_id": insert_result.inserted_id})
     if not created_user:
@@ -263,7 +259,6 @@ async def update_user(id: str, user_update_payload: UpdateUserModel = Body(...))
     else:
         # If find_one_and_update returns None, it means the document with 'id' was not found
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found during update attempt.")
-
 
 @router.delete(
     "/users/{id}",

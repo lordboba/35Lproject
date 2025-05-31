@@ -140,7 +140,7 @@ class Game():
         return True
 
     def to_game_state(self) -> GameStateModel:
-        return GameStateModel(owners={owner_id: owner.to_model() for owner_id, owner in self.owners.items()}, current_player=self.players[self.current_player], last_turn=self.last_turn.to_model(), player_status=self.player_status, status=self.status)
+        return GameStateModel(game_type="", owners={owner_id: owner.to_model() for owner_id, owner in self.owners.items()}, current_player=self.players[self.current_player], last_turn=self.last_turn.to_model(), player_status=self.player_status, status=self.status)
     
     def has_cards(self, turn:Turn): # checks if the player has the cards in the transaction requested
         for trans in turn.transactions:
@@ -218,6 +218,8 @@ class VietCongGame(Game):
 
         # Set player with 3S to start
         self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
+
+        self.broadcast_state()
 
     @staticmethod
     def is_multiple(cards: list[Card]) -> int:
@@ -336,7 +338,11 @@ class VietCongGame(Game):
             return False
         
         return True
-
+    
+    def to_game_state(self):
+        game_state = super().to_game_state()
+        game_state.game_type = "vietcong"
+        return game_state
             
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if not self.is_valid_turn(turn):
@@ -451,6 +457,8 @@ class FishGame(Game):
         for i in range(6):
             self.player_status[players[team_list[i]]] = i//3+1 
 
+        self.broadcast_state()
+
     @staticmethod
     def card_to_half_suit(card: Card):
         if card.rank == 0 or card.rank == 8:
@@ -510,6 +518,7 @@ class FishGame(Game):
     def to_game_state(self):
         game_state = super().to_game_state()
         game_state.owners["options"] = self.options_owner.to_model()
+        game_state.game_type = "fish"
         return game_state
     
     @staticmethod

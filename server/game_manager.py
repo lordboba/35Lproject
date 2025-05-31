@@ -50,10 +50,8 @@ class GameManager:
         return await self.game.play_turn(turn)
     
     async def broadcast(self,message: dict):
+        self.game_log.log_state(message)
         await self.tracker.broadcast(self.game_id, message)
-
-    def log_state(self, game_state):
-        self.game_log.log_state(game_state)
 
     async def end_game(self, results: dict):
         await self.game_log.save_replay(results)
@@ -73,7 +71,7 @@ class GameLog:
 
 
     def log_state(self, game_state):
-        self.game_states.append(game_state)
+        self.game_states.append(GameStateModel(**game_state))
 
     async def save_replay(self, results: dict):
         """

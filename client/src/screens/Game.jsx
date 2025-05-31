@@ -111,7 +111,7 @@ function Game() {
         // Extract the hostname from API_BASE_URL (without http:// or https://)
         const apiUrl = new URL(API_BASE_URL);
         const wsProtocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${apiUrl.host}/games/ws/${gameId}/users`;
+        const wsUrl = `${wsProtocol}//${apiUrl.host}/games/${gameId}/waiting/ws`;
         console.log('Connecting to WebSocket:', wsUrl);
         const ws = new WebSocket(wsUrl);
         
@@ -123,8 +123,8 @@ function Game() {
             const data = JSON.parse(event.data);
             console.log('Received updated users:', data);
             
-            if (data.users) {
-                setUsers(data.users);
+            if (data.players) {
+                setUsers(data.players);
                 
                 // Check if game can start based on the number of users
                 // This logic would depend on the game type

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { auth } from '../firebase';
 import './CreateGame.css';
 
@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function CreateGame() {
     const navigate = useNavigate();
+    const { backendUser } = useOutletContext();
     const [gameName, setGameName] = useState('');
     const [gameType, setGameType] = useState('simple');
     const [loading, setLoading] = useState(false);
@@ -40,6 +41,35 @@ function CreateGame() {
         setError('');
         
         try {
+            // Get user's MongoDB ObjectId (either from context or by fetching)
+            let userObjectId;
+            if (backendUser && backendUser.id) {
+                userObjectId = backendUser.id;
+                console.log('Backend user from context:', backendUser);
+            } else {
+                // Fallback: fetch user data by Firebase UID to get MongoDB ObjectId
+                console.log('Fetching user data by Firebase UID...');
+                const userResponse = await fetch(`${API_BASE_URL}/users/initialize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ firebase_uid: currentUser.uid })
+                });
+                
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to get user data: ${userResponse.statusText}`);
+                }
+                
+                const userData = await userResponse.json();
+                userObjectId = userData.id;
+                console.log('Fetched user data:', userData);
+            }
+            
+            if (!userObjectId) {
+                throw new Error('Could not get user MongoDB ObjectId');
+            }
+            
             console.log('Creating game with data:', { name: gameName, type: gameType });
             
             // Step 1: Create a new game
@@ -83,9 +113,9 @@ function CreateGame() {
             if (!gameId) {
                 throw new Error('Failed to extract game ID from server response');
             }
-            // Step 2: Add the current user to the game
-            const addUserResponse = await fetch(`${API_BASE_URL}/games/${gameId}/users/${currentUser.uid}`, {
-                method: 'POST',
+            // Step 2: Add the current user to the game using their MongoDB ObjectId
+            const addUserResponse = await fetch(`${API_BASE_URL}/games/${gameId}/add_user/${userObjectId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 }

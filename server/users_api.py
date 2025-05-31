@@ -289,6 +289,88 @@ async def list_games():
     games = await game_collection.find().to_list(1000)
     return GameCollection(games=games)
 
+@router.post(
+    "/games/",
+    response_description="Create a new game",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def create_game(game: GameCreateModel):
+    """
+    Create a new game.
+    """
+    game_dict = game.dict()
+    game_dict["players"] = []
+    
+    result = await game_collection.insert_one(game_dict)
+    new_game = await game_collection.find_one({"_id": result.inserted_id})
+    return new_game
+
+@router.get("/games/{game_id}/get_game",
+             response_description="Get game by ID",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def get_game_by_id(game_id: str):
+    """
+    Get a game by its ID.
+    """
+    game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    print(game)
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    return game
+
+@router.patch(
+    "/games/{game_id}/add_user/{user_id}",
+    response_description="Add a user to a game",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def add_user_to_game(game_id: str, user_id: str):
+    """
+    Add a user to the game's players list.
+    """
+    game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    if ObjectId(user_id) in game["players"]:
+        raise HTTPException(status_code=400, detail="User already in game")
+    
+    if len(game["players"]) >= GAME_RULES[game["type"]]["max_players"]:
+        raise HTTPException(status_code=400, detail="Game is already full")
+
+    await game_collection.update_one(
+        {"_id": ObjectId(game_id)},
+        {"$addToSet": {"players": ObjectId(user_id)}}
+    )
+    return await game_collection.find_one({"_id": ObjectId(game_id)})
+
+
+@router.patch(
+    "/games/{game_id}/remove_user/{user_id}",
+    response_description="Remove a user from a game",
+    response_model=GameModel,
+    response_model_by_alias=False,
+)
+async def remove_user_from_game(game_id: str, user_id: str):
+    """
+    Remove a user from the game's players list.
+    """
+    game = await game_collection.find_one({"_id": ObjectId(game_id)})
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    if ObjectId(user_id) not in game["players"]:
+        raise HTTPException(status_code=400, detail="User not in game")
+
+    await game_collection.update_one(
+        {"_id": ObjectId(game_id)},
+        {"$pull": {"players": ObjectId(user_id)}}
+    )
+    return await game_collection.find_one({"_id": ObjectId(game_id)})
+
 @router.patch(
     "/games/{game_id}/start",
     response_description="Start game",
@@ -350,6 +432,31 @@ async def game_ws(websocket: WebSocket, game_id: str,tracker: GameTracker = Depe
             await asyncio.sleep(60)
     except WebSocketDisconnect:
         tracker.websocket_manager.disconnect(game_id, websocket)
+
+# For waiting room
+@router.websocket("/games/{game_id}/waiting/ws")
+async def waiting_room_ws(websocket: WebSocket, game_id: str, tracker: GameTracker = Depends(get_tracker)):
+    # Handle waiting room connections
+    await tracker.waiting_websocket_manager.connect(game_id, websocket)
+    try:
+        while True:
+            await asyncio.sleep(60)
+    except WebSocketDisconnect:
+        tracker.waiting_websocket_manager.disconnect(game_id, websocket)
+    pass
+
+# For waiting room
+@router.websocket("/lobby/ws")
+async def lobby_ws(websocket: WebSocket, game_id: str, tracker: GameTracker = Depends(get_tracker)):
+    # Handle waiting room connections
+    await tracker.lobby_websocket_manager.connect(game_id, websocket)
+    try:
+        while True:
+            await asyncio.sleep(60)
+    except WebSocketDisconnect:
+        tracker.lobby_websocket_manager.disconnect(game_id, websocket)
+    pass
+
 
 # Dev
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from abc import ABC, abstractmethod
 from enum import Enum
 from core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel
 import random
@@ -24,7 +25,7 @@ class Suit(Enum):
 
 
 # Base Card
-class Card():
+class Card(ABC):
     def __init__(self, rank=0, suit=Suit.SPEC):
         self.rank = rank
         self.suit = suit
@@ -49,6 +50,8 @@ class Card():
                 return "JB"
             elif self.suit == Suit.DIAMOND:
                 return "JR"
+        if self.suit == Suit.SPEC:
+            return "JK"
         rank_arr = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
         suit_arr = ["","C","D","H","S"]
         return rank_arr[(self.rank)%14]+suit_arr[self.suit.value]
@@ -58,8 +61,8 @@ class Card():
         return cls(suit=Suit(model.suit), rank=model.rank)
 
 # Base Owner
-class Owner():
-    def __init__(self, cards: list[Card] = None, is_player: bool = True):
+class Owner(ABC):
+    def __init__(self, cards: list[Card] = None):
         self.cards: list[Card] = cards
         self.is_player: bool = is_player
 
@@ -82,21 +85,20 @@ class Owner():
         return OwnerModel(cards=[card.to_model() for card in self.cards], is_player=self.is_player)
 
 class Transaction:
-    def __init__(self, card: Card = None, from_: str = None, to_: str = None, success: bool = True):
+    def __init__(self, card: Card = None, from_: str = None, to_: str = None):
         self.card = card
         self.from_ = from_
         self.to_ = to_
-        self.success = success
 
     def get_card(self) -> Card:
         return self.card
 
     def to_model(self) -> TransactionModel:
-        return TransactionModel(sender=self.from_, receiver=self.to_, card=self.card.to_model(), success=self.success)
+        return TransactionModel(sender=self.from_, receiver=self.to_, card=self.card.to_model())
     
     @classmethod
     def from_model(cls, model: TransactionModel):
-        return cls(Card.from_model(model.card),model.sender, model.receiver, model.success)
+        return cls(Card.from_model(model.card),model.sender, model.receiver)
 
 class Turn:
     def __init__(self, player_id: str, turn_type: int, transactions: list[Transaction]):
@@ -117,22 +119,20 @@ class Turn:
     def from_model(cls, model: TurnModel):
         return cls(model.player, model.type, [Transaction.from_model(transact) for transact in model.transactions])
 
-class Game():
+class Game(ABC):
 
     def __init__(self, manager, owners: dict[str, Owner], cards: list[Card], player_ids: list[str]):
         self.manager = manager
         self.owners = owners
         self.cards = cards
-        self.players = player_ids
-        self.current_player: int = 0
-        self.last_turn: Turn = Turn("", 0, [])
-        self.player_status = {player_id:0 for player_id in player_ids}
-        self.belongs_to: dict[Card, str] = {}
-        self.status = 0
+        self.current_player: int = None
+        self.last_turn: Turn = None
+        self.player_ids = player_ids
+        self.belongsTo: dict[Card, str] = {}
 
         for owner_id, owner in self.owners.items():
             for c in owner.get_cards():
-                self.belongs_to[c] = owner_id
+                self.belongsTo[c] = owner_id
                 self.belongs_to[c] = owner_id
 
     # Perform transaction of card between two owners
@@ -140,12 +140,13 @@ class Game():
         # Remove card from from_ and append to to_
         self.owners[trans.from_].remove_card(trans.card)
         self.owners[trans.to_].add_card(trans.card)
-        self.belongs_to[trans.card] = trans.to_
+        self.belongsTo[trans.card] = trans.to_
 
     async def play_turn(self, turn: Turn) -> bool:
         for trans in turn.transactions:
-            if trans.success:
-                self.transact(trans)
+            self.transact(trans)
+        self.last_turn = turn
+        await self.broadcast_state(0)
         return True
 
     def to_game_state(self) -> GameStateModel:
@@ -153,15 +154,12 @@ class Game():
     
     def has_cards(self, turn:Turn): # checks if the player has the cards in the transaction requested
         for trans in turn.transactions:
-            if (self.belongs_to[trans.card] != trans.from_):
+            if (self.belongsTo[trans.card] != trans.from_):
                 return False
         return True
-    
-    def log_state(self):
-        self.manager.log_state(self.to_game_state())
 
-    async def broadcast_state(self):
-        await self.manager.broadcast(self.to_game_state().dict())
+    async def broadcast_state(self, status: int):
+        await self.manager.broadcast(self.to_game_state(status).dict())
 
 class SimpleGame(Game):
     def __init__(self, manager, players):
@@ -184,45 +182,67 @@ class SimpleGame(Game):
 class VietCongGame(Game):
 
     class Combo(Enum):
-        NONE = 0
+        NONE = -1
         SINGLE = 1
         DOUBLE = 2
         TRIPLE = 3
-        QUAD = 4
+        
+        QUAD = 100
 
-        SEQUENCE = 10
-        DB_SEQUENCE = 30
+        SEQUENCE = 13
+        DB_SEQUENCE = 103
 
-    suit_to_value = {Suit.SPADE: 0, Suit.CLUB: 1, Suit.DIAMOND: 2, Suit.HEART: 3}
+        #Not used in actually labeling
+        SINGLE_TWO = 21
+        DOUBLE_TWO = 22
+        TRIPLE_TWO = 23
 
-    @staticmethod
-    def get_card_value(card:Card)->int:
-        rank = (card.rank-3)%13
-        suit = VietCongGame.suit_to_value[card.suit]
-        return rank*10+suit
+
+    def getCardValue(card:Card)->int:
+        card1_rank = card.rank
+        card1_suit = card.suit
+        if (card.rank == 1 or card.rank == 2):
+            card1_rank = card.rank + 13
+        if (card.suit == Suit.CLUB):
+            card1_suit = 3 # we currently defined club as the worst and heart as second best, should be reversed
+        elif card.suit == Suit.HEART:
+            card1_suit = 1
+        elif card.suit == Suit.DIAMOND:
+            card1_suit = 2
+        elif card.suit == Suit.SPADE:
+            card1_suit = 4
+        return (card1_rank*10+card1_suit)
+        
+    def cmpValue(self,card1:Card, card2:Card)->bool:
+        return self.getCardValue(card1)<self.getCardValue(card2)
     
     def __init__(self, manager, players):
         if len(players)!=4:
             raise ValueError("Not the right number of players (4 needed)")
+
+        cards = []
+        cards.extend([Card(i + 1, Suit.HEART) for i in range(14)])
+        cards.extend([Card(i + 1, Suit.DIAMOND) for i in range(14)])
+        cards.extend([Card(i + 1, Suit.CLUB) for i in range(14)])
+        cards.extend([Card(i + 1, Suit.SPADE) for i in range(14)])
         
-        # Member Variables
         self.current_combo = [] #combo on top of deck
         self.current_combo_type = self.Combo.NONE #ID of combo
-        self.places = [4]*4 # finishing places
-        self.finished_players = 0 # number of players who finished
-
-        # Initializing Deck
-        cards = []
-        cards.extend([Card(i + 1, Suit.HEART) for i in range(13)])
-        cards.extend([Card(i + 1, Suit.DIAMOND) for i in range(13)])
-        cards.extend([Card(i + 1, Suit.CLUB) for i in range(13)])
-        cards.extend([Card(i + 1, Suit.SPADE) for i in range(13)])
+        self.passed = [False,False,False,False] # people who passed are true
         random.shuffle(cards)
-
-        # Initializing Owners
-        owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
-        owners["pile"] = Owner([], False)
-
+        owners: dict[str, Owner] = {
+            players[0]: Owner(cards[0:13]),
+            players[1]: Owner(cards[13:26]),
+            players[2]: Owner(cards[26:39]),
+            players[3]: Owner(cards[39:52]),
+            "Pile": Owner([]) # the pile in the middle
+        }
+        
+        for p in players:
+            if Card(3, Suit.HEART) in owners[p].cards: # person with the worst card goes first
+                self.current_player = players.index(p)
+                break
+        
         super().__init__(manager, owners, cards, players)   
 
         # Set player with 3S to start
@@ -253,108 +273,92 @@ class VietCongGame(Game):
     def is_multiple_sequence(cards: list[Card], multiple: int) -> int:
         if len(cards)<3*multiple or len(cards)%multiple!=0 or cards[-1].rank == 2:
             return False
-        
-        rank = cards[0].rank
-        for i in range(0, len(cards), multiple):
-            if any(rank != card.rank for card in cards[i:i+multiple]):
-                return False
-            rank = cards[i].rank%13+1
-        return len(cards)//multiple
-    
-    @staticmethod
-    def get_combo(cards: list[Card]):
-        # single/pair/trip/quad
-        multiple_len = VietCongGame.is_multiple(cards)
-        if multiple_len != 0:
-            return VietCongGame.Combo(multiple_len)
-        
-        # sequence by length
-        sequence_len = VietCongGame.is_multiple_sequence(cards,1)
-        if sequence_len != 0:
-            return VietCongGame.Combo(VietCongGame.Combo.SEQUENCE.value + sequence_len)
-        
-        # double sequence by length
-        double_sequence_len = VietCongGame.is_multiple_sequence(cards,2)
-        if double_sequence_len != 0:
-            return VietCongGame.Combo(VietCongGame.Combo.DB_SEQUENCE.value + double_sequence_len)
-        
-        # no matches
-        return VietCongGame.Combo.NONE
-    
-    @staticmethod
-    def is_greater_combo(cards: list[Card], current_combo: list[Card]) -> bool:
-        if len(current_combo) == 0:
+        if cards[0].rank == cards[1].rank:
             return True
-        if len(cards) == 0:
+        return False
+    async def is_triple(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=3:
             return False
-        return VietCongGame.get_card_value(cards[-1]) > VietCongGame.get_card_value(current_combo[-1])
-    
-    def valid_combo(self, cards: list[Card]):
-        # Start of Round
-        if self.current_combo_type == self.Combo.NONE:
-            combo = self.get_combo(cards)
-            if combo != self.Combo.QUAD and combo.value < self.Combo.DB_SEQUENCE.value:
-                return combo
-        
-        # Single/pair/trips/quads
-        elif self.current_combo_type.value < self.Combo.SEQUENCE.value:
-            # Matching Combo
-            multiple_len = self.is_multiple(cards)
-            if multiple_len == self.current_combo_type.value:
-                if self.is_greater_combo(cards, self.current_combo):
-                    return self.Combo(multiple_len)
-        
-            # Bomb is playable
-            elif self.current_combo[0].rank == 2:
-                # Quad is playable
-                if len(self.current_combo) < 3:
-                    if multiple_len == 4:
-                        return self.Combo.QUAD
-                    
-                # Check if double sequence playable
-                double_sequence_len = VietCongGame.is_multiple_sequence(cards,2)
-                if double_sequence_len > self.current_combo_type.value + 1:
-                    return self.Combo(self.Combo.DB_SEQUENCE.value + double_sequence_len)
-            
-        # Sequences
-        elif self.current_combo_type.value < self.Combo.DB_SEQUENCE.value:
-            sequence_len = self.is_multiple_sequence(cards, 1)
-            if sequence_len == len(self.current_combo) and self.is_greater_combo(cards, self.current_combo):
-                return self.Combo(self.Combo.SEQUENCE.value + sequence_len)
-        
-        # Double Sequences
-        else:
-            double_sequence_len = self.is_multiple_sequence(cards, 2)
-            if double_sequence_len == len(self.current_combo)//2 and self.is_greater_combo(cards, self.current_combo):
-                return self.Combo(self.Combo.DB_SEQUENCE.value + double_sequence_len)
-            
-        return self.Combo.NONE
-    
-    def get_next_player(self) -> bool:
-        for i in range(1,4):
-            next_player = (self.current_player+i)%4
-            if self.player_status[self.players[next_player]] == 0 and self.places[next_player] == 4:
-                self.current_player = next_player
-                return True
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank:
+            return True
         return False
     
-    def is_valid_turn(self, turn: Turn) -> bool:
-        # Check if player is the current player
-        if turn.player != self.players[self.current_player]:
+    async def is_quad(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=4:
             return False
-        
-        # Check if turn type is valid
-        if turn.turn_type not in [0, 1]:
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank and cards[3].rank == cards[2].rank:
+            return True
+        return False
+
+    async def is_sequence(self,turn:Turn)->int:
+        cards = [trans.get_card() for trans in turn.transactions]
+        rank = cards[0].rank - 1
+        if len(cards)<3:
             return False
-        
-        # Check if transactions are valid
-        if any(trans.from_ != turn.player for trans in turn.transactions):
+       
+
+        for i in range(len(cards)):
+            if cards[i].rank != rank+1:
+                return False
+            rank = cards[i].rank
+        return self.Combo.SEQUENCE + len(cards) - 3
+     
+    async def is_double_sequence(self,turn:Turn)->int:
+        cards = [trans.get_card() for trans in turn.transactions]
+        rank = cards[0].rank - 1
+        if len(cards)<6 or len(cards)%2==1:
             return False
+      
+
+        for i in range(len(cards)):
+            if cards[2*i].rank != rank+1 or cards[i*2+1].rank != rank+1:
+                return False
+            rank = cards[2*i].rank
+        return self.Combo.DB_SEQUENCE + len(cards) - 3
+    
+    async def get_combo(self, turn:Turn)->Combo:
+        #bombs later
+        from functools import cmp_to_key
+        cards = [trans.get_card() for trans in turn.transactions]
+        sorted(cards, key=cmp_to_key(self.cmpValue)) # sort cards (Hopefully this works)
+        sorted(self.current_combo, key=cmp_to_key(self.cmpValue))
+        if len(cards) == 0:
+            return self.Combo.NONE
+    
+        if (self.is_double_sequence(self,turn)!=False):
+            return self.is_double_sequence(self,turn)
+        elif (self.is_sequence(self,turn) != False):
+            return self.is_sequence(self,turn)
+        elif (self.is_triple(self,turn)):
+            return self.Combo.TRIPLE
+        elif (self.is_double(self,turn)):
+            return self.Combo.DOUBLE
+        elif (self.is_quad(self,turn)):
+            return self.Combo.QUAD
+        else:
+            return self.Combo.SINGLE
+    async def check_twos(self) ->Combo:
+        if (len(self.current_combo)==1) and self.current_combo[0].rank == 15:
+            return self.Combo.SINGLE_TWO
+        elif (len(self.current_combo)==2) and self.current_combo[0].rank == 15 and self.current_combo[1].rank == 15:
+            return self.Combo.DOUBLE_TWO
+        elif (len(self.current_combo)==3) and self.current_combo[0].rank == 15 and self.current_combo[1].rank == 15 and self.current_combo[2].rank == 15  :
+            return self.Combo.TRIPLE_TWO
+        return self.Combo.NONE
         
-        if any(trans.to_ != "pile" for trans in turn.transactions):
+    async def valid_move(self, turn:Turn) -> bool:
+        if not super.has_cards(self,turn):
             return False
-        
-        if not super().has_cards(turn):
+        test_combo = self.get_combo(self,turn)
+        bomb_potential = self.check_twos(self)
+        if bomb_potential > 0:
+            if bomb_potential == self.Combo.SINGLE_TWO and test_combo == self.Combo.QUAD:
+                return True
+            return test_combo >=self.Combo.DB_SEQUENCE + (bomb_potential - self.Combo.SINGLE_TWO)
+
+        if test_combo != self.current_combo_type:
             return False
         
         return True
@@ -365,7 +369,15 @@ class VietCongGame(Game):
         return game_state
             
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
-        if not self.is_valid_turn(turn):
+        if self.passed[self.current_player]:
+            self.current_player = (self.current_player+1)%4
+            return True
+        elif len(turn.transactions)==0:
+            self.passed[self.current_player] = True
+            self.current_player = (self.current_player+1)%4
+            return True
+        
+        if not self.valid_move(self,turn):
             return False
 
         # Player passes

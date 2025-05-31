@@ -1,16 +1,18 @@
 from game import *
 import time
 from fastapi import WebSocket
-from core import CardModel, TransactionModel, TurnModel, ReplayModel, GameStateModel, replay_collection
+from core import CardModel, TransactionModel, TurnModel, ReplayModel, GameStateModel, replay_collection, GameModel, GameCollection
 from bson import ObjectId
 import game
+from core import game_collection
 
 # This holds multiple game managers
 class GameTracker:
     def __init__(self):
         self.game_managers: dict[str, GameManager] = {}
         self.websocket_manager = GameWebSocketManager(self)
-        self.websocket_manager = GameWebSocketManager(self)
+        self.waiting_websocket_manager = WaitingGameWebSocketManager(self)
+        self.lobby_websocket_manager = LobbyWebSocketManager(self)
 
     def create_game(self, game_id: str, name: str, game_type: str, players: list[str]):
         self.game_managers[game_id] = GameManager(self, game_id, name, game_type, players)
@@ -34,7 +36,6 @@ class GameTracker:
 class GameManager:
     def __init__(self, tracker: GameTracker, game_id: str, name: str, game_type: str, players: list[str]):
         mapping = {
-
             "fish": game.FishGame,
             "vietcong": game.VietCongGame,
             "simple": game.SimpleGame,
@@ -44,12 +45,9 @@ class GameManager:
             raise ValueError(f"Unknown game type: {game_type}")
         self.tracker = tracker
         self.game_id = game_id
-        print(type(game_class))
-        #print(type(game_class(self,players)))
-        #print("grr")
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
-        print("yoo")
+        #print("yoo")
 
     async def play_turn(self, turn: game.Turn):
         return await self.game.play_turn(turn)
@@ -108,7 +106,56 @@ class GameWebSocketManager:
         await websocket.accept()
         self.games.setdefault(game_id, []).append(websocket)
         await websocket.send_json(self.tracker.get_game_state(game_id).dict())
-        await websocket.send_json(self.tracker.get_game_state(game_id).dict())
+
+    def disconnect(self, game_id: str, websocket: WebSocket):
+        self.games[game_id].remove(websocket)
+        if not self.games[game_id]:
+            del self.games[game_id]
+
+    async def broadcast(self, game_id: str, message: dict):
+        for ws in self.games.get(game_id, []):
+            await ws.send_json(message)
+
+# Handles WebSocket for waiting room
+class WaitingGameWebSocketManager:
+    def __init__(self, tracker: GameTracker):
+        self.games: dict[str, list[WebSocket]] = {}
+        self.tracker = tracker
+
+    async def connect(self, game_id: str, websocket: WebSocket):
+        await websocket.accept()
+        self.games.setdefault(game_id, []).append(websocket)
+        for ws in self.games.get(game_id, []):
+            game = await game_collection.find_one({"_id": ObjectId(game_id)})
+            if game:
+                game_model = GameModel(**game)
+                await ws.send_json(game_model.model_dump(by_alias=True))
+        # await websocket.send_json(self.tracker.get_game_state(game_id).dict())
+
+    def disconnect(self, game_id: str, websocket: WebSocket):
+        self.games[game_id].remove(websocket)
+        if not self.games[game_id]:
+            del self.games[game_id]
+
+    async def broadcast(self, game_id: str, message: dict):
+        for ws in self.games.get(game_id, []):
+            await ws.send_json(message)
+
+# Handles WebSocket for lobby
+class LobbyWebSocketManager:
+    def __init__(self, tracker: GameTracker):
+        self.games: dict[str, list[WebSocket]] = {}
+        self.tracker = tracker
+
+    async def connect(self, game_id: str, websocket: WebSocket):
+        await websocket.accept()
+        self.games.setdefault(game_id, []).append(websocket)
+        for ws in self.games.get(game_id, []):
+            tempG = await game_collection.find().to_list(1000)
+            game = GameCollection(games=tempG)
+            if game:
+                await ws.send_json(game.model_dump(by_alias=True))
+        # await websocket.send_json(self.tracker.get_game_state(game_id).dict())
 
     def disconnect(self, game_id: str, websocket: WebSocket):
         self.games[game_id].remove(websocket)

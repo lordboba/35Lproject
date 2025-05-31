@@ -1,7 +1,7 @@
 from game import *
 import time
 from fastapi import WebSocket
-from core import CardModel, TransactionModel, TurnModel, ReplayModel, replay_collection
+from core import CardModel, TransactionModel, TurnModel, ReplayModel, GameStateModel, replay_collection
 from bson import ObjectId
 import game
 

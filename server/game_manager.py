@@ -57,6 +57,9 @@ class GameManager:
         self.game_log.log_state(message)
         await self.tracker.broadcast(self.game_id, message)
 
+    def log_state(self, game_state):
+        self.game_log.log_state(game_state)
+
     async def end_game(self, results: dict):
         await self.game_log.save_replay(results)
         self.tracker.delete_game(self.game_id)

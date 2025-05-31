@@ -1,23 +1,250 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import './Game.css';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function Game() {
-    return (
-        <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            width: '100vw',
-            margin: 0,
-            padding: 0
-        }}>
-            <div style={{
-                width: '100px',
-                height: '100px',
-                backgroundColor: 'green',
-            }}>
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [currentUser, setCurrentUser] = useState(null);
+    const [gameId, setGameId] = useState(null);
+    const [gameName, setGameName] = useState('');
+    const [gameType, setGameType] = useState('');
+    const [users, setUsers] = useState([]);
+    const [userDetails, setUserDetails] = useState({}); // Store username details by user ID
+    const [websocket, setWebsocket] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [gameStarted, setGameStarted] = useState(false);
+    
+    // Get the current Firebase user
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            setCurrentUser(user);
+        });
+        
+        return () => unsubscribe();
+    }, []);
+    
+    // Function to fetch user details by ID
+    const fetchUserDetails = async (userId) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+            if (response.ok) {
+                const userData = await response.json();
+                return userData;
+            } else {
+                console.error(`Failed to fetch user details for ${userId}`);
+                return null;
+            }
+        } catch (error) {
+            console.error(`Error fetching user details for ${userId}:`, error);
+            return null;
+        }
+    };
+    
+    // Function to fetch multiple user details
+    const fetchAllUserDetails = async (userIds) => {
+        const newUserDetails = { ...userDetails };
+        
+        // Only fetch details for users we don't already have
+        const usersToFetch = userIds.filter(userId => !newUserDetails[userId]);
+        
+        if (usersToFetch.length === 0) return;
+        
+        const fetchPromises = usersToFetch.map(async (userId) => {
+            const userData = await fetchUserDetails(userId);
+            if (userData) {
+                newUserDetails[userId] = userData;
+            }
+            return userData;
+        });
+        
+        await Promise.all(fetchPromises);
+        setUserDetails(newUserDetails);
+    };
+    
+    // Get the game ID from the URL query parameters
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const id = searchParams.get('id');
+        
+        if (!id) {
+            setError('Game ID not found in URL');
+            return;
+        }
+        
+        setGameId(id);
+        
+        // Fetch game details
+        fetchGameDetails(id);
+    }, [location]);
+    
+    // Fetch game details from the backend
+    const fetchGameDetails = async (id) => {
+        try {
+            setLoading(true);
+            // This would typically fetch game details like name, type, etc.
+            // For now, we'll assume this is handled elsewhere or not needed yet
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching game details:', err);
+            setError('Failed to load game details');
+            setLoading(false);
+        }
+    };
+    
+    // Fetch user details when users list changes
+    useEffect(() => {
+        if (users.length > 0) {
+            fetchAllUserDetails(users);
+        }
+    }, [users]);
+    
+    // Set up WebSocket connection to monitor users in the game
+    useEffect(() => {
+        if (!gameId || !currentUser) return;
+        
+        // Create WebSocket connection
+        // Extract the hostname from API_BASE_URL (without http:// or https://)
+        const apiUrl = new URL(API_BASE_URL);
+        const wsProtocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${apiUrl.host}/games/ws/${gameId}/users`;
+        console.log('Connecting to WebSocket:', wsUrl);
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+            console.log('WebSocket connection established');
+        };
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('Received updated users:', data);
+            
+            if (data.users) {
+                setUsers(data.users);
+                
+                // Check if game can start based on the number of users
+                // This logic would depend on the game type
+                // For simplicity, we'll assume 2+ players means the game can start
+                if (data.users.length >= 2) {
+                    // Enable the start button (logic handled in the UI)
+                }
+            }
+        };
+        
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            setError('Error connecting to game server');
+        };
+        
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+        
+        setWebsocket(ws);
+        
+        // Clean up the WebSocket connection when the component unmounts
+        return () => {
+            if (ws) {
+                ws.close();
+            }
+        };
+    }, [gameId, currentUser]);
+    
+    // Function to leave the waiting room
+    const handleLeaveGame = async () => {
+        // Implement logic to remove user from the game
+        // For now, just navigate back to the main screen
+        if (websocket) {
+            websocket.close();
+        }
+        navigate('/app');
+    };
+    
+    // Function to start the game (only available to the creator)
+    const handleStartGame = async () => {
+        // Logic to start the game would go here
+        // This would typically involve an API call to change the game state
+        setGameStarted(true);
+    };
+    
+    // Helper function to get display name for a user
+    const getUserDisplayName = (userId) => {
+        const user = userDetails[userId];
+        if (user && user.name) {
+            return user.name;
+        }
+        // Fallback to showing "Loading..." while we fetch the username
+        return 'Loading...';
+    };
+    
+    // If the game has started, render the actual game UI
+    if (gameStarted) {
+        return (
+            <div className="game-container">
+                <h1>Game Started</h1>
+                {/* Game UI would go here */}
             </div>
+        );
+    }
+    
+    // Otherwise, render the waiting room UI
+    return (
+        <div className="waiting-room-container">
+            <h1>Waiting Room</h1>
+            
+            {error && <p className="error-message">{error}</p>}
+            
+            {loading ? (
+                <p>Loading game details...</p>
+            ) : (
+                <>
+                    <div className="game-info">
+                        <h2>Game ID: {gameId}</h2>
+                        {gameName && <p>Game Name: {gameName}</p>}
+                        {gameType && <p>Game Type: {gameType}</p>}
+                    </div>
+                    
+                    <div className="users-list">
+                        <h3>Players ({users.length}):</h3>
+                        {users.length === 0 ? (
+                            <p>No players have joined yet.</p>
+                        ) : (
+                            <ul>
+                                {users.map((userId, index) => (
+                                    <li key={index}>
+                                        {getUserDisplayName(userId)}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                    
+                    <div className="waiting-room-actions">
+                        <button 
+                            onClick={handleLeaveGame}
+                            className="leave-button"
+                        >
+                            Leave Game
+                        </button>
+                        
+                        {/* Only show start button if enough players have joined */}
+                        {users.length >= 2 && (
+                            <button 
+                                onClick={handleStartGame}
+                                className="start-button"
+                            >
+                                Start Game
+                            </button>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 }
+
 export default Game;

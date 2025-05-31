@@ -170,7 +170,7 @@ class SimpleGame(Game):
             players[1]: Owner(cardsB),
         }
 
-        super().__init__(manager, owners, cards, players)     
+        super().__init__(manager, owners, cards, players)
 
 class VietCongGame(Game):
 

@@ -118,7 +118,6 @@ class Turn:
         return cls(model.player, model.type, [Transaction.from_model(transact) for transact in model.transactions])
 
 class Game():
-class Game():
 
     def __init__(self, manager, owners: dict[str, Owner], cards: list[Card], player_ids: list[str]):
         self.manager = manager

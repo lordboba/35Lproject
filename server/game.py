@@ -315,9 +315,33 @@ class VietCongGame(Game):
                 self.current_player = next_player
                 return True
         return False
+    
+    def is_valid_turn(self, turn: Turn) -> bool:
+        # Check if player is the current player
+        if turn.player != self.players[self.current_player]:
+            return False
+        
+        # Check if turn type is valid
+        if turn.turn_type not in [0, 1]:
+            return False
+        
+        # Check if transactions are valid
+        if any(trans.from_ != turn.player for trans in turn.transactions):
+            return False
+        
+        if any(trans.to_ != "pile" for trans in turn.transactions):
+            return False
+        
+        if not super().has_cards(turn):
+            return False
+        
+        return True
 
             
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
+        if not self.is_valid_turn(turn):
+            return False
+
         # Player passes
         if turn.turn_type == 1:
             if self.current_combo_type == self.Combo.NONE:
@@ -328,10 +352,6 @@ class VietCongGame(Game):
 
         # Player plays cards
         else:
-            # Checks player has cards they are transferring
-            if not super().has_cards(turn):
-                return False
-            
             cards = sorted(turn.get_cards(), key=VietCongGame.get_card_value)
 
             # Checks if 3 of Spades is played
@@ -408,13 +428,13 @@ class FishGame(Game):
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)
 
-        self.owner_half_suits = {owner_id: self.cards_to_half_suit(owner.get_cards()) for owner_id, owner in self.owners.items()} # Half suits each owner has
         self.options_owner = Owner([])
         self.unclaimed = {self.HalfSuit(i) for i in range(9)}
         self.temp_current_player = 0
         
         super().__init__(manager, owners, cards, players)
         self.current_player = random.randint(0,5)
+        self.owner_half_suits = {owner_id: self.cards_to_half_suit(owner.get_cards()) for owner_id, owner in self.owners.items()} # Half suits each owner has
 
         # Forming Teams
         team_list = list(range(6))
@@ -447,14 +467,22 @@ class FishGame(Game):
         cards = turn.get_cards()
         suit_set = {self.card_to_half_suit(card) for card in cards}
         # 6 cards, all same half suit, half suit unclaimed
-        return len(turn.transactions) == 6 and len(suit_set) == 1 and self.card_to_half_suit(cards[0]) in self.unclaimed
+        return len(turn.transactions) == 6 and \
+            len(suit_set) == 1 and \
+            self.card_to_half_suit(cards[0]) in self.unclaimed and \
+            all(self.player_status[trans.from_] == self.player_status[turn.player] for trans in turn.transactions) and \
+            all(trans.to_ == f"suits_{self.player_status[turn.player]}" for trans in turn.transactions)
     
     def is_valid_question(self, turn: Turn):
         player = self.players[self.current_player]
         card = turn.get_cards()[0]
         half_suit = self.card_to_half_suit(card)
-        # 1 card, player has suit, player doesn't have card
-        return len(turn.transactions) == 1 and half_suit in self.owner_half_suits[player] and card not in self.owners[player].get_cards()
+        return len(turn.transactions) == 1 and \
+            half_suit in self.owner_half_suits[player] and \
+            card not in self.owners[player].get_cards() and \
+            turn.transactions[0].from_ == player and \
+            turn.transactions[0].card in self.options_owner.get_cards() and \
+            self.player_status[turn.transactions[0].to_] != self.player_status[player]
     
     def to_game_state(self):
         game_state = super().to_game_state()

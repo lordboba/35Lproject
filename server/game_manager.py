@@ -49,6 +49,9 @@ class GameManager:
             raise ValueError(f"Unknown game type: {game_type}")
         self.tracker = tracker
         self.game_id = game_id
+        print(type(game_class))
+        #print(type(game_class(self,players)))
+        #print("grr")
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
         #print("yoo")

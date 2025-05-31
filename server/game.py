@@ -54,9 +54,9 @@ class Card():
 
 # Base Owner
 class Owner():
-    def __init__(self, cards: list[Card] = None):
+    def __init__(self, cards: list[Card] = None, is_player: bool = True):
         self.cards: list[Card] = cards
-        self.is_player: bool = False
+        self.is_player: bool = is_player
 
     def is_empty(self) -> bool:
         return len(self.cards) == 0
@@ -77,20 +77,21 @@ class Owner():
         return OwnerModel(cards=[card.to_model() for card in self.cards], is_player=self.is_player)
 
 class Transaction:
-    def __init__(self, card: Card = None, from_: str = None, to_: str = None):
+    def __init__(self, card: Card = None, from_: str = None, to_: str = None, success: bool = True):
         self.card = card
         self.from_ = from_
         self.to_ = to_
+        self.success = success
 
     def get_card(self) -> Card:
         return self.card
 
     def to_model(self) -> TransactionModel:
-        return TransactionModel(sender=self.from_, receiver=self.to_, card=self.card.to_model())
+        return TransactionModel(sender=self.from_, receiver=self.to_, card=self.card.to_model(), success=self.success)
     
     @classmethod
     def from_model(cls, model: TransactionModel):
-        return cls(Card.from_model(model.card),model.sender, model.receiver)
+        return cls(Card.from_model(model.card),model.sender, model.receiver, model.success)
 
 class Turn:
     def __init__(self, player_id: str, turn_type: int, transactions: list[Transaction]):
@@ -115,8 +116,8 @@ class Game():
         self.owners = owners
         self.cards = cards
         self.players = player_ids
-        self.current_player: int = None
-        self.last_turn: Turn = None
+        self.current_player: int = 0
+        self.last_turn: Turn = Turn("", 0, [])
         self.player_status = {player_id:0 for player_id in player_ids}
         self.belongs_to: dict[Card, str] = {}
         self.status = 0
@@ -134,7 +135,8 @@ class Game():
 
     async def play_turn(self, turn: Turn) -> bool:
         for trans in turn.transactions:
-            self.transact(trans)
+            if trans.success:
+                self.transact(trans)
         return True
 
     def to_game_state(self) -> GameStateModel:
@@ -145,6 +147,9 @@ class Game():
             if (self.belongs_to[trans.card] != trans.from_):
                 return False
         return True
+    
+    def log_state(self):
+        self.manager.log_state(self.to_game_state())
 
     async def broadcast_state(self):
         await self.manager.broadcast(self.to_game_state().dict())
@@ -207,12 +212,12 @@ class VietCongGame(Game):
 
         # Initializing Owners
         owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
-        owners["Pile"] = Owner([])
-        
-        # Set player with 3S to start
-        self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
+        owners["pile"] = Owner([], False)
 
         super().__init__(manager, owners, cards, players)   
+
+        # Set player with 3S to start
+        self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
 
     @staticmethod
     def is_multiple(cards: list[Card]) -> int:
@@ -265,7 +270,7 @@ class VietCongGame(Game):
     def valid_combo(self, cards: list[Card]):
         # Start of Round
         if self.current_combo_type == self.Combo.NONE:
-            combo = self.get_combo(self,cards)
+            combo = self.get_combo(cards)
             if combo != self.Combo.QUAD and combo.value < self.Combo.DB_SEQUENCE.value:
                 return combo
         
@@ -304,7 +309,7 @@ class VietCongGame(Game):
         return self.Combo.NONE
     
     def get_next_player(self) -> bool:
-        for i in range(3):
+        for i in range(1,4):
             next_player = (self.current_player+i)%4
             if self.player_status[self.players[next_player]] == 0 and self.places[next_player] == 4:
                 self.current_player = next_player
@@ -313,23 +318,32 @@ class VietCongGame(Game):
 
             
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
-        # Checks player has cards they are transferring
-        if not super().has_cards(self,turn):
-            return False
-
         # Player passes
         if turn.turn_type == 1:
+            if self.current_combo_type == self.Combo.NONE:
+                return False
+            
             self.player_status[turn.player] = 1
+
 
         # Player plays cards
         else:
-            cards = sorted(turn.transactions.get_cards(), key=VietCongGame.get_card_value)
+            # Checks player has cards they are transferring
+            if not super().has_cards(turn):
+                return False
+            
+            cards = sorted(turn.get_cards(), key=VietCongGame.get_card_value)
+
+            # Checks if 3 of Spades is played
+            if self.belongs_to[Card(3, Suit.SPADE)] != "pile" and Card(3, Suit.SPADE) not in cards:
+                return False
+
             combo = self.valid_combo(cards)
 
             if combo == self.Combo.NONE:
                 return False
             
-            await super().play_turn(self, turn)
+            await super().play_turn(turn)
             self.last_turn = Turn(turn.player, 0, [Transaction(card, turn.player, "pile") for card in cards])
             self.current_combo = cards
             self.current_combo_type = combo
@@ -339,6 +353,8 @@ class VietCongGame(Game):
                 # Game ends
                 if self.finished_players == 3:
                     self.status = 1
+                    for i in range(4):
+                        self.player_status[self.players[i]] = self.places[i]
                     await self.broadcast_state()
                     await self.manager.end_game({self.players[i]:self.places[i] for i in range(4)})
         
@@ -354,7 +370,7 @@ class VietCongGame(Game):
             self.current_player = self.players.index(self.last_turn.player)
 
             # Pass turn to next player if player finished
-            if self.places[self.current_player] != 0:
+            if self.places[self.current_player] != 4:
                 self.get_next_player()
         
         await self.broadcast_state()
@@ -389,8 +405,8 @@ class FishGame(Game):
         # Dealing Cards
         random.shuffle(cards)
         owners: dict[str, Owner] = {players[i]: Owner(cards[i*9:(i+1)*9]) for i in range(6)}
-        owners["suits_1"] = Owner([])
-        owners["suits_2"] = Owner([])
+        owners["suits_1"] = Owner([], False)
+        owners["suits_2"] = Owner([], False)
 
         self.owner_half_suits = {owner_id: self.cards_to_half_suit(owner.get_cards()) for owner_id, owner in self.owners.items()} # Half suits each owner has
         self.options_owner = Owner([])
@@ -456,11 +472,12 @@ class FishGame(Game):
     
     async def play_turn(self, turn: Turn) -> bool:
         # Question
-        if turn.turn_type == 0 and self.is_valid_question(turn):
-            if self.has_cards(turn):
-                await super().play_turn()
-            else:
+        if turn.turn_type == 0 and self.status == 0 and self.is_valid_question(turn):
+            # Unsuccessful Question
+            if not self.has_cards(turn):
                 self.current_player = self.players.index(turn.transactions[0].from_)
+                turn.transactions[0].success = False
+            await super().play_turn()
             self.options_owner = Owner(self.get_question_options())
             await super().broadcast_state()
             return True
@@ -478,15 +495,27 @@ class FishGame(Game):
             
             # Make Claim
             elif self.status == 2 and self.is_valid_claim(turn):
+                suit_team = turn.transactions[0].to_[-1]
+                # Unsuccessful Claim
                 if not self.has_cards(turn):
-                    opposite_team = f"suits_{self.player_status[turn.player]%2+1}"
-                    turn.transactions = [Transaction(trans.card,trans.from_,opposite_team) for trans in turn.transactions]
-                self.last_turn = turn
-                self.current_player = self.temp_current_player
-                self.options_owner = Owner(self.get_question_options())
-                self.status = 0
+                    suit_team = self.player_status[turn.player]%2+1
+                    for trans in turn.transactions:
+                        trans.success = False
+                    turn.transactions += [Transaction(trans.card,self.belongs_to[trans.card],f"suits_{suit_team}") for trans in turn.transactions]
                 await super().play_turn()
-                await super().broadcast_state()
+                self.last_turn = turn
+                # End Game
+                if len(self.owner_half_suits[turn.transactions[0].to_]) == 5:
+                    self.status = 1
+                    for i in range(6):
+                        self.player_status[self.plaaddyers[i]] = suit_team == self.player_status[self.players[i]]
+                    await super().broadcast_state()
+                    await self.manager.end_game({self.players[i]:self.player_status[self.players[i]] for i in range(6)})
+                else:
+                    self.current_player = self.temp_current_player
+                    self.options_owner = Owner(self.get_question_options())
+                    self.status = 0
+                    await super().broadcast_state()
                 return True
 
         return False

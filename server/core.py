@@ -42,6 +42,7 @@ class TransactionModel(BaseModel):
     sender: str = Field(...)
     receiver: str = Field(...)
     card: CardModel = Field(...)
+    success: bool = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True
@@ -54,20 +55,6 @@ class TurnModel(BaseModel):
     player: str = Field(...)
     transactions: List[TransactionModel] = Field(default_factory=list)
     type: int = Field(...)
-
-class ReplayModel(BaseModel):
-    """
-    Container for a single replay.
-    """
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    name: str = Field(...)
-    players: Dict[PyObjectId,int] = Field(default_factory=dict)
-    turns: List[TurnModel] = Field(default_factory=list)
-    timestamp: int = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True
-    )
 
 class UserModel(BaseModel):
     """
@@ -155,3 +142,17 @@ class GameStateModel(BaseModel):
     last_turn: Optional[TurnModel]
     player_status: Dict[str, int]
     status: int
+
+class ReplayModel(BaseModel):
+    """
+    Container for a single replay.
+    """
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    name: str = Field(...)
+    players: Dict[PyObjectId,int] = Field(default_factory=dict)
+    game_states: List[GameStateModel] = Field(default_factory=list)
+    timestamp: int = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True
+    )

@@ -221,7 +221,7 @@ class VietCongGame(Game):
         owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
         owners["pile"] = Owner([], False)
 
-        super().__init__(manager, owners, cards, players)   
+        super().__init__(manager, owners, cards, players)
 
         # Set player with 3S to start
         self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
@@ -380,6 +380,10 @@ class VietCongGame(Game):
         # Player plays cards
         else:
             print(f"play_turn called by {turn.player} with turn_type {turn.turn_type}, cards: {getattr(turn, 'cards', None)}")
+            # Checks player has cards they are transferring
+            if not super().has_cards(turn):
+                return False
+            
             cards = sorted(turn.get_cards(), key=VietCongGame.get_card_value)
             print(f"{turn.player} is trying to play: {cards}")
 

@@ -61,9 +61,9 @@ class Card():
 
 # Base Owner
 class Owner():
-    def __init__(self, cards: list[Card] = None):
+    def __init__(self, cards: list[Card] = None, is_player: bool = True):
         self.cards: list[Card] = cards
-        self.is_player: bool = False
+        self.is_player: bool = is_player
 
     def is_empty(self) -> bool:
         return len(self.cards) == 0
@@ -84,20 +84,21 @@ class Owner():
         return OwnerModel(cards=[card.to_model() for card in self.cards], is_player=self.is_player)
 
 class Transaction:
-    def __init__(self, card: Card = None, from_: str = None, to_: str = None):
+    def __init__(self, card: Card = None, from_: str = None, to_: str = None, success: bool = True):
         self.card = card
         self.from_ = from_
         self.to_ = to_
+        self.success = success
 
     def get_card(self) -> Card:
         return self.card
 
     def to_model(self) -> TransactionModel:
-        return TransactionModel(sender=self.from_, receiver=self.to_, card=self.card.to_model())
+        return TransactionModel(sender=self.from_, receiver=self.to_, card=self.card.to_model(), success=self.success)
     
     @classmethod
     def from_model(cls, model: TransactionModel):
-        return cls(Card.from_model(model.card),model.sender, model.receiver)
+        return cls(Card.from_model(model.card),model.sender, model.receiver, model.success)
 
 class Turn:
     def __init__(self, player_id: str, turn_type: int, transactions: list[Transaction]):
@@ -122,8 +123,8 @@ class Game():
         self.owners = owners
         self.cards = cards
         self.players = player_ids
-        self.current_player: int = None
-        self.last_turn: Turn = None
+        self.current_player: int = 0
+        self.last_turn: Turn = Turn("", 0, [])
         self.player_status = {player_id:0 for player_id in player_ids}
         self.belongs_to: dict[Card, str] = {}
         self.status = 0
@@ -141,7 +142,8 @@ class Game():
 
     async def play_turn(self, turn: Turn) -> bool:
         for trans in turn.transactions:
-            self.transact(trans)
+            if trans.success:
+                self.transact(trans)
         return True
 
     def to_game_state(self) -> GameStateModel:
@@ -152,6 +154,9 @@ class Game():
             if (self.belongs_to[trans.card] != trans.from_):
                 return False
         return True
+    
+    def log_state(self):
+        self.manager.log_state(self.to_game_state())
 
     async def broadcast_state(self):
         await self.manager.broadcast(self.to_game_state().dict())
@@ -214,23 +219,18 @@ class VietCongGame(Game):
 
         # Initializing Owners
         owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
-        owners["Pile"] = Owner([])
-        
-        # Set player with 3S to start
-        self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
+        owners["pile"] = Owner([], False)
 
         super().__init__(manager, owners, cards, players)   
 
         # Set player with 3S to start
         self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
 
-        super().__init__(manager, owners, cards, players)   
+        super().__init__(manager, owners, cards, players)
 
         # Initializing Owners
         owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
         owners["pile"] = Owner([], False)
-
-        super().__init__(manager, owners, cards, players)
 
         # Set player with 3S to start
         self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
@@ -312,7 +312,7 @@ class VietCongGame(Game):
     def valid_combo(self, cards: list[Card]):
         # Start of Round
         if self.current_combo_type == self.Combo.NONE:
-            combo = self.get_combo(self,cards)
+            combo = self.get_combo(cards)
             if combo != self.Combo.QUAD and combo.value < self.Combo.DB_SEQUENCE.value:
                 return combo
         
@@ -351,7 +351,7 @@ class VietCongGame(Game):
         return self.Combo.NONE
     
     def get_next_player(self) -> bool:
-        for i in range(3):
+        for i in range(1,4):
             next_player = (self.current_player+i)%4
             if self.player_status[self.players[next_player]] == 0 and self.places[next_player] == 4:
                 self.current_player = next_player
@@ -369,10 +369,6 @@ class VietCongGame(Game):
         return game_state
             
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
-        # Checks player has cards they are transferring
-        if not super().has_cards(self,turn):
-            return False
-
         # Player passes
         if turn.turn_type == 1:
             if self.current_combo_type == self.Combo.NONE:

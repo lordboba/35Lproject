@@ -9,8 +9,81 @@ function card(cardname){
 function cardClicked(cardname){
   console.log(cardname + "clicked")
 }
+function otherPlayer(number = 1, moving = false) {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      position: 'relative',
+    }}>
+        <img
+          src={"/src/assets/backicon.svg"}
+          alt="card back"
+          style={{
+            width: '15vw',
+            height: '15vh',
+            display: 'block',
+          }}
+        />
+        <span
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            fontSize: '4vh',
+            fontWeight: 'bold',
+            pointerEvents: 'none',
+          }}
+        >
+          {number}
+        </span>
 
-function currentPlayerCards(cardlist){
+      {moving && (
+        <div style={{
+          width: '150%',
+          color: '#FFF',
+          fontSize: '1.5vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+        }}>
+          current move
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getAllOtherPlayers(playerList){
+  let others = []
+  others.push(otherPlayer(playerList[0], false))
+  others.push(otherPlayer(playerList[1], false))
+  others.push(otherPlayer(playerList[2], true))
+  others.push(otherPlayer(playerList[3], false))
+  return <div
+style={{
+  maxHeight: '30vh',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '5vh',
+  alignItems: 'center',
+  overflowY: 'scroll',
+  scrollbarWidth: 'thin', 
+  msOverflowStyle: 'auto' 
+}}
+>
+  {others}
+</div>
+
+}
+
+function currentPlayerCards(cards){
+  let cardlist = []
+  cards.forEach(cardname => {
+    cardlist.push(card(cardname))
+  })
 return <div
 style={{
   maxWidth: '80vw',
@@ -18,9 +91,9 @@ style={{
   gap: '3vw',
   alignItems: 'center',
   overflowX: 'scroll',
-  border: "1px solid #ddd",
-  scrollbarWidth: 'thin', // for Firefox
-  msOverflowStyle: 'auto' // for IE and Edge
+
+  scrollbarWidth: 'thin', 
+  msOverflowStyle: 'auto' 
 }}
 >
   {cardlist}
@@ -28,61 +101,37 @@ style={{
 }
 function Game() {
   const [games, setGames] = useState([]);
-  let cardlist = []
-  cardlist.push(card("2C"))
-  cardlist.push(card("2D"))
-  cardlist.push(card("3C"))
-  cardlist.push(card("3D"))
-  cardlist.push(card("4C"))
-  cardlist.push(card("4D"))
-  cardlist.push(card("5C"))
-  cardlist.push(card("5D"))
-  cardlist.push(card("6C"))
-  cardlist.push(card("6D"))
-  cardlist.push(card("7C"))
-  cardlist.push(card("7D"))
-  cardlist.push(card("8C"))
-  cardlist.push(card("9C"))
-  cardlist.push(card("2C"))
-  cardlist.push(card("2D"))
-  cardlist.push(card("3C"))
-  cardlist.push(card("3D"))
-  cardlist.push(card("4C"))
-  cardlist.push(card("4D"))
-  cardlist.push(card("5C"))
-  cardlist.push(card("5D"))
-  cardlist.push(card("6C"))
-  cardlist.push(card("6D"))
-  cardlist.push(card("7C"))
-  cardlist.push(card("7D"))
-  cardlist.push(card("8C"))
-  cardlist.push(card("9C"))
-  cardlist.push(card("9D"))
-  cardlist.push(card("JC"))
-  cardlist.push(card("JD"))
-  cardlist.push(card("QC"))
-  
-  cardlist.push(card("QD"))
+  let cardlist = ["2C", "2D", "3C", "3D", "4C", "4D", "5C", "5D", "6C", "6D", "7C", "7D", "8C", "8D", "9C", "9D", "JC", "JD", "QC", "QD", "KC", "KD", "AC", "AD"]
+
 
   return (
-    <>
-    <div style={{width: "100%", height: "50vh", display: "flex", justifyContent: "center", alignItems: "center"}}>  
+      <>
+      <div style={{width: "100%", height: "50vh", display: "flex", justifyContent: "center", alignItems: "center"}}>  
 
-    <img
-        src={"/src/assets/table.svg"}
-        alt="table"
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      />
-    </div>
-    <div style={{paddingTop: "5vh", width: "100%"}}>
+      <img
+          src={"/src/assets/table.svg"}
+          alt="table"
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+        />
+      </div>
+      <div style={{paddingTop: "5vh", width: "100%"}}>
 
-      {currentPlayerCards(cardlist)}
-    </div>
-     
-    </>
+        {currentPlayerCards(cardlist)}
+      </div>
+      <div style={{
+        paddingTop: "5vh",
+        width: "100%",
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "flex-start",
+
+      }}>
+        {getAllOtherPlayers([1,2,3,4])}
+      </div>
+      </>
   );
 }
 

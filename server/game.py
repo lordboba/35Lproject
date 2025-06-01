@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from enum import Enum
 from core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel
+from core import user_collection
+from bson import ObjectId
 import random
 
 GAME_RULES = {
@@ -570,6 +572,22 @@ class FishGame(Game):
         cards = set(self.half_suits_cards(self.owner_half_suits[player]))
         return list(cards.difference(set(self.owners[player].get_cards())))
     
+    async def update_fish_stats(self, results: dict[str, bool]):
+        for user_id, won in results.items():
+            print(f"Updating stats for {user_id}: won = {won}")
+            await user_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {
+                    "$inc": 
+                    {
+                        "stats.fish.games": 1,
+                        "stats.fish.wins": int(won),
+                        "stats.fish.claims": 1,
+                        "stats.fish.successful_claims": int(won),
+                    }
+                }
+            )
+
     def is_unclaimed(self,card: Card):
         return self.belongs_to[card] not in ["suits_1","suits_2"]
 
@@ -615,7 +633,9 @@ class FishGame(Game):
                     for i in range(6):
                         self.player_status[self.players[i]] = suit_team == self.player_status[self.players[i]]
                     await super().broadcast_state()
-                    await self.manager.end_game({self.players[i]:self.player_status[self.players[i]] for i in range(6)})
+                    results = {self.players[i]: self.player_status[self.players[i]] for i in range(6)}
+                    await self.update_fish_stats(results)
+                    await self.manager.end_game(results)
                 else:
                     self.current_player = self.temp_current_player
                     self.options_owner = Owner(self.get_question_options(), False)

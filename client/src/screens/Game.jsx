@@ -78,7 +78,7 @@ style={{
 function currentPlayerCards(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10vw", height: "10vh", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />)
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "8%", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />)
   })
 return <div
 style={{
@@ -99,7 +99,7 @@ style={{
 function lastCombo(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "25hw", height: "25vh", display: "flex", gap: "0px"}} alt={cardname}/>)
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "20%", display: "flex", gap: "0px"}} alt={cardname}/>)
   })
   return <div
   style={{
@@ -124,25 +124,26 @@ function Game() {
 
   return (
       <>
-      <div style={{width: "100%", height: "50vh", display: "flex", justifyContent: "center", alignItems: "center"}}>  
-
-      <img
-          src={"/src/assets/table.svg"}
-          alt="table"
-          style={{
-            width: "70%",
-            height: "70%",
-            position: "absolute",
-          }}
-        />
-         <div style={{paddingTop: "5vh", width: "100%", zIndex:100, position: "absolute"}}>
-        {lastCombo(lastPlayedCards)}
-      </div>
-      </div>
+        <div style={{width: "100%", height: "50vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "5%", position: "relative"}}>
+          <img
+            src={"/src/assets/table.svg"}
+            alt="table"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 0
+            }}
+          />
+          <div style={{width: "100%", height: "100%", position: "absolute", top: 0, left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex:100}}>
+            {lastCombo(lastPlayedCards)}
+          </div>
+        </div>
 
      
-      <div style={{paddingTop: "5vh", width: "100%"}}>
-
+      <div style={{width: "100%"}}>
         {currentPlayerCards(cardlist)}
       </div>
       <div style={{

@@ -2,75 +2,73 @@ import React, { useState, useEffect } from 'react';
 
 import { Link } from 'react-router-dom';
 
-// function getCard(cardname){
-//   return <img src={`/src/assets/${cardname}icon.svg`} style={{width: "20vw"}} alt={cardname} />
-// }
+function card(cardname){
+  return <img src={`/src/assets/${cardname}icon.svg`} style={{width: "10vw", height: "10vh", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />
+}
 
-// function currentPlayerCards(cardlist){
-// return <div
-// style={{
-//   position: 'absolute',
-//   left: '10vw',
-//   top: '90%',
-//   transform: 'translateY(-50%)',
-//   width: '80vw',
-//   display: 'flex',
-//   justifyContent: 'space-between',
-//   alignItems: 'center',
-//   pointerEvents: 'none',
-// }}
-// >
-//   {cardlist}
-// </div>
-// }
+function cardClicked(cardname){
+  console.log(cardname + "clicked")
+}
+
+function currentPlayerCards(cardlist){
+return <div
+style={{
+  maxWidth: '80vw',
+  display: 'inline-flex',
+  gap: '3vw',
+  alignItems: 'center',
+  overflowX: 'scroll',
+  border: "1px solid #ddd",
+  scrollbarWidth: 'thin', // for Firefox
+  msOverflowStyle: 'auto' // for IE and Edge
+}}
+>
+  {cardlist}
+</div>
+}
 function Game() {
   const [games, setGames] = useState([]);
-  // useEffect(() => {
-  //   // Create WebSocket connection to the lobby endpoint
-  //   const ws = new WebSocket(`ws://localhost:8000/game/ws/${game_id}`);
-  //
-  //   ws.onopen = () => {
-  //       console.log('Connected to lobby WebSocket');
-  //       setWebsocket(ws);
-  //   };
+  let cardlist = []
+  cardlist.push(card("2C"))
+  cardlist.push(card("2D"))
+  cardlist.push(card("3C"))
+  cardlist.push(card("3D"))
+  cardlist.push(card("4C"))
+  cardlist.push(card("4D"))
+  cardlist.push(card("5C"))
+  cardlist.push(card("5D"))
+  cardlist.push(card("6C"))
+  cardlist.push(card("6D"))
+  cardlist.push(card("7C"))
+  cardlist.push(card("7D"))
+  cardlist.push(card("8C"))
+  cardlist.push(card("9C"))
+  cardlist.push(card("2C"))
+  cardlist.push(card("2D"))
+  cardlist.push(card("3C"))
+  cardlist.push(card("3D"))
+  cardlist.push(card("4C"))
+  cardlist.push(card("4D"))
+  cardlist.push(card("5C"))
+  cardlist.push(card("5D"))
+  cardlist.push(card("6C"))
+  cardlist.push(card("6D"))
+  cardlist.push(card("7C"))
+  cardlist.push(card("7D"))
+  cardlist.push(card("8C"))
+  cardlist.push(card("9C"))
+  cardlist.push(card("9D"))
+  cardlist.push(card("JC"))
+  cardlist.push(card("JD"))
+  cardlist.push(card("QC"))
+  
+  cardlist.push(card("QD"))
 
-  //   ws.onmessage = (event) => {
-  //       try {
-  //           const gamesList = JSON.parse(event.data);
-  //           setGames(gamesList);
-  //           console.log('Received games list:', gamesList);
-  //       } catch (error) {
-  //           console.error('Error parsing WebSocket message:', error);
-  //       }
-  //   };
-
-  //   ws.onclose = () => {
-  //       console.log('WebSocket connection closed');
-  //       setWebsocket(null);
-  //   };
-
-  //   ws.onerror = (error) => {
-  //       console.error('WebSocket error:', error);
-  //   };
-
-  //   // Cleanup function to close WebSocket when component unmounts
-  //   return () => {
-  //       if (ws.readyState === WebSocket.OPEN) {
-  //           ws.close();
-  //       }
-  //   };
-  //}, []);
-  // let cardlist = []
-  // cardlist.push(otherPlayer(1, true))
-  // cardlist.push(otherPlayer(2, false))
-  // cardlist.push(otherPlayer(3, false))
-  // cardlist.push(otherPlayer(4, true))
-  // cardlist.push(otherPlayer(1, true))
-  // cardlist.push(otherPlayer(29, false))
-  // cardlist.push(otherPlayer(3, false))
   return (
     <>
-      <img
+    <div style={{width: "100%", height: "50vh", display: "flex", justifyContent: "center", alignItems: "center"}}>  
+
+    <img
         src={"/src/assets/table.svg"}
         alt="table"
         style={{
@@ -78,6 +76,12 @@ function Game() {
           height: "100%",
         }}
       />
+    </div>
+    <div style={{paddingTop: "5vh", width: "100%"}}>
+
+      {currentPlayerCards(cardlist)}
+    </div>
+     
     </>
   );
 }

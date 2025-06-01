@@ -99,7 +99,7 @@ style={{
 function lastCombo(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "25hw", height: "25vh", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />)
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "25hw", height: "25vh", display: "flex", gap: "0px"}} alt={cardname}/>)
   })
   return <div
   style={{
@@ -120,7 +120,7 @@ function lastCombo(cards){
 function Game() {
   const [games, setGames] = useState([]);
   let cardlist = ["2C", "2D", "3C", "3D", "4C", "4D", "5C", "5D", "6C", "6D", "7C", "7D", "8C", "8D", "9C", "9D", "JC", "JD", "QC", "QD", "KC", "KD", "AC", "AD"]
-
+  let lastPlayedCards = ["3C","4C","5C","6C","7C","8C","9C","JC","QC","KC","AC"]
 
   return (
       <>
@@ -136,7 +136,7 @@ function Game() {
           }}
         />
          <div style={{paddingTop: "5vh", width: "100%", zIndex:100, position: "absolute"}}>
-        {lastCombo(["3C","4C","5C","6C","7C"])}
+        {lastCombo(lastPlayedCards)}
       </div>
       </div>
 

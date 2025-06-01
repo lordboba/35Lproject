@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="4381.8237" height="1882.5405" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 4381.8237 1882.5405">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-2 {
+        fill: #6b513b;
+      }
+
+      .cls-3 {
+        fill: #826248;
+      }
+
+      .cls-4 {
+        fill: #6b4524;
+      }
+
+      .cls-5 {
+        fill: #70553d;
+      }
+
+      .cls-6 {
+        fill: #594431;
+      }
+
+      .cls-7 {
+        fill: #785b42;
+      }
+
+      .cls-8 {
+        fill: url(#New_Pattern_7);
+      }
+    </style>
+    <pattern id="New_Pattern_7" data-name="New Pattern 7" x="0" y="0" width="729.9133" height="600.431" patternTransform="translate(-2384.439 -5261.8657)" patternUnits="userSpaceOnUse" viewBox="0 0 729.9133 600.431">
+      <g>
+        <rect class="cls-1" width="729.9133" height="600.431"/>
+        <g>
+          <rect class="cls-2" x="-.0002" y="584.7888" width="182.4783" height="631.7155"/>
+          <rect class="cls-4" x="182.4781" y="268.9311" width="182.4783" height="631.7155"/>
+          <rect class="cls-3" x="364.9564" y="584.7888" width="182.4783" height="631.7155"/>
+          <rect class="cls-5" x="547.4348" y="268.9311" width="182.4783" height="631.7155"/>
+        </g>
+        <g>
+          <rect class="cls-2" x="-.0002" y="-15.6422" width="182.4783" height="631.7155"/>
+          <rect class="cls-6" x="182.4781" y="300.2156" width="182.4783" height="631.7155"/>
+          <rect class="cls-4" x="182.4781" y="-331.4999" width="182.4783" height="631.7155"/>
+          <rect class="cls-3" x="364.9564" y="-15.6422" width="182.4783" height="631.7155"/>
+          <rect class="cls-7" x="547.4348" y="300.2156" width="182.4783" height="631.7155"/>
+          <rect class="cls-5" x="547.4348" y="-331.4999" width="182.4783" height="631.7155"/>
+        </g>
+        <g>
+          <rect class="cls-2" x="-.0002" y="-616.0732" width="182.4783" height="631.7155"/>
+          <rect class="cls-6" x="182.4781" y="-300.2154" width="182.4783" height="631.7155"/>
+          <rect class="cls-3" x="364.9564" y="-616.0732" width="182.4783" height="631.7155"/>
+          <rect class="cls-7" x="547.4348" y="-300.2154" width="182.4783" height="631.7155"/>
+        </g>
+      </g>
+    </pattern>
+  </defs>
+  <g id="Layer_12" data-name="Layer 12">
+    <rect class="cls-8" x="-313.0772" y="-164.1321" width="4993.7658" height="3947.8559" rx="262.0109" ry="262.0109"/>
+  </g>
+</svg>

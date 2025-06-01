@@ -94,6 +94,8 @@ class FishStatsModel(BaseModel):
     claims: int = Field(default=0)
     successful_claims: int = Field(default=0)
 
+# Users
+
 class UserModel(BaseModel):
     """
     Container for a single user record.

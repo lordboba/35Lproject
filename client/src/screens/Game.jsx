@@ -60,14 +60,14 @@ function getAllOtherPlayers(playerList){
   others.push(otherPlayer(playerList[3], false))
   return <div
 style={{
-  maxHeight: '30vh',
+  maxWidth: '80%',
   display: 'flex',
-  flexDirection: 'column',
-  gap: '5vh',
+  flexDirection: 'row',
+  gap: '5%',
   alignItems: 'center',
-  overflowY: 'scroll',
-  scrollbarWidth: 'thin', 
-  msOverflowStyle: 'auto' 
+  overflowX: 'scroll',
+  scrollbarWidth: 'thin',
+  msOverflowStyle: 'auto'
 }}
 >
   {others}
@@ -87,8 +87,7 @@ style={{
   gap: '3vw',
   alignItems: 'center',
   overflowX: 'scroll',
-
-  scrollbarWidth: 'thin', 
+  scrollbarWidth: 'thin',
   msOverflowStyle: 'auto' 
 }}
 >
@@ -99,11 +98,11 @@ style={{
 function lastCombo(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "20%", display: "flex", gap: "0px"}} alt={cardname}/>)
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10%", display: "flex", gap: "0px"}} alt={cardname}/>)
   })
   return <div
   style={{
-    maxWidth: '60vw',
+    maxWidth: '80%',
     display: 'inline-flex',
     gap: '3vw',
     alignItems: 'center',
@@ -124,6 +123,13 @@ function Game() {
 
   return (
       <>
+        <div style={{
+               paddingBottom: "10px",
+               width: "100%",
+             }}>
+          {getAllOtherPlayers([1,2,3,4])}
+        </div>
+
         <div style={{width: "100%", height: "50vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "5%", position: "relative"}}>
           <img
             src={"/src/assets/table.svg"}
@@ -151,19 +157,6 @@ function Game() {
             <button style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}>Play</button>
             <button style={{ padding: '1vh 2vw', fontSize: '5vh' }}>Pass</button>
             </div>
-
-
-      <div style={{
-        paddingTop: "5vh",
-        width: "100%",
-        display: "flex",
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-
-      }}>
-        {getAllOtherPlayers([1,2,3,4])}
-      </div>
-
       </>
   );
 }

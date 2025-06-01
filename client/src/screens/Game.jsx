@@ -97,33 +97,40 @@ function otherPlayer(number = 1, moving = false) {
     </div>
   );
 }
+function currentPlayerCards(cardlist){
+
+
+return <div
+style={{
+  position: 'absolute',
+  left: '10vw', 
+  top: '90%',
+  transform: 'translateY(-50%)',
+  width: '80vw',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  pointerEvents: 'none',
+}}
+>
+  {cardlist}
+</div>
+}
 function Game() {
   const [games, setGames] = useState([]);
   const [websocket, setWebsocket] = useState(null);
-
+  let cardlist = []
+  cardlist.push(otherPlayer(1, true))
+  cardlist.push(otherPlayer(2, false))
+  cardlist.push(otherPlayer(3, false))
+  cardlist.push(otherPlayer(4, true))
+  cardlist.push(otherPlayer(1, true))
+  cardlist.push(otherPlayer(2, false))
+  cardlist.push(otherPlayer(3, false))
   return (
     <div style={{width: "80vw", height: "80vh", display: "flex", justifyContent: "center", alignItems: "center"}}>
       {table()}
-      <div
-        style={{
-          position: 'absolute',
-          left: '10vw', 
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: '80vw',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        {otherPlayer(1, true)}
-        {otherPlayer(2, false)}
-        {otherPlayer(3, false)}
-        {otherPlayer(4, true)}
-  
-        {otherPlayer(16)}
-      </div>
+      {currentPlayerCards(cardlist)}
     </div>
   );
 }

@@ -658,7 +658,7 @@ class FishGame(Game):
                         self.player_status[self.players[i]] = suit_team == self.player_status[self.players[i]]
                     await super().broadcast_state()
                     results = {self.players[i]: self.player_status[self.players[i]] for i in range(6)}
-                    await self.update_fish_stats(turn.player, int(suit_team))
+                    await self.update_fish_stats(results)
                     await self.manager.end_game(results)
                 else:
                     self.current_player = self.temp_current_player

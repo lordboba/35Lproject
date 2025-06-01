@@ -141,11 +141,18 @@ function Game() {
             {lastCombo(lastPlayedCards)}
           </div>
         </div>
-
+           
      
       <div style={{width: "100%"}}>
         {currentPlayerCards(cardlist)}
       </div>
+
+      <div>
+            <button style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}>Play</button>
+            <button style={{ padding: '1vh 2vw', fontSize: '5vh' }}>Pass</button>
+            </div>
+
+
       <div style={{
         paddingTop: "5vh",
         width: "100%",
@@ -156,6 +163,7 @@ function Game() {
       }}>
         {getAllOtherPlayers([1,2,3,4])}
       </div>
+
       </>
   );
 }

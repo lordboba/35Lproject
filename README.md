@@ -21,9 +21,10 @@ And you should have a local version of the backend running!
 4. To run the frontend, follow these steps:
     ```bash
     chmod +x frontend
+    export VITE_FIREBASE_API_KEY=[INSERT FIREBASE API KEY]
     ./frontend
     ```
-    You will be prompted to enter your Firebase API Key. This key is necessary for the application to connect to Firebase services.
+    The Firebase API key is necessary for the application to connect to Firebase services.
 
 And you should have a local version of the frontend running!
 

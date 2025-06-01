@@ -82,7 +82,7 @@ function currentPlayerCards(cards){
   })
 return <div
 style={{
-  maxWidth: '80vw',
+  maxWidth: '60%',
   display: 'inline-flex',
   gap: '3vw',
   alignItems: 'center',
@@ -130,13 +130,13 @@ function Game() {
           {getAllOtherPlayers([1,2,3,4])}
         </div>
 
-        <div style={{width: "100%", height: "50vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "5%", position: "relative"}}>
+        <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "5%", position: "relative"}}>
           <img
             src={"/src/assets/table.svg"}
             alt="table"
             style={{
               width: "100%",
-              height: "100%",
+              height: "90%",
               position: "absolute",
               top: 0,
               left: 0,

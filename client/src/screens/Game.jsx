@@ -104,12 +104,26 @@ function Game() {
   return (
     <div style={{width: "80vw", height: "80vh", display: "flex", justifyContent: "center", alignItems: "center"}}>
       {table()}
-      {otherPlayer(1, true)}
-      {otherPlayer(2, false)}
-      {otherPlayer(3, false)}
-      {otherPlayer(4, true)}
-      {otherPlayer(5, false)}
-      {otherPlayer(16)}
+      <div
+        style={{
+          position: 'absolute',
+          left: '10vw', 
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '80vw',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          pointerEvents: 'none',
+        }}
+      >
+        {otherPlayer(1, true)}
+        {otherPlayer(2, false)}
+        {otherPlayer(3, false)}
+        {otherPlayer(4, true)}
+  
+        {otherPlayer(16)}
+      </div>
     </div>
   );
 }

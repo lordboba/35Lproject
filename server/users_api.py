@@ -301,7 +301,7 @@ async def list_games():
     response_model=GameModel,
     response_model_by_alias=False,
 )
-async def create_game(game: GameCreateModel):
+async def create_game(game: GameCreateModel, tracker: GameTracker = Depends(get_tracker)):
     """
     Create a new game.
     """
@@ -312,6 +312,10 @@ async def create_game(game: GameCreateModel):
     new_game = await game_collection.find_one({"_id": result.inserted_id})
     # Convert to GameModel to ensure proper ObjectId serialization
     game_model = GameModel(**new_game)
+    
+    # Broadcast to lobby that a new game was created
+    await tracker.lobby_websocket_manager.broadcast("lobby", {})
+    
     return game_model.model_dump(by_alias=True)
 
 @router.get("/games/{game_id}/get_game",
@@ -337,7 +341,7 @@ async def get_game_by_id(game_id: str):
     response_model=GameModel,
     response_model_by_alias=False,
 )
-async def add_user_to_game(game_id: str, user_id: str):
+async def add_user_to_game(game_id: str, user_id: str, tracker: GameTracker = Depends(get_tracker)):
     """
     Add a user to the game's players list.
     """
@@ -358,6 +362,13 @@ async def add_user_to_game(game_id: str, user_id: str):
     updated_game = await game_collection.find_one({"_id": ObjectId(game_id)})
     # Convert to GameModel to ensure proper ObjectId serialization
     game_model = GameModel(**updated_game)
+    
+    # Broadcast the updated game data to all waiting room clients for this game
+    await tracker.waiting_websocket_manager.broadcast(game_id, game_model.model_dump(by_alias=True))
+    
+    # Also broadcast to lobby to update player counts
+    await tracker.lobby_websocket_manager.broadcast("lobby", {})
+    
     return game_model.model_dump(by_alias=True)
 
 
@@ -367,7 +378,7 @@ async def add_user_to_game(game_id: str, user_id: str):
     response_model=GameModel,
     response_model_by_alias=False,
 )
-async def remove_user_from_game(game_id: str, user_id: str):
+async def remove_user_from_game(game_id: str, user_id: str, tracker: GameTracker = Depends(get_tracker)):
     """
     Remove a user from the game's players list.
     """
@@ -385,6 +396,13 @@ async def remove_user_from_game(game_id: str, user_id: str):
     updated_game = await game_collection.find_one({"_id": ObjectId(game_id)})
     # Convert to GameModel to ensure proper ObjectId serialization
     game_model = GameModel(**updated_game)
+    
+    # Broadcast the updated game data to all waiting room clients for this game
+    await tracker.waiting_websocket_manager.broadcast(game_id, game_model.model_dump(by_alias=True))
+    
+    # Also broadcast to lobby to update player counts
+    await tracker.lobby_websocket_manager.broadcast("lobby", {})
+    
     return game_model.model_dump(by_alias=True)
 
 @router.patch(
@@ -406,6 +424,9 @@ async def start_game(game_id: str, tracker: GameTracker = Depends(get_tracker)):
     tracker.create_game(game_id, game["name"], game["type"], list(map(str,game["players"])))
 
     await game_collection.delete_one({"_id": ObjectId(game_id)})
+    
+    # Broadcast to lobby that a game was started (removed from available games)
+    await tracker.lobby_websocket_manager.broadcast("lobby", {})
 
 @router.patch(
     "/games/{game_id}/play",
@@ -429,13 +450,15 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
     response_description="Delete game",
     status_code=204,
 )
-async def delete_game(game_id: str):
+async def delete_game(game_id: str, tracker: GameTracker = Depends(get_tracker)):
     """
     Delete a game from the database.
     """
     delete_result = await game_collection.delete_one({"_id": ObjectId(game_id)})
 
     if delete_result.deleted_count == 1:
+        # Broadcast to lobby that a game was deleted
+        await tracker.lobby_websocket_manager.broadcast("lobby", {})
         return {}
 
     raise HTTPException(status_code=404, detail=f"Game {game_id} not found")
@@ -456,6 +479,9 @@ async def delete_all_games(tracker: GameTracker = Depends(get_tracker)):
     active_game_ids = list(tracker.games.keys())
     for game_id in active_game_ids:
         tracker.delete_game(game_id)
+    
+    # Broadcast to lobby that all games were deleted
+    await tracker.lobby_websocket_manager.broadcast("lobby", {})
     
     return {}
 

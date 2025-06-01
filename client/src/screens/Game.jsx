@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { auth } from '../firebase';
 import './Game.css';
 
@@ -8,6 +8,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 function Game() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { backendUser } = useOutletContext();
     const [currentUser, setCurrentUser] = useState(null);
     const [gameId, setGameId] = useState(null);
     const [gameName, setGameName] = useState('');
@@ -86,8 +87,16 @@ function Game() {
     const fetchGameDetails = async (id) => {
         try {
             setLoading(true);
-            // This would typically fetch game details like name, type, etc.
-            // For now, we'll assume this is handled elsewhere or not needed yet
+            const response = await fetch(`${API_BASE_URL}/games/${id}/get_game`);
+            if (response.ok) {
+                const gameData = await response.json();
+                setGameName(gameData.name || '');
+                setGameType(gameData.type || '');
+                setUsers(gameData.players || []);
+            } else {
+                console.error('Failed to fetch game details:', response.statusText);
+                setError('Failed to load game details');
+            }
             setLoading(false);
         } catch (err) {
             console.error('Error fetching game details:', err);
@@ -121,17 +130,17 @@ function Game() {
         
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log('Received updated users:', data);
+            console.log('Received updated game data:', data);
             
+            // Update game data from WebSocket message
             if (data.players) {
                 setUsers(data.players);
-                
-                // Check if game can start based on the number of users
-                // This logic would depend on the game type
-                // For simplicity, we'll assume 2+ players means the game can start
-                if (data.users.length >= 2) {
-                    // Enable the start button (logic handled in the UI)
-                }
+            }
+            if (data.name) {
+                setGameName(data.name);
+            }
+            if (data.type) {
+                setGameType(data.type);
             }
         };
         
@@ -156,8 +165,44 @@ function Game() {
     
     // Function to leave the waiting room
     const handleLeaveGame = async () => {
-        // Implement logic to remove user from the game
-        // For now, just navigate back to the main screen
+        try {
+            // Get the current user's backend ID
+            let userObjectId = null;
+            
+            // Try to get from context first
+            if (backendUser && backendUser.id) {
+                userObjectId = backendUser.id;
+            } else if (currentUser) {
+                // Fallback: fetch user data by Firebase UID to get MongoDB ObjectId
+                const userResponse = await fetch(`${API_BASE_URL}/users/initialize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ firebase_uid: currentUser.uid })
+                });
+                
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    userObjectId = userData.id;
+                }
+            }
+            
+            // Remove user from the game if we have their ID
+            if (userObjectId && gameId) {
+                await fetch(`${API_BASE_URL}/games/${gameId}/remove_user/${userObjectId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error leaving game:', error);
+            // Continue with navigation even if the API call fails
+        }
+        
+        // Close WebSocket connection and navigate away
         if (websocket) {
             websocket.close();
         }
@@ -203,8 +248,7 @@ function Game() {
             ) : (
                 <>
                     <div className="game-info">
-                        <h2>Game ID: {gameId}</h2>
-                        {gameName && <p>Game Name: {gameName}</p>}
+                        <h2>{gameName || `Game ID: ${gameId}`}</h2>
                         {gameType && <p>Game Type: {gameType}</p>}
                     </div>
                     

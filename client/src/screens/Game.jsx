@@ -84,11 +84,11 @@ function otherPlayer(number = 1, moving = false) {
         <div style={{
           position: 'absolute',
           left: '50%',
-          bottom: '-2.5vh',
+          bottom: '-3.5vh',
           transform: 'translateX(-50%)',
           width: '100%',
           color: '#FFF',
-          fontSize: '1vw',
+          fontSize: '1.5vw',
           fontWeight: 'bold',
         }}>
           current move
@@ -107,7 +107,7 @@ function Game() {
       {otherPlayer(1, true)}
       {otherPlayer(2, false)}
       {otherPlayer(3, false)}
-      {otherPlayer(4, false)}
+      {otherPlayer(4, true)}
       {otherPlayer(5, false)}
       {otherPlayer(16)}
     </div>

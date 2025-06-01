@@ -1,7 +1,63 @@
 import React, { StrictMode, Component } from "react";
 
 import { Frame, Circle, Dial, Emitter, Pen, MotionController, series, LabelOnArc } from "zimjs"
-
+import iconTable from '../assets/table.svg';
+import iconTableedge from '../assets/tableedge.svg';
+import iconBackicon from '../assets/backicon.svg';
+import iconTHicon from '../assets/THicon.svg';
+import iconTSicon from '../assets/TSicon.svg';
+import iconQDicon from '../assets/QDicon.svg';
+import iconQHicon from '../assets/QHicon.svg';
+import iconQSicon from '../assets/QSicon.svg';
+import iconTCicon from '../assets/TCicon.svg';
+import iconTDicon from '../assets/TDicon.svg';
+import iconKHicon from '../assets/KHicon.svg';
+import iconKSicon from '../assets/KSicon.svg';
+import iconQCicon from '../assets/QCicon.svg';
+import iconJSicon from '../assets/JSicon.svg';
+import iconKCicon from '../assets/KCicon.svg';
+import iconKDicon from '../assets/KDicon.svg';
+import iconJHicon from '../assets/JHicon.svg';
+import iconJKBLACKicon from '../assets/JKBLACKicon.svg';
+import iconJKREDicon from '../assets/JKREDicon.svg';
+import iconJCicon from '../assets/JCicon.svg';
+import iconJDicon from '../assets/JDicon.svg';
+import iconACicon from '../assets/ACicon.svg';
+import iconADicon from '../assets/ADicon.svg';
+import iconAHicon from '../assets/AHicon.svg';
+import iconASicon from '../assets/ASicon.svg';
+import icon9D from '../assets/9Dicon.svg';
+import icon9H from '../assets/9Hicon.svg';
+import icon9S from '../assets/9Sicon.svg';
+import icon8S from '../assets/8Sicon.svg';
+import icon9C from '../assets/9Cicon.svg';
+import icon7S from '../assets/7Sicon.svg';
+import icon8C from '../assets/8Cicon.svg';
+import icon8D from '../assets/8Dicon.svg';
+import icon8H from '../assets/8Hicon.svg';
+import icon6S from '../assets/6Sicon.svg';
+import icon7C from '../assets/7Cicon.svg';
+import icon7D from '../assets/7Dicon.svg';
+import icon7H from '../assets/7Hicon.svg';
+import icon6C from '../assets/6Cicon.svg';
+import icon6D from '../assets/6Dicon.svg';
+import icon6H from '../assets/6Hicon.svg';
+import icon4H from '../assets/4Hicon.svg';
+import icon4S from '../assets/4Sicon.svg';
+import icon5C from '../assets/5Cicon.svg';
+import icon5D from '../assets/5Dicon.svg';
+import icon5H from '../assets/5Hicon.svg';
+import icon5S from '../assets/5Sicon.svg';
+import icon3S from '../assets/3Sicon.svg';
+import icon4C from '../assets/4Cicon.svg';
+import icon4D from '../assets/4Dicon.svg';
+import icon2S from '../assets/2Sicon.svg';
+import icon3C from '../assets/3Cicon.svg';
+import icon3D from '../assets/3Dicon.svg';
+import icon3H from '../assets/3Hicon.svg';
+import icon2D from '../assets/2Dicon.svg';
+import icon2H from '../assets/2Hicon.svg';
+import icon2C from '../assets/2Cicon.svg';
 class ZimFrame extends Component {
   componentDidMount() {
     this.frame = new Frame({

@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 import { Link } from 'react-router-dom';
 
-function card(cardname){
-  return <img src={`/src/assets/${cardname}icon.svg`} style={{width: "10vw", height: "10vh", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />
-}
-
 function cardClicked(cardname){
   console.log(cardname + "clicked")
 }
@@ -82,7 +78,7 @@ style={{
 function currentPlayerCards(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(card(cardname))
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10vw", height: "10vh", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />)
   })
 return <div
 style={{
@@ -99,6 +95,28 @@ style={{
   {cardlist}
 </div>
 }
+
+function lastCombo(cards){
+  let cardlist = []
+  cards.forEach(cardname => {
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "25hw", height: "25vh", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />)
+  })
+  return <div
+  style={{
+    maxWidth: '60vw',
+    display: 'inline-flex',
+    gap: '3vw',
+    alignItems: 'center',
+    overflowX: 'scroll',
+  
+    scrollbarWidth: 'thin', 
+    msOverflowStyle: 'auto' 
+  }}
+  >
+    {cardlist}
+  </div>
+}
+
 function Game() {
   const [games, setGames] = useState([]);
   let cardlist = ["2C", "2D", "3C", "3D", "4C", "4D", "5C", "5D", "6C", "6D", "7C", "7D", "8C", "8D", "9C", "9D", "JC", "JD", "QC", "QD", "KC", "KD", "AC", "AD"]
@@ -112,11 +130,17 @@ function Game() {
           src={"/src/assets/table.svg"}
           alt="table"
           style={{
-            width: "100%",
-            height: "100%",
+            width: "70%",
+            height: "70%",
+            position: "absolute",
           }}
         />
+         <div style={{paddingTop: "5vh", width: "100%", zIndex:100, position: "absolute"}}>
+        {lastCombo(["3C","4C","5C","6C","7C"])}
       </div>
+      </div>
+
+     
       <div style={{paddingTop: "5vh", width: "100%"}}>
 
         {currentPlayerCards(cardlist)}

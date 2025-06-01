@@ -11,6 +11,8 @@ import GameInstructions from './screens/GameInstructions';
 import UsernameScreen from './screens/UsernameScreen';
 import CreateGame from './screens/CreateGame';
 import Game from './screens/Game';
+import VietcongGameScreen from './screens/VietcongGameScreen';
+import FishGameScreen from './screens/FishGameScreen';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -157,7 +159,8 @@ function App() {
         <Route path="stats" element={<UserStats />} />
         <Route path="instructions" element={<GameInstructions />} />
         <Route path="create-game" element={<CreateGame />} />
-        <Route path="game" element={<Game />} />
+        <Route path="vietcong-game" element={<VietcongGameScreen />} />
+        <Route path="fish-game" element={<FishGameScreen />} />
       </Route>
     </Routes>
   );

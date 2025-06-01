@@ -97,9 +97,15 @@ function otherPlayer(number = 1, moving = false) {
     </div>
   );
 }
+
+function card(cardname){
+  return <button><img src={`/src/assets/${cardname}icon.svg`} style={{width: "20vw", height: "20vh"}} alt={cardname} onClick={this.myfunction} /></button> 
+}
+function cardClicked(){
+  console.log("clicked")
+}
+
 function currentPlayerCards(cardlist){
-
-
 return <div
 style={{
   position: 'absolute',
@@ -119,13 +125,48 @@ style={{
 function Game() {
   const [games, setGames] = useState([]);
   const [websocket, setWebsocket] = useState(null);
+  useEffect(() => {
+    // Create WebSocket connection to the lobby endpoint
+    const ws = new WebSocket(`ws://localhost:8000/game/ws/${game_id}`);
+    
+    ws.onopen = () => {
+        console.log('Connected to lobby WebSocket');
+        setWebsocket(ws);
+    };
+
+    ws.onmessage = (event) => {
+        try {
+            const gamesList = JSON.parse(event.data);
+            setGames(gamesList);
+            console.log('Received games list:', gamesList);
+        } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+        }
+    };
+
+    ws.onclose = () => {
+        console.log('WebSocket connection closed');
+        setWebsocket(null);
+    };
+
+    ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+
+    // Cleanup function to close WebSocket when component unmounts
+    return () => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.close();
+        }
+    };
+}, []);
   let cardlist = []
   cardlist.push(otherPlayer(1, true))
   cardlist.push(otherPlayer(2, false))
   cardlist.push(otherPlayer(3, false))
   cardlist.push(otherPlayer(4, true))
   cardlist.push(otherPlayer(1, true))
-  cardlist.push(otherPlayer(2, false))
+  cardlist.push(otherPlayer(29, false))
   cardlist.push(otherPlayer(3, false))
   return (
     <div style={{width: "80vw", height: "80vh", display: "flex", justifyContent: "center", alignItems: "center"}}>

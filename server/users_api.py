@@ -11,16 +11,22 @@ from starlette.websockets import WebSocketState
 from core import (
     user_collection,
     game_collection,
+    replay_collection,
     UserModel,
     UpdateUserModel,
     FirebaseUserRegistrationRequest,
     CheckUsernameResponse,
     CompleteRegistrationRequest,
-    UserCollection,
+    UserCollectionModel,
     GameModel,
     GameCreateModel,
     GameCollection,
     TurnModel,
+    ReplaySummaryModel,
+    ReplaySearchModel,
+    ReplayModel,
+    ReplayCollectionModel,
+    UserSearchModel
 )
 
 from game import Card, Transaction, Turn, GAME_RULES
@@ -33,27 +39,24 @@ router = APIRouter()
     "/users/initialize",
     response_description="Initialize or get user by Firebase UID",
     response_model=UserModel,
-    status_code=status.HTTP_200_OK, 
+    status_code=status.HTTP_200_OK,
     response_model_by_alias=False,
 )
 async def initialize_user(payload: FirebaseUserRegistrationRequest = Body(...)):
-    """
-    Initializes a new user record if one doesn't exist for the Firebase UID,
-    or retrieves the existing user record.
-    """
     existing_user = await user_collection.find_one({"firebase_uid": payload.firebase_uid})
     if existing_user:
-        return existing_user
+        return UserModel(**existing_user)
 
+    # Use UserModel defaults
     new_user = UserModel(firebase_uid=payload.firebase_uid)
-    new_user_data = new_user.model_dump(by_alias=True, exclude={"id"})
+    new_user_data = new_user.model_dump(by_alias=True)
 
     insert_result = await user_collection.insert_one(new_user_data)
     created_user = await user_collection.find_one({"_id": insert_result.inserted_id})
     if not created_user:
-         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user.")
-    return created_user
-
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user.")
+    
+    return UserModel(**created_user)
 
 @router.get(
     "/users/check_username_availability/{username}",
@@ -113,7 +116,6 @@ async def complete_registration(payload: CompleteRegistrationRequest = Body(...)
     
     return result
 
-
 @router.post(
     "/users/",
     response_description="Add new user",
@@ -122,20 +124,10 @@ async def complete_registration(payload: CompleteRegistrationRequest = Body(...)
     response_model_by_alias=False,
 )
 async def create_user(user: UserModel = Body(...)):
-    """
-    Insert a new user record.
-    `firebase_uid` is mandatory. If `name` (username) is provided, it will be checked for uniqueness.
-    `username_set` will be set to True if `name` is provided, False otherwise.
-    Consider if this endpoint is still the primary way to create users vs. /users/initialize.
-    """
-    # firebase_uid is now mandatory in UserModel, Pydantic validation handles its presence.
-
-    # Check for existing user by firebase_uid, as it should be unique
     existing_by_fb_uid = await user_collection.find_one({"firebase_uid": user.firebase_uid})
     if existing_by_fb_uid:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"User with Firebase UID {user.firebase_uid} already exists.")
 
-    # Handle username (name field) if provided
     if user.name:
         if not re.match(r"^[a-zA-Z0-9_]{3,20}$", user.name):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username format invalid.")
@@ -143,16 +135,11 @@ async def create_user(user: UserModel = Body(...)):
         existing_by_name = await user_collection.find_one({"name": user.name})
         if existing_by_name:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Username '{user.name}' already taken.")
-        user.username_set = True # If name is provided, username is considered set
+        user.username_set = True
     else:
-        user.username_set = False # If name is not provided, it's not set
+        user.username_set = False
 
-    # Ensure default values for games and wins are present if not supplied by client
-    # Pydantic model now has defaults, so this explicit setting might be redundant but safe
     new_user_doc_data = user.model_dump(by_alias=True, exclude={"id"})
-    new_user_doc_data.setdefault("games", 0)
-    new_user_doc_data.setdefault("wins", 0)
-    # username_set is handled above based on presence of 'name'
 
     insert_result = await user_collection.insert_one(new_user_doc_data)
     created_user = await user_collection.find_one(
@@ -162,11 +149,10 @@ async def create_user(user: UserModel = Body(...)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create and retrieve user.")
     return created_user
 
-
 @router.get(
     "/users/",
     response_description="List all users",
-    response_model=UserCollection,
+    response_model=UserCollectionModel,
     response_model_by_alias=False,
 )
 async def list_users():
@@ -175,25 +161,7 @@ async def list_users():
 
     The response is unpaginated and limited to 1000 results.
     """
-    return UserCollection(users=await user_collection.find().to_list(1000))
-
-
-@router.get(
-    "/users/{id}",
-    response_description="Get a single user by id",
-    response_model=UserModel,
-    response_model_by_alias=False,
-)
-async def show_user(id: str):
-    """
-    Get the record for a specific user, looked up by `id`.
-    """
-    if (
-        user := await user_collection.find_one({"_id": ObjectId(id)})
-    ) is not None:
-        return user
-
-    raise HTTPException(status_code=404, detail=f"User {id} not found")
+    return UserCollectionModel(users=await user_collection.find().to_list(1000))
 
 @router.get(
         "/users/name/{name}",
@@ -575,3 +543,147 @@ async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get
 #     Get active game owners
 #     """
 #     return [str(card) for card in list(tracker.game_managers[game_id].game.owners.values())[0].cards]
+
+# DB Query 
+
+@router.get(
+    "/replays/search",
+    response_model=List[ReplaySummaryModel],
+    response_description="Search replays with filters"
+)
+async def search_replays(filters: ReplaySearchModel = Depends()):
+    query = {}
+
+    if filters.player_id:
+        if filters.result_codes:
+            query[f"players.{filters.player_id}"] = {"$in": filters.result_codes}
+        else:
+            query[f"players.{filters.player_id}"] = {"$exists": True}
+
+    if filters.start_time or filters.end_time:
+        query["timestamp"] = {}
+        if filters.start_time:
+            query["timestamp"]["$gte"] = filters.start_time
+        if filters.end_time:
+            query["timestamp"]["$lte"] = filters.end_time
+
+    if filters.type:
+        query["type"] = filters.type
+
+    if filters.name:
+        query["name"] = filters.name
+
+    results = await replay_collection.find(query).to_list(1000)
+
+    projection = {
+        "_id": 1,
+        "type": 1,
+        "name": 1,
+        "players": 1,
+        "timestamp": 1,
+    }
+
+    cursor = replay_collection.find(query, projection)
+    results = await cursor.to_list(length=1000)
+
+    return ReplayCollectionModel(replays=[ReplaySummaryModel(**doc) for doc in results])
+
+@router.get(
+    "/replays/{replay_id}",
+    response_model=ReplayModel,
+    response_description="Get a single replay by ID"
+)
+async def get_replay_by_id(replay_id: str):
+    """
+    Retrieves a replay document by its MongoDB ID.
+    """
+    try:
+        obj_id = ObjectId(replay_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid replay ID format.")
+
+    replay = await replay_collection.find_one({"_id": obj_id})
+    if not replay:
+        raise HTTPException(status_code=404, detail="Replay not found.")
+
+    return replay
+
+@router.get(
+    "/users/search",
+    response_model=UserCollectionModel,
+    response_model_by_alias=False,
+    summary="Search for users by game statistics and filters",
+)
+async def search_users(filters: UserSearchModel = Depends()):
+    query = {}
+
+    if filters.name:
+        query["name"] = {"$regex": filters.name, "$options": "i"}
+
+    # Filters for fish games
+    if filters.min_fish_games is not None:
+        query["stats.fish.games"] = {"$gte": filters.min_fish_games}
+
+    if filters.min_claims is not None:
+        query["stats.fish.claims"] = {"$gte": filters.min_claims}
+
+    # Filters for vietcong games
+    if filters.min_vietcong_games is not None:
+        query["stats.vietcong.games"] = {"$gte": filters.min_vietcong_games}
+
+    users_raw = await user_collection.find(query).to_list(1000)
+
+    results = []
+    for doc in users_raw:
+        stats = doc.get("stats", {})
+        fish = stats.get("fish", {})
+        viet = stats.get("vietcong", {})
+
+        # Handle fish win rate
+        if filters.min_fish_win_rate is not None:
+            games = fish.get("games", 0)
+            wins = fish.get("wins", 0)
+            if games == 0 or (wins / games) < filters.min_fish_win_rate:
+                continue
+
+        # Handle fish claim rate
+        if filters.min_claim_rate is not None:
+            claims = fish.get("claims", 0)
+            successful = fish.get("successful_claims", 0)
+            if claims == 0 or (successful / claims) < filters.min_claim_rate:
+                continue
+
+        # Handle vietcong scoring rate
+        if filters.min_vietcong_score_rate is not None:
+            vc_games = viet.get("games", 0)
+            finishes = viet.get("place_finishes", {})
+            score = (
+                finishes.get("first", 0) * 1.0
+                + finishes.get("second", 0) * 0.6
+                + finishes.get("third", 0) * 0.3
+            )
+            rate = score / vc_games if vc_games else 0
+            if rate < filters.min_vietcong_score_rate:
+                continue
+
+        # Convert to UserModel
+        results.append(UserModel(**doc))
+
+    return UserCollectionModel(users=results)
+
+@router.get(
+    "/users/{id}",
+    response_description="Get a single user by id",
+    response_model=UserModel,
+    response_model_by_alias=False,
+)
+async def show_user(id: str):
+    """
+    Get the record for a specific user, looked up by `id`.
+    """
+    if (
+        user := await user_collection.find_one({"_id": ObjectId(id)})
+    ) is not None:
+        return user
+
+    raise HTTPException(status_code=404, detail=f"User {id} not found")

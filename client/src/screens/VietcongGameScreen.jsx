@@ -80,7 +80,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
       </div>
       
       <img
-        src={"/backicon.svg"}
+        src={"/src/assets/backicon.svg"}
         alt="card back"
         style={{
           width: '15vw',
@@ -163,7 +163,7 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
     cardlist.push(
       <img 
         key={cardname}
-        src={`/${cardname}icon.svg`} 
+        src={`/src/assets/${cardname}icon.svg`} 
         style={{
           width: "5.5%",
           display: "flex", 
@@ -200,7 +200,7 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
 function lastCombo(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/${cardname}icon.svg`} style={{width: "10%", display: "block"}} alt={cardname} key={cardname}/>)
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10%", display: "block"}} alt={cardname} key={cardname}/>)
   })
   return <div
   style={{
@@ -367,7 +367,7 @@ function VietcongGameScreen() {
     if (!gameId || !currentUser) return;
     
     // Create WebSocket connection
-    const wsUrl = getWebSocketURL(`/game/ws/${gameId}`);
+    const wsUrl = getWebSocketURL(`/games/${gameId}/vietcong/ws`);
     console.log('Connecting to game WebSocket:', wsUrl);
     
     const ws = new WebSocket(wsUrl);
@@ -527,7 +527,7 @@ function VietcongGameScreen() {
 
         <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "8%", position: "relative"}}>
           <img
-            src={"/table.svg"}
+            src={"/src/assets/table.svg"}
             alt="table"
             style={{
               width: "100%",

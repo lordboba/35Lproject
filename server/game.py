@@ -242,30 +242,6 @@ class VietCongGame(Game):
     def is_multiple_sequence(cards: list[Card], multiple: int) -> int:
         if len(cards)<3*multiple or len(cards)%multiple!=0 or cards[-1].rank == 2:
             return False
-        if cards[0].rank == cards[1].rank:
-            return True
-        return False
-    async def is_triple(self, turn:Turn) ->bool:
-        cards = [trans.get_card() for trans in turn.transactions]
-        if len(cards)!=3:
-            return False
-        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank:
-            return True
-        return False
-    
-    async def is_quad(self, turn:Turn) ->bool:
-        cards = [trans.get_card() for trans in turn.transactions]
-        if len(cards)!=4:
-            return False
-        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank and cards[3].rank == cards[2].rank:
-            return True
-        return False
-
-    async def is_sequence(self,turn:Turn)->int:
-        cards = [trans.get_card() for trans in turn.transactions]
-        rank = cards[0].rank - 1
-        if len(cards)<3:
-            return False
         
         rank = cards[0].rank
         for i in range(0, len(cards), multiple):
@@ -273,7 +249,7 @@ class VietCongGame(Game):
                 return False
             rank = cards[i].rank%13+1
         return len(cards)//multiple
-    
+
     @staticmethod
     def get_combo(cards: list[Card]):
         # single/pair/trip/quad
@@ -293,7 +269,7 @@ class VietCongGame(Game):
         
         # no matches
         return VietCongGame.Combo.NONE
-    
+
     @staticmethod
     def is_greater_combo(cards: list[Card], current_combo: list[Card]) -> bool:
         if len(current_combo) == 0:
@@ -301,7 +277,7 @@ class VietCongGame(Game):
         if len(cards) == 0:
             return False
         return VietCongGame.get_card_value(cards[-1]) > VietCongGame.get_card_value(current_combo[-1])
-    
+
     def valid_combo(self, cards: list[Card]):
         # Start of Round
         if self.current_combo_type == self.Combo.NONE:
@@ -342,7 +318,7 @@ class VietCongGame(Game):
                 return self.Combo(self.Combo.DB_SEQUENCE.value + double_sequence_len)
             
         return self.Combo.NONE
-    
+
     def get_next_player(self) -> bool:
         for i in range(1,4):
             next_player = (self.current_player+i)%4
@@ -350,7 +326,7 @@ class VietCongGame(Game):
                 self.current_player = next_player
                 return True
         return False
-    
+
     def is_valid_turn(self, turn: Turn) -> bool:
         # Check if player is the current player
         if turn.player != self.players[self.current_player]:
@@ -371,28 +347,12 @@ class VietCongGame(Game):
             return False
         
         return True
-    
+
     def to_game_state(self):
         game_state = super().to_game_state()
         game_state.game_type = "vietcong"
         return game_state
-    
-    async def update_vietcong_stats(self, results: dict[str, int]):
-        for user_id, place in results.items():
-            place_mapper = ["first", "second", "third", "fourth"]
-            place_str = place_mapper[place-1]
-            print(f"Updating stats for {user_id}: place = {place}")
-            await user_collection.update_one(
-                {"_id": ObjectId(user_id)},
-                {
-                    "$inc": 
-                    {
-                        "stats.vietcong.games": 1,
-                        f"stats.vietcong.place_finishes.{place_str}": 1
-                    }
-                }
-            )
-
+            
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if not self.is_valid_turn(turn):
             return False
@@ -436,9 +396,7 @@ class VietCongGame(Game):
                     for i in range(4):
                         self.player_status[self.players[i]] = self.places[i]
                     await self.broadcast_state()
-                    results = {self.players[i]:self.places[i] for i in range(4)}
-                    await self.update_vietcong_stats(results)
-                    await self.manager.end_game(results)
+                    await self.manager.end_game({self.players[i]:self.places[i] for i in range(4)})
         
         # Pass turn to next player
         if not self.get_next_player():

@@ -221,7 +221,7 @@ class VietCongGame(Game):
         # Set player with 3S to start
         self.current_player = players.index(self.belongs_to[Card(3,Suit.SPADE)])
 
-        self.manager.game_log.log_state(self.to_game_state())
+        # self.manager.game_log.log_state(self.to_game_state())
 
     @staticmethod
     def is_multiple(cards: list[Card]) -> int:
@@ -477,7 +477,7 @@ class FishGame(Game):
         for i in range(6):
             self.player_status[players[team_list[i]]] = i//3+1 
 
-        self.manager.game_log.log_state(self.to_game_state())
+        # self.manager.game_log.log_state(self.to_game_state())
 
     @staticmethod
     def card_to_half_suit(card: Card):

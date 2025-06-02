@@ -77,25 +77,6 @@ class FishStatsModel(BaseModel):
 
 # Users
 
-class VietCongStatsModel(BaseModel):
-    """
-    Container for Viet Cong game stats.
-    """
-    games: int = Field(default=0)
-    place_finishes: Dict[int, int] = Field(default_factory=lambda: {1: 0, 2: 0, 3: 0, 4: 0})
-
-class FishStatsModel(BaseModel):
-    """
-    Container for Fish game stats.
-    """
-    games: int = Field(default=0)
-    wins: int = Field(default=0)
-    losses: int = Field(default=0)
-    claims: int = Field(default=0)
-    successful_claims: int = Field(default=0)
-
-# Users
-
 class UserModel(BaseModel):
     """
     Container for a single user record.

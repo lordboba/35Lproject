@@ -158,7 +158,7 @@ class Game():
         return True
     
     def log_state(self):
-        self.manager.log_state(self.to_game_state())
+        self.manager.game_log.log_state(self.to_game_state())
 
     async def broadcast_state(self):
         await self.manager.broadcast(self.to_game_state().dict())

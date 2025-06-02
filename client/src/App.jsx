@@ -14,7 +14,7 @@ import GameScreen from './screens/GameScreen';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-function ProtectedLayout({ onSignOut }) {
+function ProtectedLayout({ onSignOut, backendUser }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -26,7 +26,7 @@ function ProtectedLayout({ onSignOut }) {
       <Navbar onSignOut={onSignOut} onToggleSidebar={toggleSidebar} />
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className={`content-area ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-        <Outlet />
+        <Outlet context={{ backendUser }} />
       </div>
     </>
   );
@@ -147,7 +147,7 @@ function App() {
       } />
       <Route path="/app" element={
         user && backendUser && backendUser.username_set ? (
-          <ProtectedLayout onSignOut={handleSignOut} />
+          <ProtectedLayout onSignOut={handleSignOut} backendUser={backendUser} />
         ) : (
           <Navigate to="/" />
         )

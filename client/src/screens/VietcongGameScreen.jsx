@@ -19,8 +19,30 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
   }
 }
 
-function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, hasPassed = false) {
+function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null) {
   const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
+  
+  // Determine what status text to show based on player status
+  let statusText = '';
+  let statusColor = '#FF6B6B'; // Default red color
+  let isFinished = false;
+  
+  if (playerStatus === -1) {
+    statusText = 'PASSED';
+    statusColor = '#FF6B6B';
+  } else if (playerStatus === 1) {
+    statusText = '1st PLACE';
+    statusColor = '#FFD700'; // Gold
+    isFinished = true;
+  } else if (playerStatus === 2) {
+    statusText = '2nd PLACE';
+    statusColor = '#C0C0C0'; // Silver
+    isFinished = true;
+  } else if (playerStatus === 3) {
+    statusText = '3rd PLACE';
+    statusColor = '#CD7F32'; // Bronze
+    isFinished = true;
+  }
   
   return (
     <div style={{
@@ -44,15 +66,15 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
         backgroundColor: isCurrentUser ? 'rgba(255, 215, 0, 0.2)' : 'transparent', // Semi-transparent background
       }}>
         {username}
-        {hasPassed && (
+        {statusText && (
           <div style={{
-            color: '#FF6B6B',
+            color: statusColor,
             fontSize: '0.9vw',
             fontWeight: 'bold',
             marginTop: '2px',
             textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
           }}>
-            PASSED
+            {statusText}
           </div>
         )}
       </div>
@@ -64,7 +86,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
           width: '15vw',
           height: '15vh',
           display: 'block',
-          opacity: hasPassed ? 0.6 : 1, // Make card slightly transparent if passed
+          opacity: (playerStatus === -1 || isFinished) ? 0.6 : 1, // Make card slightly transparent if passed or finished
         }}
       />
       <span
@@ -114,8 +136,8 @@ function getAllPlayers(users, userDetails, gameState, currentUserId) {
     const isCurrentPlayer = gameState?.current_player === userId;
     const cardCount = gameState?.owners?.[userId]?.cards?.length || 13;
     const isCurrentUser = userId === currentUserId;
-    const hasPassed = gameState?.player_status?.[userId] === 1;
-    players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, hasPassed));
+    const playerStatus = gameState?.player_status?.[userId] || null;
+    players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, playerStatus));
   });
   
   return (

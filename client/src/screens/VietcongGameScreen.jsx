@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useOutletContext } from 'react-router-dom';
+import { auth } from '../firebase';
 
 import { Link } from 'react-router-dom';
 
-function cardClicked(cardname){
-  console.log(cardname + "clicked")
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+function cardClicked(cardname, selectedCards, setSelectedCards) {
+  console.log(cardname + " clicked");
+  
+  // Toggle card selection
+  if (selectedCards.includes(cardname)) {
+    // Remove card from selection
+    setSelectedCards(selectedCards.filter(card => card !== cardname));
+  } else {
+    // Add card to selection
+    setSelectedCards([...selectedCards, cardname]);
+  }
 }
-function otherPlayer(number = 1, moving = false) {
+
+function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, hasPassed = false) {
+  const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
+  
   return (
     <div style={{
       display: 'flex',
@@ -13,101 +29,165 @@ function otherPlayer(number = 1, moving = false) {
       alignItems: 'center',
       position: 'relative',
     }}>
-        <img
-          src={"/src/assets/backicon.svg"}
-          alt="card back"
-          style={{
-            width: '15vw',
-            height: '15vh',
-            display: 'block',
-          }}
-        />
-        <span
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
-            fontSize: '4vh',
+      {/* Username label above cards */}
+      <div style={{
+        color: isCurrentUser ? '#FFD700' : '#FFF', // Gold color for current user
+        fontSize: '1.2vw',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: '0.5vh',
+        minHeight: '2vh',
+        textShadow: isCurrentUser ? '2px 2px 4px rgba(0,0,0,0.8)' : 'none', // Shadow for current user
+        border: isCurrentUser ? '2px solid #FFD700' : 'none', // Border for current user
+        borderRadius: isCurrentUser ? '8px' : '0',
+        padding: isCurrentUser ? '4px 8px' : '0',
+        backgroundColor: isCurrentUser ? 'rgba(255, 215, 0, 0.2)' : 'transparent', // Semi-transparent background
+      }}>
+        {username}
+        {hasPassed && (
+          <div style={{
+            color: '#FF6B6B',
+            fontSize: '0.9vw',
             fontWeight: 'bold',
-            pointerEvents: 'none',
-          }}
-        >
-          {number}
-        </span>
+            marginTop: '2px',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+          }}>
+            PASSED
+          </div>
+        )}
+      </div>
+      
+      <img
+        src={"/src/assets/backicon.svg"}
+        alt="card back"
+        style={{
+          width: '15vw',
+          height: '15vh',
+          display: 'block',
+          opacity: hasPassed ? 0.6 : 1, // Make card slightly transparent if passed
+        }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          top: '60%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: 'white',
+          fontSize: '4vh',
+          fontWeight: 'bold',
+          pointerEvents: 'none',
+        }}
+      >
+        {cardCount}
+      </span>
 
       {moving && (
         <div style={{
-          width: '150%',
-          color: '#FFF',
-          fontSize: '1.5vw',
+          width: '80%',
+          color: '#00FF00',
+          fontSize: '1.2vw',
           fontWeight: 'bold',
           textAlign: 'center',
+          marginTop: '0.5vh',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+          backgroundColor: 'rgba(0, 255, 0, 0.1)',
+          borderRadius: '8px',
+          padding: '2px 6px',
+          border: '2px solid #00FF00',
         }}>
-          current move
+          CURRENT TURN
         </div>
       )}
     </div>
   );
 }
 
-function getAllOtherPlayers(playerList){
-  let others = []
-  others.push(otherPlayer(playerList[0], false))
-  others.push(otherPlayer(playerList[1], false))
-  others.push(otherPlayer(playerList[2], true))
-  others.push(otherPlayer(playerList[3], false))
-  return <div
-style={{
-  maxWidth: '80%',
-  display: 'flex',
-  flexDirection: 'row',
-  gap: '5%',
-  alignItems: 'center',
-  overflowX: 'scroll',
-  scrollbarWidth: 'thin',
-  msOverflowStyle: 'auto'
-}}
->
-  {others}
-</div>
-
+function getAllPlayers(users, userDetails, gameState, currentUserId) {
+  if (!users || users.length === 0 || !gameState) {
+    return <div style={{color: '#FFF'}}>Loading players...</div>;
+  }
+  
+  // Show ALL players (including current user)
+  let players = [];
+  users.forEach((userId, index) => {
+    const isCurrentPlayer = gameState?.current_player === userId;
+    const cardCount = gameState?.owners?.[userId]?.cards?.length || 13;
+    const isCurrentUser = userId === currentUserId;
+    const hasPassed = gameState?.player_status?.[userId] === 1;
+    players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, hasPassed));
+  });
+  
+  return (
+    <div style={{
+      maxWidth: '80%',
+      display: 'flex',
+      flexDirection: 'row',
+      gap: '5%',
+      alignItems: 'center',
+      overflowX: 'scroll',
+      scrollbarWidth: 'thin',
+      msOverflowStyle: 'auto'
+    }}>
+      {players}
+    </div>
+  );
 }
 
-function currentPlayerCards(cards){
-  let cardlist = []
+function currentPlayerCards(cards, selectedCards, setSelectedCards) {
+  let cardlist = [];
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "8%", display: "flex", gap: "0px"}} alt={cardname} onClick={() => cardClicked(cardname)} />)
-  })
-return <div
-style={{
-  maxWidth: '60%',
-  display: 'inline-flex',
-  gap: '3vw',
-  alignItems: 'center',
-  overflowX: 'scroll',
-  scrollbarWidth: 'thin',
-  msOverflowStyle: 'auto' 
-}}
->
-  {cardlist}
-</div>
+    const isSelected = selectedCards.includes(cardname);
+    cardlist.push(
+      <img 
+        key={cardname}
+        src={`/src/assets/${cardname}icon.svg`} 
+        style={{
+          width: "5.5%",
+          display: "flex", 
+          gap: "0px",
+          cursor: "pointer",
+          border: isSelected ? "3px solid #007BFF" : "3px solid transparent", // Blue border when selected
+          borderRadius: "8px",
+          transform: isSelected ? "translateY(-10px)" : "translateY(0px)", // Move up when selected
+          transition: "all 0.2s ease-in-out", // Smooth animation
+          boxShadow: isSelected ? "0 4px 8px rgba(0, 123, 255, 0.3)" : "none", // Blue shadow when selected
+        }} 
+        alt={cardname} 
+        onClick={() => cardClicked(cardname, selectedCards, setSelectedCards)} 
+      />
+    );
+  });
+  
+  return (
+    <div style={{
+      maxWidth: '95%',
+      display: 'inline-flex',
+      gap: '0.5vw',
+      alignItems: 'center',
+      overflowX: 'auto',
+      scrollbarWidth: 'thin',
+      msOverflowStyle: 'auto',
+      justifyContent: 'center',
+    }}>
+      {cardlist}
+    </div>
+  );
 }
 
 function lastCombo(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10%", display: "flex", gap: "0px"}} alt={cardname}/>)
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10%", display: "block"}} alt={cardname} key={cardname}/>)
   })
   return <div
   style={{
-    maxWidth: '80%',
-    display: 'inline-flex',
-    gap: '3vw',
+    width: '100%',
+    display: 'flex',
+    gap: '1vw',
     alignItems: 'center',
-    overflowX: 'scroll',
-  
+    justifyContent: 'center',
+    flexWrap: 'wrap',
     scrollbarWidth: 'thin', 
     msOverflowStyle: 'auto' 
   }}
@@ -117,9 +197,304 @@ function lastCombo(cards){
 }
 
 function VietcongGameScreen() {
+  // WebSocket and game state management
+  const location = useLocation();
+  const { backendUser } = useOutletContext();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [gameId, setGameId] = useState(null);
+  const [websocket, setWebsocket] = useState(null);
+  const [gameState, setGameState] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [userDetails, setUserDetails] = useState({});
+  
+  // Card selection state
+  const [selectedCards, setSelectedCards] = useState([]);
+  
   const [games, setGames] = useState([]);
-  let cardlist = ["2C", "2D", "3C", "3D", "4C", "4D", "5C", "5D", "6C", "6D", "7C", "7D", "8C", "8D", "9C", "9D", "JC", "JD", "QC", "QD", "KC", "KD", "AC", "AD"]
-  let lastPlayedCards = ["3C","4C","5C","6C","7C","8C","9C","JC","QC","KC","AC"]
+  // Remove hardcoded lastPlayedCards - will get from gameState instead
+
+  // Get the current Firebase user
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user);
+    });
+    
+    return () => unsubscribe();
+  }, []);
+  
+  // Get the game ID from URL parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const id = searchParams.get('id');
+    if (id) {
+      setGameId(id);
+    }
+  }, [location]);
+  
+  // Function to convert backend card format to frontend format
+  const convertCardToString = (card) => {
+    const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+    const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
+    
+    const rank = ranks[card.rank] || card.rank;
+    const suit = suits[card.suit] || card.suit;
+    
+    return `${rank}${suit}`;
+  };
+  
+  // Function to convert frontend card format to backend format
+  const convertStringToCard = (cardString) => {
+    const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+    const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
+    
+    const rank = cardString.slice(0, -1); // All but last character
+    const suit = cardString.slice(-1); // Last character
+    
+    return {
+      rank: ranks.indexOf(rank),
+      suit: suits.indexOf(suit)
+    };
+  };
+  
+  // Function to generate TurnModel for playing cards
+  const generatePlayTurnModel = (selectedCards) => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId || selectedCards.length === 0) {
+      return null;
+    }
+    
+    const transactions = selectedCards.map(cardString => ({
+      sender: currentUserId,
+      receiver: "pile",
+      card: convertStringToCard(cardString),
+      success: true
+    }));
+    
+    return {
+      player: currentUserId,
+      transactions: transactions,
+      type: 0 // 0 = playing cards
+    };
+  };
+  
+  // Function to generate TurnModel for passing
+  const generatePassTurnModel = () => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      return null;
+    }
+    
+    return {
+      player: currentUserId,
+      transactions: [],
+      type: 1 // 1 = passing
+    };
+  };
+  
+  // Get current user's cards from game state
+  const getCurrentUserCards = () => {
+    const currentUserId = getCurrentUserId();
+    if (!gameState || !gameState.owners || !currentUserId) {
+      return [];
+    }
+    
+    const userCards = gameState.owners[currentUserId]?.cards || [];
+    return userCards.map(card => convertCardToString(card));
+  };
+  
+  // Function to fetch user details by ID
+  const fetchUserDetails = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+      if (response.ok) {
+        const userData = await response.json();
+        return userData;
+      } else {
+        console.error(`Failed to fetch user details for ${userId}`);
+        return null;
+      }
+    } catch (error) {
+      console.error(`Error fetching user details for ${userId}:`, error);
+      return null;
+    }
+  };
+  
+  // Function to fetch multiple user details
+  const fetchAllUserDetails = async (userIds) => {
+    const newUserDetails = { ...userDetails };
+    
+    // Only fetch details for users we don't already have
+    const usersToFetch = userIds.filter(userId => !newUserDetails[userId]);
+    
+    if (usersToFetch.length === 0) return;
+    
+    const fetchPromises = usersToFetch.map(async (userId) => {
+      const userData = await fetchUserDetails(userId);
+      if (userData) {
+        newUserDetails[userId] = userData;
+      }
+      return userData;
+    });
+    
+    await Promise.all(fetchPromises);
+    setUserDetails(newUserDetails);
+  };
+  
+  // Set up WebSocket connection for game state
+  useEffect(() => {
+    if (!gameId || !currentUser) return;
+    
+    // Create WebSocket connection
+    const apiUrl = new URL(API_BASE_URL);
+    const wsProtocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${apiUrl.host}/game/ws/${gameId}`;
+    console.log('Connecting to game WebSocket:', wsUrl);
+    
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      console.log('Game WebSocket connection established');
+    };
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received game state:', data);
+      setGameState(data);
+      
+      // Extract users from game state if available
+      if (data.owners) {
+        const playerIds = Object.keys(data.owners).filter(id => id !== 'pile' && data.owners[id].is_player);
+        setUsers(playerIds);
+        fetchAllUserDetails(playerIds);
+      }
+    };
+    
+    ws.onerror = (error) => {
+      console.error('Game WebSocket error:', error);
+    };
+    
+    ws.onclose = () => {
+      console.log('Game WebSocket connection closed');
+    };
+    
+    setWebsocket(ws);
+    
+    // Clean up the WebSocket connection when the component unmounts
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [gameId, currentUser]);
+  
+  // Get current user's backend ID
+  const getCurrentUserId = () => {
+    if (backendUser && backendUser.id) {
+      return backendUser.id;
+    }
+    return null;
+  };
+  
+  // Function to handle playing selected cards
+  const handlePlayCards = async () => {
+    if (selectedCards.length === 0) {
+      alert("Please select cards to play!");
+      return;
+    }
+    
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      alert("User not authenticated!");
+      return;
+    }
+    
+    // Check if it's the current user's turn
+    if (gameState?.current_player !== currentUserId) {
+      alert("It's not your turn!");
+      return;
+    }
+    
+    const turnModel = generatePlayTurnModel(selectedCards);
+    if (!turnModel) {
+      alert("Failed to generate turn model!");
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(turnModel)
+      });
+      
+      if (response.ok) {
+        // Clear selected cards on successful play
+        setSelectedCards([]);
+        console.log("Cards played successfully!");
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to play cards: ${errorData.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error playing cards:', error);
+      alert('Failed to play cards. Please try again.');
+    }
+  };
+  
+  // Function to handle passing turn
+  const handlePass = async () => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      alert("User not authenticated!");
+      return;
+    }
+    
+    // Check if it's the current user's turn
+    if (gameState?.current_player !== currentUserId) {
+      alert("It's not your turn!");
+      return;
+    }
+    
+    const turnModel = generatePassTurnModel();
+    if (!turnModel) {
+      alert("Failed to generate pass turn model!");
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(turnModel)
+      });
+      
+      if (response.ok) {
+        console.log("Passed successfully!");
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to pass: ${errorData.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error passing:', error);
+      alert('Failed to pass. Please try again.');
+    }
+  };
+
+  // Get the last played cards from game state
+  const getLastPlayedCards = () => {
+    if (!gameState || !gameState.last_turn || !gameState.last_turn.transactions) {
+      return []; // No cards played yet
+    }
+    
+    // Convert backend card format to frontend format for display
+    return gameState.last_turn.transactions.map(transaction => 
+      convertCardToString(transaction.card)
+    );
+  };
 
   return (
       <>
@@ -127,10 +502,10 @@ function VietcongGameScreen() {
                paddingBottom: "10px",
                width: "100%",
              }}>
-          {getAllOtherPlayers([1,2,3,4])}
+          {getAllPlayers(users, userDetails, gameState, getCurrentUserId())}
         </div>
 
-        <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "5%", position: "relative"}}>
+        <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "8%", position: "relative"}}>
           <img
             src={"/src/assets/table.svg"}
             alt="table"
@@ -144,19 +519,31 @@ function VietcongGameScreen() {
             }}
           />
           <div style={{width: "100%", height: "100%", position: "absolute", top: 0, left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex:100}}>
-            {lastCombo(lastPlayedCards)}
+            {lastCombo(getLastPlayedCards())}
           </div>
         </div>
            
      
-      <div style={{width: "100%"}}>
-        {currentPlayerCards(cardlist)}
+      <div style={{width: "100%", paddingTop: "4vh"}}>
+        {currentPlayerCards(getCurrentUserCards(), selectedCards, setSelectedCards)}
       </div>
 
       <div>
-            <button style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}>Play</button>
-            <button style={{ padding: '1vh 2vw', fontSize: '5vh' }}>Pass</button>
-            </div>
+            <button 
+              style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}
+              onClick={handlePlayCards}
+              disabled={selectedCards.length === 0 || gameState?.current_player !== getCurrentUserId()}
+            >
+              Play
+            </button>
+            <button 
+              style={{ padding: '1vh 2vw', fontSize: '5vh' }}
+              onClick={handlePass}
+              disabled={gameState?.current_player !== getCurrentUserId()}
+            >
+              Pass
+            </button>
+      </div>
       </>
   );
 }

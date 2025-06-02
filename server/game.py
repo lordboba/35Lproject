@@ -486,7 +486,7 @@ class FishGame(Game):
         # 6 cards, all same half suit, half suit unclaimed
         return len(turn.transactions) == 6 and \
             len(suit_set) == 1 and \
-            self.card_to_half_suit(cards[0]) in self.unclaimed and \
+            self.card_to_half_suit(cards[0]) == self.card_to_half_suit(self.options_owner.get_cards()[0]) and \
             all(self.player_status[trans.from_] == self.player_status[turn.player] for trans in turn.transactions) and \
             all(trans.to_ == f"suits_{self.player_status[turn.player]}" for trans in turn.transactions)
     
@@ -530,6 +530,10 @@ class FishGame(Game):
         cards = set(self.half_suits_cards(self.owner_half_suits[player]))
         return list(cards.difference(set(self.owners[player].get_cards())))
     
+    def is_unclaimed(self,card: Card):
+        return self.belongs_to[card] not in ["suits_1","suits_2"]
+
+    
     async def play_turn(self, turn: Turn) -> bool:
         # Question
         if turn.turn_type == 0 and self.status == 0 and self.is_valid_question(turn):
@@ -546,11 +550,11 @@ class FishGame(Game):
         # Claim
         elif turn.turn_type == 1:
             # Initiate Claim
-            if self.status == 0 and len(turn.transactions) == 0:
+            if self.status == 0 and len(turn.transactions) == 1 and self.is_unclaimed(turn.transactions[0].card[0]):
                 self.status = 2
                 self.temp_current_player = self.current_player
                 self.current_player = self.players.index(turn.player)
-                self.options_owner = Owner(self.half_suits_cards(self.unclaimed))
+                self.options_owner = Owner(self.half_suits_cards(self.card_to_half_suit(turn.transactions[0].card[0])), False)
                 await super().broadcast_state()
                 return True
             
@@ -569,12 +573,12 @@ class FishGame(Game):
                 if len(self.owner_half_suits[turn.transactions[0].to_]) == 5:
                     self.status = 1
                     for i in range(6):
-                        self.player_status[self.plaaddyers[i]] = suit_team == self.player_status[self.players[i]]
+                        self.player_status[self.players[i]] = suit_team == self.player_status[self.players[i]]
                     await super().broadcast_state()
                     await self.manager.end_game({self.players[i]:self.player_status[self.players[i]] for i in range(6)})
                 else:
                     self.current_player = self.temp_current_player
-                    self.options_owner = Owner(self.get_question_options())
+                    self.options_owner = Owner(self.get_question_options(), False)
                     self.status = 0
                     await super().broadcast_state()
                 return True

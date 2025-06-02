@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from enum import Enum
 from core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel
+from core import user_collection
+from bson import ObjectId
 import random
 
 GAME_RULES = {
@@ -170,7 +172,7 @@ class SimpleGame(Game):
             players[1]: Owner(cardsB),
         }
 
-        super().__init__(manager, owners, cards, players)     
+        super().__init__(manager, owners, cards, players)
 
 class VietCongGame(Game):
 
@@ -343,7 +345,23 @@ class VietCongGame(Game):
         game_state = super().to_game_state()
         game_state.game_type = "vietcong"
         return game_state
-            
+    
+    async def update_vietcong_stats(self, results: dict[str, int]):
+        for user_id, place in results.items():
+            place_mapper = ["first", "second", "third", "fourth"]
+            place_str = place_mapper[place-1]
+            print(f"Updating stats for {user_id}: place = {place}")
+            await user_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {
+                    "$inc": 
+                    {
+                        "stats.vietcong.games": 1,
+                        f"stats.vietcong.place_finishes.{place_str}": 1
+                    }
+                }
+            )
+
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if not self.is_valid_turn(turn):
             return False
@@ -387,7 +405,9 @@ class VietCongGame(Game):
                     for i in range(4):
                         self.player_status[self.players[i]] = self.places[i]
                     await self.broadcast_state()
-                    await self.manager.end_game({self.players[i]:self.places[i] for i in range(4)})
+                    results = {self.players[i]:self.places[i] for i in range(4)}
+                    await self.update_vietcong_stats(results)
+                    await self.manager.end_game(results)
         
         # Pass turn to next player
         if not self.get_next_player():
@@ -530,6 +550,28 @@ class FishGame(Game):
         cards = set(self.half_suits_cards(self.owner_half_suits[player]))
         return list(cards.difference(set(self.owners[player].get_cards())))
     
+    async def update_fish_stats(self, claim_player_id: str, winning_team: int):
+        for user_id in self.players:
+            inc_fields = {
+                "stats.fish.games": 1
+            }
+
+            cur_team = self.player_status[user_id]
+
+            if cur_team == winning_team:
+                inc_fields["stats.fish.wins"] = 1
+
+            if user_id == claim_player_id:
+                inc_fields["stats.fish.claims"] = 1
+                if cur_team == winning_team:
+                    inc_fields["stats.fish.successful_claims"] = 1
+
+            print(f"Updating fish stats for {user_id}")
+            await user_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$inc": inc_fields}
+            )
+
     def is_unclaimed(self,card: Card):
         return self.belongs_to[card] not in ["suits_1","suits_2"]
 
@@ -575,7 +617,9 @@ class FishGame(Game):
                     for i in range(6):
                         self.player_status[self.players[i]] = suit_team == self.player_status[self.players[i]]
                     await super().broadcast_state()
-                    await self.manager.end_game({self.players[i]:self.player_status[self.players[i]] for i in range(6)})
+                    results = {self.players[i]: self.player_status[self.players[i]] for i in range(6)}
+                    await self.update_fish_stats(turn.player, int(suit_team))
+                    await self.manager.end_game(results)
                 else:
                     self.current_player = self.temp_current_player
                     self.options_owner = Owner(self.get_question_options(), False)

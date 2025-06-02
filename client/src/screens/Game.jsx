@@ -135,12 +135,14 @@ function Game() {
             // Check if this is a game started message
             if (data.game_started || data.status === 'started') {
                 // Game has started, navigate all users to the appropriate game screen
-                if (gameType.toLowerCase() === 'vietcong') {
-                    navigate(`/vietcong-game?id=${gameId}`);
-                } else if (gameType.toLowerCase() === 'fish') {
-                    navigate(`/fish-game?id=${gameId}`);
+                // Access current gameType from state
+                const currentGameType = data.type || gameType;
+                if (currentGameType.toLowerCase() === 'vietcong') {
+                    navigate(`/app/vietcong-game?id=${gameId}`);
+                } else if (currentGameType.toLowerCase() === 'fish') {
+                    navigate(`/app/fish-game?id=${gameId}`);
                 } else {
-                    console.error(`Unknown game type: ${gameType}`);
+                    console.error(`Unknown game type: ${currentGameType}`);
                 }
                 return;
             }
@@ -174,7 +176,7 @@ function Game() {
                 ws.close();
             }
         };
-    }, [gameId, currentUser, navigate, gameType]);
+    }, [gameId, currentUser]);
     
     // Function to leave the waiting room
     const handleLeaveGame = async () => {
@@ -236,9 +238,9 @@ function Game() {
             if (response.ok) {
                 // Game successfully started (204 status), navigate to appropriate game screen
                 if (gameType.toLowerCase() === 'vietcong') {
-                    navigate(`/vietcong-game?id=${gameId}`);
+                    navigate(`/app/vietcong-game?id=${gameId}`);
                 } else if (gameType.toLowerCase() === 'fish') {
-                    navigate(`/fish-game?id=${gameId}`);
+                    navigate(`/app/fish-game?id=${gameId}`);
                 } else {
                     setError(`Unknown game type: ${gameType}`);
                 }

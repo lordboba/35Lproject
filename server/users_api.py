@@ -390,6 +390,15 @@ async def start_game(game_id: str, tracker: GameTracker = Depends(get_tracker)):
     if len(game["players"]) != GAME_RULES[game["type"]]["max_players"]:
         raise HTTPException(status_code=400, detail="Game not full yet")
     
+    # Notify all waiting room users that the game is starting
+    game_started_message = {
+        "game_started": True,
+        "status": "started",
+        "type": game["type"],
+        "name": game["name"]
+    }
+    await tracker.waiting_websocket_manager.broadcast(game_id, game_started_message)
+    
     tracker.create_game(game_id, game["name"], game["type"], list(map(str,game["players"])))
 
     await game_collection.delete_one({"_id": ObjectId(game_id)})

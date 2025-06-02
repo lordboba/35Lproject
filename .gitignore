@@ -17,5 +17,6 @@ thumb
 sketch
 .venv/
 
+.ipynb_checkpoints
 .env
 # End of https://www.toptal.com/developers/gitignore/api/react

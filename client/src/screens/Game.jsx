@@ -212,8 +212,17 @@ function Game() {
     // Function to start the game (only available to the creator)
     const handleStartGame = async () => {
         // Logic to start the game would go here
-        // This would typically involve an API call to change the game state
         setGameStarted(true);
+
+        await fetch(`${API_BASE_URL}/games/${gameId}/start`)
+
+        if (gameType == "fish") {
+            navigate("/app/fish-game");
+        } else if (gameType == "vietcong") {
+            navigate("/app/vietcong-game");
+        } else {
+            navigate("/app/simple");
+        }
     };
     
     // Helper function to get display name for a user

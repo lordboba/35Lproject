@@ -105,8 +105,7 @@ function CreateGame() {
             
             // Check for common ID field names
             gameId = gameData.id;
-            
-            
+
             console.log('Game ID extracted:', gameId);
             
             // Make sure we have a valid game ID before proceeding

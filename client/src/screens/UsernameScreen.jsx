@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import { API_BASE_URL } from '../config';
 import './UsernameScreen.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function UsernameScreen({ firebaseUser, onRegistrationSuccess }) {
   const [username, setUsername] = useState('');

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { API_BASE_URL } from '../config';
 import './CreateGame.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function CreateGame() {
     const navigate = useNavigate();

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './Lobby.css';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { auth } from '../firebase'; // Import Firebase auth
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { onAuthStateChanged } from 'firebase/auth';
+import { API_BASE_URL, getWebSocketURL } from '../config';
 
 // Define maxMap as a constant object outside the component
 const MAX_PLAYERS = {
@@ -151,7 +151,7 @@ function Lobby() {
 
     useEffect(() => {
         // Create WebSocket connection to the lobby endpoint
-        const ws = new WebSocket('ws://localhost:8000/lobby/ws');
+        const ws = new WebSocket(getWebSocketURL('/lobby/ws'));
         
         ws.onopen = () => {
             console.log('Connected to lobby WebSocket');

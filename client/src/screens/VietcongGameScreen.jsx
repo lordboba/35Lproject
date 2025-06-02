@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useOutletContext } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { API_BASE_URL, getWebSocketURL } from '../config';
+import '../Game.css';
 
 import { Link } from 'react-router-dom';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function cardClicked(cardname, selectedCards, setSelectedCards) {
   console.log(cardname + " clicked");
@@ -367,9 +368,7 @@ function VietcongGameScreen() {
     if (!gameId || !currentUser) return;
     
     // Create WebSocket connection
-    const apiUrl = new URL(API_BASE_URL);
-    const wsProtocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${apiUrl.host}/game/ws/${gameId}`;
+    const wsUrl = getWebSocketURL(`/games/${gameId}/vietcong/ws`);
     console.log('Connecting to game WebSocket:', wsUrl);
     
     const ws = new WebSocket(wsUrl);

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { API_BASE_URL, getWebSocketURL } from '../config';
 import './Game.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function Game() {
     const location = useLocation();
@@ -118,9 +118,8 @@ function Game() {
         
         // Create WebSocket connection
         // Extract the hostname from API_BASE_URL (without http:// or https://)
-        const apiUrl = new URL(API_BASE_URL);
-        const wsProtocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${apiUrl.host}/games/${gameId}/waiting/ws`;
+        const hostname = API_BASE_URL.replace(/^https?:\/\//, '').replace(/:\d+$/, '');
+        const wsUrl = getWebSocketURL(`/games/${gameId}/ws`);
         console.log('Connecting to WebSocket:', wsUrl);
         const ws = new WebSocket(wsUrl);
         

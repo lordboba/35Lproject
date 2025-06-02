@@ -134,7 +134,7 @@ function getAllPlayers(users, userDetails, gameState, currentUserId) {
   let players = [];
   users.forEach((userId, index) => {
     const isCurrentPlayer = gameState?.current_player === userId;
-    const cardCount = gameState?.owners?.[userId]?.cards?.length || 13;
+    const cardCount = gameState?.owners?.[userId]?.cards?.length || 0;
     const isCurrentUser = userId === currentUserId;
     const playerStatus = gameState?.player_status?.[userId] || null;
     players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, playerStatus));

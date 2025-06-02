@@ -367,7 +367,7 @@ function VietcongGameScreen() {
     if (!gameId || !currentUser) return;
     
     // Create WebSocket connection
-    const wsUrl = getWebSocketURL(`/games/ws/${gameId}/`);
+    const wsUrl = getWebSocketURL(`/game/ws/${gameId}`);
     console.log('Connecting to game WebSocket:', wsUrl);
     
     const ws = new WebSocket(wsUrl);

@@ -49,7 +49,8 @@ async def initialize_user(payload: FirebaseUserRegistrationRequest = Body(...)):
 
     # Use UserModel defaults
     new_user = UserModel(firebase_uid=payload.firebase_uid)
-    new_user_data = new_user.model_dump(by_alias=True)
+    new_user_data = new_user.model_dump(by_alias=True, exclude={"id"})
+
 
     insert_result = await user_collection.insert_one(new_user_data)
     created_user = await user_collection.find_one({"_id": insert_result.inserted_id})

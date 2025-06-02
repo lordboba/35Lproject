@@ -116,10 +116,8 @@ function Game() {
     useEffect(() => {
         if (!gameId || !currentUser) return;
         
-        // Create WebSocket connection
-        // Extract the hostname from API_BASE_URL (without http:// or https://)
-        const hostname = API_BASE_URL.replace(/^https?:\/\//, '').replace(/:\d+$/, '');
-        const wsUrl = getWebSocketURL(`/games/${gameId}/ws`);
+        // Create WebSocket connection to the waiting room endpoint
+        const wsUrl = getWebSocketURL(`/games/${gameId}/waiting/ws`);
         console.log('Connecting to WebSocket:', wsUrl);
         const ws = new WebSocket(wsUrl);
         

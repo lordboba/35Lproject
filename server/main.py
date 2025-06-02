@@ -11,33 +11,75 @@ import os
 
 app = FastAPI(title="Card Game API")
 
+# Updated CORS configuration for CloudFront
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000", 
         "http://localhost:5173", 
         "https://35-lproject.vercel.app",
-        "https://*.elasticbeanstalk.com",  # Allow HTTPS from Elastic Beanstalk domains
-        "http://*.elasticbeanstalk.com",   # Keep HTTP for backward compatibility during transition
-        "https://*.cloudfront.net",       # Allow CloudFront domains
-        "https://d11u6fgyzepl0v.cloudfront.net",  # Specific CloudFront domain
-        "https://*.amazonaws.com",        # Allow other AWS domains
+        "https://*.elasticbeanstalk.com",
+        "http://*.elasticbeanstalk.com",
+        "https://*.cloudfront.net",
+        "https://d11u6fgyzepl0v.cloudfront.net",
+        "https://*.amazonaws.com",
+        "*"  # Temporarily allow all origins for debugging
     ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,  # Changed to False for broader compatibility
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
+    allow_headers=[
+        "Accept",
+        "Accept-Language",
+        "Content-Language", 
+        "Content-Type",
+        "X-Requested-With",
+        "X-Forwarded-Host",
+        "Origin",
+        "Referer",
+        "User-Agent",
+        "Sec-WebSocket-Key",
+        "Sec-WebSocket-Version", 
+        "Sec-WebSocket-Protocol",
+        "Sec-WebSocket-Extensions"
+    ],
 )
 
-# Add middleware to handle X-Forwarded-Proto header from CloudFront
+# Add middleware to handle CloudFront headers and CORS
 @app.middleware("http")
-async def handle_forwarded_proto(request: Request, call_next):
+async def handle_cloudfront_and_cors(request: Request, call_next):
+    # Handle preflight OPTIONS requests
+    if request.method == "OPTIONS":
+        from fastapi.responses import Response
+        response = Response()
+        response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+        response.headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, X-Forwarded-Proto, X-Forwarded-Host, Origin, Referer, User-Agent"
+        response.headers["Access-Control-Max-Age"] = "86400"
+        response.status_code = 200
+        return response
+    
     # CloudFront sends X-Forwarded-Proto header
     forwarded_proto = request.headers.get("x-forwarded-proto")
+    forwarded_host = request.headers.get("x-forwarded-host")
+    
     if forwarded_proto:
-        # Update the request scheme based on CloudFront header
         request.scope["scheme"] = forwarded_proto
     
+    if forwarded_host:
+        request.scope["server"] = (forwarded_host, request.scope.get("server", ("localhost", 80))[1])
+    
     response = await call_next(request)
+    
+    # Add CORS headers to all responses
+    origin = request.headers.get("origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+    
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+    response.headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, X-Forwarded-Proto, X-Forwarded-Host, Origin, Referer, User-Agent"
+    response.headers["Access-Control-Expose-Headers"] = "Content-Length, Content-Range"
     
     # Add security headers for HTTPS
     if forwarded_proto == "https":
@@ -54,7 +96,18 @@ app.include_router(games_router)
 @app.get("/health")
 async def health_check():
     """Health check endpoint for CloudFront"""
-    return {"status": "healthy", "service": "35L Backend API"}
+    return {"status": "healthy", "service": "35L Backend API", "websocket_support": "enabled"}
+
+@app.options("/{path:path}")
+async def options_handler(request: Request):
+    """Handle all OPTIONS requests for CORS preflight"""
+    from fastapi.responses import Response
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+    response.headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, X-Forwarded-Proto, X-Forwarded-Host, Origin, Referer, User-Agent"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    return response
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))

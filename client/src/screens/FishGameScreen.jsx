@@ -85,7 +85,7 @@ return <div
 style={{
   maxWidth: '60%',
   display: 'inline-flex',
-  gap: '3vw',
+  gap: '0.5vw',
   alignItems: 'center',
   overflowX: 'scroll',
   scrollbarWidth: 'thin',

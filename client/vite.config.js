@@ -14,6 +14,12 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     // Ensure environment variables are available
-    'process.env': {}
-  }
+    'process.env': {},
+    // Make sure NODE_ENV is properly defined for runtime checks
+    'process.env.NODE_ENV': JSON.stringify(mode)
+  },
+  // Ensure environment variables are loaded properly
+  envPrefix: ['VITE_', 'REACT_APP_'],
+  // Force production mode settings when building for production
+  mode: mode
 }))

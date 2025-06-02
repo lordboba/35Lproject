@@ -6,6 +6,7 @@ from game_manager import GameTracker
 from game import TransactionModel
 from fastapi import Body
 import uvicorn
+import os
 
 
 app = FastAPI(title="Card Game API")
@@ -26,4 +27,5 @@ app.include_router(users_router)
 app.include_router(games_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)

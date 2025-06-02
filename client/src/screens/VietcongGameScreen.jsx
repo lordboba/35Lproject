@@ -3,7 +3,6 @@ import { useLocation, useOutletContext, useParams, useNavigate } from 'react-rou
 import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { API_BASE_URL, getWebSocketURL } from '../config';
-import '../Game.css';
 
 import { Link } from 'react-router-dom';
 

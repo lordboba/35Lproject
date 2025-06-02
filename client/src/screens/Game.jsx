@@ -132,6 +132,21 @@ function Game() {
             const data = JSON.parse(event.data);
             console.log('Received updated game data:', data);
             
+            // Check if this is a game started message
+            if (data.game_started || data.status === 'started') {
+                // Game has started, navigate all users to the appropriate game screen
+                // Access current gameType from state
+                const currentGameType = data.type || gameType;
+                if (currentGameType.toLowerCase() === 'vietcong') {
+                    navigate(`/app/vietcong-game?id=${gameId}`);
+                } else if (currentGameType.toLowerCase() === 'fish') {
+                    navigate(`/app/fish-game?id=${gameId}`);
+                } else {
+                    console.error(`Unknown game type: ${currentGameType}`);
+                }
+                return;
+            }
+            
             // Update game data from WebSocket message
             if (data.players) {
                 setUsers(data.players);
@@ -211,9 +226,37 @@ function Game() {
     
     // Function to start the game (only available to the creator)
     const handleStartGame = async () => {
-        // Logic to start the game would go here
-        // This would typically involve an API call to change the game state
-        setGameStarted(true);
+        try {
+            // Make API call to start the game
+            const response = await fetch(`${API_BASE_URL}/games/${gameId}/start`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            if (response.ok) {
+                // Game successfully started (204 status), navigate to appropriate game screen
+                if (gameType.toLowerCase() === 'vietcong') {
+                    navigate(`/app/vietcong-game?id=${gameId}`);
+                } else if (gameType.toLowerCase() === 'fish') {
+                    navigate(`/app/fish-game?id=${gameId}`);
+                } else {
+                    setError(`Unknown game type: ${gameType}`);
+                }
+            } else if (response.status === 400) {
+                // Game not full yet - API returns 400 error
+                const errorData = await response.json();
+                setError(errorData.detail || "Game not full yet. Need more players to start.");
+            } else {
+                // Other errors (404, etc.)
+                const errorData = await response.json();
+                setError(errorData.detail || 'Failed to start game');
+            }
+        } catch (error) {
+            console.error('Error starting game:', error);
+            setError('Failed to start game. Please try again.');
+        }
     };
     
     // Helper function to get display name for a user

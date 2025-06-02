@@ -54,6 +54,7 @@ class GameManager:
         #print("grr")
         self.game = game_class(self, players)
         self.game_log = GameLog(game_id, name, game_type, players)
+        self.game.log_state()
         #print("yoo")
 
     async def play_turn(self, turn: game.Turn):
@@ -82,7 +83,7 @@ class GameLog:
 
 
     def log_state(self, game_state):
-        self.game_states.append(GameStateModel(**game_state))
+        self.game_states.append(game_state)
 
     async def save_replay(self, results: dict):
         """

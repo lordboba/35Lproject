@@ -45,6 +45,7 @@ function App() {
       setUser(currentUser);
       if (currentUser) {
         try {
+          console.log('Initializing user with API endpoint:', `${API_BASE_URL}/users/initialize`);
           const response = await fetch(`${API_BASE_URL}/users/initialize`,
             {
               method: 'POST',

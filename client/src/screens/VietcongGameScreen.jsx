@@ -95,14 +95,32 @@ style={{
 </div>
 }
 
-function lastCombo(claims){
+function lastCombo(cards){
+  let cardlist = []
+  cards.forEach(cardname => {
+    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10%", display: "flex", gap: "0px"}} alt={cardname}/>)
+  })
+  return <div
+  style={{
+    maxWidth: '80%',
+    display: 'inline-flex',
+    gap: '1.5vw',
+    alignItems: 'center',
+    overflowX: 'scroll',
   
+    scrollbarWidth: 'thin', 
+    msOverflowStyle: 'auto' 
+  }}
+  >
+    {cardlist}
+  </div>
 }
 
 function VietcongGameScreen() {
+
   const [games, setGames] = useState([]);
   let cardlist = ["3D", "4C", "KD", "5C", "5D", "6C", "6D", "7C", "7D", "8C", "8D", "9C", "9D", "JC", "JD", "QC", "QD", "KC", "KD", "AC", "AD"]
-  let lastPlayedCards = ["3D"]
+  let lastPlayedCards = ["3D","4C","5C","6C","7C","8C","9C","JC","QC","KC","AC"]
 
   return (
       <>

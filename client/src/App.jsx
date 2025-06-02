@@ -159,8 +159,8 @@ function App() {
         <Route path="stats" element={<UserStats />} />
         <Route path="instructions" element={<GameInstructions />} />
         <Route path="create-game" element={<CreateGame />} />
-        <Route path="vietcong-game" element={<VietcongGameScreen />} />
-        <Route path="game" element={<FishGameScreen />} />
+        <Route path="game" element={<VietcongGameScreen />} />
+        <Route path="fish-game" element={<FishGameScreen />} />
       </Route>
     </Routes>
   );

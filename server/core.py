@@ -13,8 +13,13 @@ load_dotenv()
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
+# Get MongoDB URL with error handling
+mongodb_url = os.environ.get("MONGODB_URL")
+if not mongodb_url:
+    raise ValueError("MONGODB_URL environment variable is not set")
+
 client = motor.motor_asyncio.AsyncIOMotorClient(
-    os.environ["MONGODB_URL"],
+    mongodb_url,
     tls=True,
     tlsCAFile=certifi.where()
 )

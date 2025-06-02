@@ -13,8 +13,7 @@ import CreateGame from './screens/CreateGame';
 import Game from './screens/Game';
 import VietcongGameScreen from './screens/VietcongGameScreen';
 import FishGameScreen from './screens/FishGameScreen';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API_BASE_URL } from './config';
 
 function ProtectedLayout({ onSignOut, backendUser }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront distribution for Elastic Beanstalk application with SSL'
+
+Parameters:
+  ElasticBeanstalkCNAME:
+    Type: String
+    Default: '35Lbackend-dev.us-west-2.elasticbeanstalk.com'
+    Description: 'The CNAME of your Elastic Beanstalk environment'
+  
+  DomainName:
+    Type: String
+    Default: ''
+    Description: 'Optional: Your custom domain name (leave empty to use CloudFront domain)'
+  
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: 'Optional: ACM Certificate ARN for custom domain (must be in us-east-1)'
+
+Conditions:
+  HasCustomDomain: !Not [!Equals [!Ref DomainName, '']]
+  HasCertificate: !Not [!Equals [!Ref CertificateArn, '']]
+
+Resources:
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases: !If 
+          - HasCustomDomain
+          - [!Ref DomainName]
+          - []
+        
+        Origins:
+          - Id: ElasticBeanstalkOrigin
+            DomainName: !Ref ElasticBeanstalkCNAME
+            CustomOriginConfig:
+              HTTPPort: 80
+              OriginProtocolPolicy: http-only  # Force HTTP only to EB
+              OriginReadTimeout: 30
+              OriginKeepaliveTimeout: 5
+        
+        DefaultCacheBehavior:
+          TargetOriginId: ElasticBeanstalkOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - PUT
+            - POST
+            - PATCH
+            - DELETE
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # CachingDisabled
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf  # CORS-S3Origin
+          Compress: true
+          TrustedSigners: []
+        
+        Comment: !Sub 'CloudFront distribution for ${ElasticBeanstalkCNAME}'
+        Enabled: true
+        HttpVersion: http2
+        PriceClass: PriceClass_100  # Use only North America and Europe
+        
+        ViewerCertificate: !If
+          - HasCertificate
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+
+Outputs:
+  CloudFrontDistributionId:
+    Description: 'CloudFront Distribution ID'
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub '${AWS::StackName}-CloudFrontDistributionId'
+  
+  CloudFrontDomainName:
+    Description: 'CloudFront Distribution Domain Name'
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-CloudFrontDomainName'
+  
+  CloudFrontURL:
+    Description: 'CloudFront HTTPS URL'
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-CloudFrontURL' 

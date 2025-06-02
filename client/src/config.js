@@ -4,7 +4,7 @@ const config = {
     API_BASE_URL: 'http://localhost:8000',
   },
   production: {
-    API_BASE_URL: 'https://35lbackend-dev.us-west-2.elasticbeanstalk.com',
+    API_BASE_URL: 'https://d11u6fgyzepl0v.cloudfront.net',
   }
 };
 
@@ -13,29 +13,32 @@ const environment = import.meta.env.MODE || 'development';
 
 // Get API URL with proper fallback logic and HTTPS enforcement
 const getApiUrl = () => {
+  let url;
+  
   // First priority: explicit environment variable
   if (import.meta.env.VITE_API_URL) {
-    let url = import.meta.env.VITE_API_URL;
+    url = import.meta.env.VITE_API_URL;
     // Force HTTPS in production mode, even if env var specifies HTTP
     if (environment === 'production' && url.startsWith('http://')) {
       console.warn('Converting HTTP to HTTPS for production environment');
       url = url.replace('http://', 'https://');
     }
-    return url;
   }
-  
   // Second priority: environment-specific config
-  if (config[environment]?.API_BASE_URL) {
-    return config[environment].API_BASE_URL;
+  else if (config[environment]?.API_BASE_URL) {
+    url = config[environment].API_BASE_URL;
   }
-  
   // Final fallback: production URL with HTTPS enforcement
-  if (environment === 'production') {
-    return config.production.API_BASE_URL;
+  else if (environment === 'production') {
+    url = config.production.API_BASE_URL;
+  }
+  // Development fallback
+  else {
+    url = config.development.API_BASE_URL;
   }
   
-  // Development fallback
-  return config.development.API_BASE_URL;
+  // Ensure the URL doesn't end with a slash to prevent double slashes when concatenating
+  return url.endsWith('/') ? url.slice(0, -1) : url;
 };
 
 // Export the configuration for the current environment
@@ -46,7 +49,10 @@ export const getWebSocketURL = (path) => {
   const apiUrl = API_BASE_URL;
   const wsProtocol = apiUrl.startsWith('https://') ? 'wss://' : 'ws://';
   const baseUrl = apiUrl.replace(/^https?:\/\//, '');
-  return `${wsProtocol}${baseUrl}${path}`;
+  
+  // Ensure no double slashes in the WebSocket URL
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${wsProtocol}${baseUrl}${cleanPath}`;
 };
 
 // Secure API request helper - ensures HTTPS in production

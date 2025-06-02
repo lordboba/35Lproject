@@ -23,7 +23,7 @@ VITE_API_URL=http://localhost:8000
 #### Production
 ```bash
 # .env.production
-VITE_API_URL=https://35lbackend-dev.us-west-2.elasticbeanstalk.com
+VITE_API_URL=https://d11u6fgyzepl0v.cloudfront.net
 ```
 
 ### Build Scripts

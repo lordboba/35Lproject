@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   server: {
     port: 5173,
-    open: mode === 'development' // Only open browser in development mode
+    open: false // Disable automatic browser opening to prevent xdg-open errors in deployment environments
   },
   build: {
     outDir: 'dist',

@@ -322,7 +322,7 @@ class VietCongGame(Game):
     def get_next_player(self) -> bool:
         for i in range(1,4):
             next_player = (self.current_player+i)%4
-            if self.player_status[self.players[next_player]] == 0 and self.places[next_player] == 4:
+            if self.player_status[self.players[next_player]] == 0 and self.places[next_player] == 4 and self.players[next_player] != self.last_turn.player:
                 self.current_player = next_player
                 return True
         return False
@@ -351,6 +351,7 @@ class VietCongGame(Game):
     def to_game_state(self):
         game_state = super().to_game_state()
         game_state.game_type = "vietcong"
+        game_state.player_status = {self.players[i]: self.player_status[self.players[i]] if place == 4 else place for i, place in enumerate(self.places)}
         return game_state
             
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
@@ -362,7 +363,7 @@ class VietCongGame(Game):
             if self.current_combo_type == self.Combo.NONE:
                 return False
             
-            self.player_status[turn.player] = 1
+            self.player_status[turn.player] = -1
 
 
         # Player plays cards

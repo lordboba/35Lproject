@@ -96,14 +96,14 @@ style={{
 </div>
 }
 function startClaim(buttonNo){
-  let names = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"]
+  let names = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"]
   console.log(buttonNo + "clicked")
   // API call to initialize the claim
 
 }
 
 function claimButtons(claims) {
-  let names = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"]
+  let names = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"]
   return (
     <div style={{
       maxWidth: '80%',

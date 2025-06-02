@@ -137,7 +137,7 @@ function VietcongGameScreen() {
       </div>
 
       <div>
-            <button style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}>Play</button>
+            <button style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }} disabled = {false}>Play</button>
             <button style={{ padding: '1vh 2vw', fontSize: '5vh' }}>Pass</button>
             </div>
       </>

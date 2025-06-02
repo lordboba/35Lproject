@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="837.0066" height="1192.4994" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 837.0066 1192.4994">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #333;
+      }
+    </style>
+    <symbol id="Black_4" data-name="Black 4" viewBox="0 0 150 177.0669">
+      <polygon points="134.6416 102.6004 134.6416 0 73.2083 0 8.7311 90.3639 30.8161 90.3639 76.9604 25.945 76.9604 102.6004 41.972 102.6004 22.0508 102.6004 0 102.6004 0 132.6547 85.5459 132.6547 85.5459 139.7743 0 139.7743 0 144.7125 80.8874 144.7125 80.8874 177.0669 135.6655 177.0669 135.6655 146.4773 150 146.4773 150 102.6004 134.6416 102.6004"/>
+    </symbol>
+    <symbol id="Spade" viewBox="0 0 285.5324 271.7601">
+      <g>
+        <polygon points="285.5324 183.2928 242.6122 97.1964 172.6183 128.7681 224.9795 83.6053 142.7661 0 60.5528 83.6053 112.9141 128.7681 42.9201 97.1964 0 183.2928 87.0237 212.3293 112.9141 167.8122 95.6276 271.7601 142.7661 271.7601 189.9048 271.7601 172.6183 167.8122 198.5087 212.3293 285.5324 183.2928"/>
+        <polygon class="cls-2" points="142.7661 0 112.9141 128.7681 60.5528 83.6053 142.7661 0"/>
+        <polygon class="cls-2" points="142.7661 0 142.7661 271.7601 189.9048 271.7601 172.6183 167.8122 198.5087 212.3293 285.5324 183.2928 242.6122 97.1964 172.6183 128.7681 142.7661 0"/>
+      </g>
+    </symbol>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <rect class="cls-1" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <use width="150" height="177.0669" transform="translate(42.5934 49.9303)" xlink:href="#Black_4"/>
+    <use width="285.5324" height="271.7601" transform="translate(40.4199 251.4599) scale(.4513)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(175.7349 163.6035) scale(.6466)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(360.3525 999.1471) rotate(-180) scale(.6466)" xlink:href="#Spade"/>
+    <use width="150" height="177.0669" transform="translate(790.1869 1122.1206) rotate(-180)" xlink:href="#Black_4"/>
+    <use width="285.5324" height="271.7601" transform="translate(792.3605 920.591) rotate(-180) scale(.4513)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(657.0454 1008.4474) rotate(-180) scale(.6466)" xlink:href="#Spade"/>
+    <use width="285.5324" height="271.7601" transform="translate(472.4278 172.9038) scale(.6466)" xlink:href="#Spade"/>
+  </g>
+</svg>

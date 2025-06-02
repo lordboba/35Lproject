@@ -46,6 +46,13 @@ class Card():
                 return "JB"
             elif self.suit == Suit.DIAMOND:
                 return "JR"
+        if self.rank == 0:
+            if self.suit == Suit.CLUB:
+                return "JB"
+            elif self.suit == Suit.DIAMOND:
+                return "JR"
+        if self.suit == Suit.SPEC:
+            return "JK"
         rank_arr = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
         suit_arr = ["","C","D","H","S"]
         return rank_arr[(self.rank)%14]+suit_arr[self.suit.value]
@@ -234,6 +241,30 @@ class VietCongGame(Game):
     @staticmethod
     def is_multiple_sequence(cards: list[Card], multiple: int) -> int:
         if len(cards)<3*multiple or len(cards)%multiple!=0 or cards[-1].rank == 2:
+            return False
+        if cards[0].rank == cards[1].rank:
+            return True
+        return False
+    async def is_triple(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=3:
+            return False
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank:
+            return True
+        return False
+    
+    async def is_quad(self, turn:Turn) ->bool:
+        cards = [trans.get_card() for trans in turn.transactions]
+        if len(cards)!=4:
+            return False
+        if cards[0].rank == cards[1].rank and cards[1].rank == cards[2].rank and cards[3].rank == cards[2].rank:
+            return True
+        return False
+
+    async def is_sequence(self,turn:Turn)->int:
+        cards = [trans.get_card() for trans in turn.transactions]
+        rank = cards[0].rank - 1
+        if len(cards)<3:
             return False
         
         rank = cards[0].rank

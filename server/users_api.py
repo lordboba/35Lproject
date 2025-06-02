@@ -414,6 +414,38 @@ async def play_turn(game_id: str, turn: TurnModel = Body(...), tracker: GameTrac
         raise HTTPException(status_code=400, detail="Invalid turn or game state")
     
 @router.delete(
+    "/games/all",
+    response_description="Delete all games",
+    status_code=204,
+)
+async def delete_all_games(tracker: GameTracker = Depends(get_tracker)):
+    """
+    Delete all games from both the database and active games in memory.
+    """
+    try:
+        # Get all games from the database first
+        all_games = await game_collection.find().to_list(1000)
+        print(f"Found {len(all_games)} games in database")
+        
+        # Delete each game individually from the database
+        for game in all_games:
+            await game_collection.delete_one({"_id": game["_id"]})
+        print(f"Deleted {len(all_games)} games from database")
+        
+        # Delete all active games from the tracker
+        active_game_ids = list(tracker.games.keys())
+        print(f"Found {len(active_game_ids)} active games")
+        
+        for game_id in active_game_ids:
+            tracker.delete_game(game_id)
+        print(f"Deleted {len(active_game_ids)} active games")
+        
+        return {}
+    except Exception as e:
+        print(f"Error in delete_all_games: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@router.delete(
     "/games/{game_id}",
     response_description="Delete game",
     status_code=204,
@@ -430,28 +462,6 @@ async def delete_game(game_id: str, tracker: GameTracker = Depends(get_tracker))
         return {}
 
     raise HTTPException(status_code=404, detail=f"Game {game_id} not found")
-
-@router.delete(
-    "/games/all",
-    response_description="Delete all games",
-    status_code=204,
-)
-async def delete_all_games(tracker: GameTracker = Depends(get_tracker)):
-    """
-    Delete all games from both the database and active games in memory.
-    """
-    # Delete all games from the database
-    await game_collection.delete_many({})
-    
-    # Delete all active games from the tracker
-    active_game_ids = list(tracker.games.keys())
-    for game_id in active_game_ids:
-        tracker.delete_game(game_id)
-    
-    # Broadcast to lobby that all games were deleted
-    await tracker.lobby_websocket_manager.broadcast("lobby", {})
-    
-    return {}
 
 # WebSocket
 

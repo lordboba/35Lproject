@@ -614,6 +614,12 @@ class FishGame(Game):
 
     
     async def play_turn(self, turn: Turn) -> bool:
+
+        print(f"[DEBUG] play_turn: status={self.status}, turn_type={turn.turn_type}")
+        print(f"[DEBUG] turn.player={turn.player}, from_={turn.transactions[0].from_}, to_={turn.transactions[0].to_}")
+        print(f"[DEBUG] card={turn.transactions[0].card}")
+        print(f"[DEBUG] valid_question={self.is_valid_question(turn)}")
+
         # Question
         if turn.turn_type == 0 and self.status == 0 and self.is_valid_question(turn):
             # Unsuccessful Question
@@ -660,7 +666,7 @@ class FishGame(Game):
                         self.player_status[self.players[i]] = winner == self.player_status[self.players[i]]
                     await super().broadcast_state()
                     results = {self.players[i]: self.player_status[self.players[i]] for i in range(6)}
-                    await self.update_fish_stats(results)
+                    await self.update_fish_stats(results, winner)
                     await self.manager.end_game(results)
                 else:
                     self.current_player = self.temp_current_player

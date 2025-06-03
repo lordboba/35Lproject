@@ -163,7 +163,7 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
     cardlist.push(
       <img 
         key={cardname}
-        src={`/src/assets/${cardname}icon.svg`} 
+        src={`/${cardname}icon.svg`}
         style={{
           width: "5.5%",
           display: "flex", 
@@ -186,11 +186,13 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
       maxWidth: '95%',
       display: 'inline-flex',
       gap: '0.5vw',
-      alignItems: 'center',
+      alignItems: 'flex-end',
       overflowX: 'auto',
       scrollbarWidth: 'thin',
       msOverflowStyle: 'auto',
       justifyContent: 'center',
+      paddingTop: '15px',
+      paddingBottom: '5px',
     }}>
       {cardlist}
     </div>
@@ -200,7 +202,7 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
 function lastCombo(cards){
   let cardlist = []
   cards.forEach(cardname => {
-    cardlist.push(<img src={`/src/assets/${cardname}icon.svg`} style={{width: "10%", display: "block"}} alt={cardname} key={cardname}/>)
+    cardlist.push(<img src={`/${cardname}icon.svg`} style={{width: "10%", display: "block"}} alt={cardname} key={cardname}/>)
   })
   return <div
   style={{
@@ -527,7 +529,7 @@ function VietcongGameScreen() {
 
         <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "8%", position: "relative"}}>
           <img
-            src={"/src/assets/table.svg"}
+            src={"/table.svg"}
             alt="table"
             style={{
               width: "100%",
@@ -544,7 +546,7 @@ function VietcongGameScreen() {
         </div>
            
      
-      <div style={{width: "100%", paddingTop: "4vh"}}>
+      <div style={{width: "100%", paddingTop: "6vh"}}>
         {currentPlayerCards(getCurrentUserCards(), selectedCards, setSelectedCards)}
       </div>
 

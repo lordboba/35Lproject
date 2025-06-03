@@ -7,13 +7,13 @@ import { API_BASE_URL, getWebSocketURL } from '../config';
 function cardClicked(cardname, selectedCards, setSelectedCards) {
     console.log(cardname + " clicked");
     
-    // Toggle card selection
+    // For Fish game questions, only allow selecting one card at a time
     if (selectedCards.includes(cardname)) {
       // Remove card from selection
-      setSelectedCards(selectedCards.filter(card => card !== cardname));
+      setSelectedCards([]);
     } else {
-      // Add card to selection
-      setSelectedCards([...selectedCards, cardname]);
+      // Replace any existing selection with this card
+      setSelectedCards([cardname]);
     }
   }
   
@@ -29,17 +29,14 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
       statusText = 'CLAIMING';
       statusColor = '#FF6B6B';
     } else if (playerStatus === 1) {
-      statusText = '1st PLACE';
-      statusColor = '#FFD700'; // Gold
-      isFinished = true;
+      statusText = 'Team #1';
+      statusColor = '#3b82f6'; // Blue for team 1
     } else if (playerStatus === 2) {
-      statusText = '2nd PLACE';
-      statusColor = '#C0C0C0'; // Silver
-      isFinished = true;
+      statusText = 'Team #2';
+      statusColor = '#ef4444'; // Red for team 2
     } else if (playerStatus === 3) {
-      statusText = '3rd PLACE';
-      statusColor = '#CD7F32'; // Bronze
-      isFinished = true;
+      statusText = 'Team #3';
+      statusColor = '#10b981'; // Green for team 3
     }
     
     return (
@@ -138,10 +135,10 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     
     return (
       <div style={{
-        maxWidth: '80%',
+        maxWidth: '95%',
         display: 'flex',
         flexDirection: 'row',
-        gap: '5%',
+        gap: '0%',
         alignItems: 'center',
         overflowX: 'scroll',
         scrollbarWidth: 'thin',
@@ -152,27 +149,23 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     );
   }
 
-  function currentPlayerCards(cards, selectedCards, setSelectedCards) {
+  function currentPlayerCards(cards) {
     let cardlist = [];
     cards.forEach(cardname => {
-      const isSelected = selectedCards.includes(cardname);
       cardlist.push(
         <img 
           key={cardname}
-          src={`/src/assets/${cardname}icon.svg`} 
+          src={`/${cardname}icon.svg`}
           style={{
             width: "5.5%",
             display: "flex", 
             gap: "0px",
-            cursor: "pointer",
-            border: isSelected ? "3px solid #007BFF" : "3px solid transparent", // Blue border when selected
+            border: "2px solid rgba(255, 255, 255, 0.3)", // Subtle border for definition
             borderRadius: "8px",
-            transform: isSelected ? "translateY(-10px)" : "translateY(0px)", // Move up when selected
-            transition: "all 0.2s ease-in-out", // Smooth animation
-            boxShadow: isSelected ? "0 4px 8px rgba(0, 123, 255, 0.3)" : "none", // Blue shadow when selected
+            transition: "all 0.2s ease-in-out", // Smooth animation for hover
+            opacity: 0.9,
           }} 
-          alt={cardname} 
-          onClick={() => cardClicked(cardname, selectedCards, setSelectedCards)} 
+          alt={cardname}
         />
       );
     });
@@ -186,11 +179,233 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
         scrollbarWidth: 'thin',
         msOverflowStyle: 'auto',
         justifyContent: 'center',
+        paddingTop: '10px',
+        paddingBottom: '10px',
       }}>
+        <div style={{
+          color: '#FFF',
+          fontSize: '1.4vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginRight: '15px',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+          minWidth: 'fit-content',
+        }}>
+          Your Hand:
+        </div>
         {cardlist}
       </div>
     );
   }
+
+  // Function to display current player's cards as question options
+  function questionOptionsFromCards(cardStrings, selectedCards, setSelectedCards) {
+    console.log('questionOptionsFromCards called with:', {
+      cardStrings,
+      selectedCards
+    });
+
+    if (!cardStrings || !Array.isArray(cardStrings) || cardStrings.length === 0) {
+      console.log('questionOptionsFromCards returning null - no valid cards');
+      return null;
+    }
+
+    let optionCards = [];
+    
+    cardStrings.forEach(cardname => {
+      const isSelected = selectedCards.includes(cardname);
+      optionCards.push(
+        <img 
+          key={`option-${cardname}`}
+          src={`/${cardname}icon.svg`}
+          style={{
+            width: "4%",
+            display: "flex", 
+            cursor: "pointer",
+            border: isSelected ? "3px solid #00FF00" : "3px solid #FFD700", // Green when selected, gold border normally
+            borderRadius: "8px",
+            transform: isSelected ? "translateY(-15px) scale(1.1)" : "translateY(0px)", // Move up and scale when selected
+            transition: "all 0.3s ease-in-out", // Smooth animation
+            boxShadow: isSelected ? "0 6px 12px rgba(0, 255, 0, 0.4)" : "0 2px 6px rgba(255, 215, 0, 0.3)", // Green/gold shadow
+            opacity: isSelected ? 1 : 0.9,
+          }} 
+          alt={cardname} 
+          onClick={() => cardClicked(cardname, selectedCards, setSelectedCards)} 
+        />
+      );
+    });
+
+    console.log('questionOptionsFromCards rendering with', optionCards.length, 'cards');
+
+    return (
+      <div style={{
+        width: '100%',
+        padding: '25px 15px 15px 15px', // Extra top padding for cards that move up
+        backgroundColor: 'rgba(255, 215, 0, 0.15)', // Light gold background
+        borderRadius: '12px',
+        border: '2px solid #FFD700',
+        marginBottom: '20px',
+      }}>
+        <div style={{
+          color: '#FFD700',
+          fontSize: '1.8vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: '15px', // More space before cards
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        }}>
+          🃏 Select a Card to Ask About 🃏
+        </div>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+          alignItems: 'flex-end', // Align to bottom so cards can move up
+          justifyContent: 'center',
+          maxHeight: '30vh', // Increased height
+          overflowY: 'auto',
+          paddingTop: '20px', // Extra padding at top for movement
+          paddingBottom: '10px',
+        }}>
+          {optionCards}
+        </div>
+        <div style={{
+          color: '#FFF',
+          fontSize: '1.2vw',
+          textAlign: 'center',
+          marginTop: '8px',
+          fontStyle: 'italic',
+        }}>
+          Choose from your hand - you can only ask about cards you have
+        </div>
+      </div>
+    );
+  }
+
+  // Function to display selectable players for asking questions
+  function playerSelectionForQuestions(users, userDetails, currentUserId, selectedPlayerToAsk, setSelectedPlayerToAsk, gameState) {
+    if (!users || users.length === 0 || !gameState) {
+      return null;
+    }
+    
+    // Get current player's team
+    const currentPlayerTeam = gameState?.player_status?.[currentUserId];
+    
+    // Filter out the current user and teammates - only show opponents
+    const opponents = users.filter(userId => {
+      if (userId === currentUserId) return false; // Can't ask yourself
+      
+      const playerTeam = gameState?.player_status?.[userId];
+      // Only include players on different teams (opponents)
+      return playerTeam && playerTeam !== currentPlayerTeam;
+    });
+    
+    if (opponents.length === 0) {
+      return (
+        <div style={{
+          width: '100%',
+          padding: '20px 15px',
+          backgroundColor: 'rgba(255, 193, 7, 0.15)', // Light yellow background
+          borderRadius: '12px',
+          border: '2px solid #FFC107',
+          marginBottom: '20px',
+        }}>
+          <div style={{
+            color: '#FFC107',
+            fontSize: '1.6vw',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+          }}>
+            ⚠️ No opponents available to ask
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{
+        width: '100%',
+        padding: '20px 15px',
+        backgroundColor: 'rgba(0, 123, 255, 0.15)', // Light blue background
+        borderRadius: '12px',
+        border: '2px solid #007BFF',
+        marginBottom: '20px',
+      }}>
+        <div style={{
+          color: '#007BFF',
+          fontSize: '1.8vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: '15px',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        }}>
+          🎯 Select an Opponent to Ask 🎯
+        </div>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '12px',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          {opponents.map(userId => {
+            const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
+            const playerTeam = gameState?.player_status?.[userId];
+            const isSelected = selectedPlayerToAsk === userId;
+            
+            // Get team color
+            let teamColor = '#007BFF'; // Default blue
+            if (playerTeam === 1) teamColor = '#3b82f6'; // Blue for team 1
+            else if (playerTeam === 2) teamColor = '#ef4444'; // Red for team 2
+            else if (playerTeam === 3) teamColor = '#10b981'; // Green for team 3
+            
+            return (
+              <button
+                key={`player-select-${userId}`}
+                style={{
+                  padding: '12px 20px',
+                  fontSize: '1.4vw',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  border: isSelected ? '3px solid #00FF00' : `3px solid ${teamColor}`,
+                  background: isSelected ? '#00FF00' : teamColor,
+                  color: isSelected ? '#000' : '#FFF',
+                  cursor: 'pointer',
+                  transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: isSelected ? '0 4px 8px rgba(0, 255, 0, 0.4)' : `0 2px 6px ${teamColor}33`,
+                  minWidth: '120px',
+                }}
+                onClick={() => {
+                  if (selectedPlayerToAsk === userId) {
+                    setSelectedPlayerToAsk(null); // Deselect if already selected
+                  } else {
+                    setSelectedPlayerToAsk(userId); // Select this player
+                  }
+                }}
+              >
+                {username}
+                <div style={{ fontSize: '0.8em', marginTop: '2px' }}>
+                  Team #{playerTeam}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{
+          color: '#FFF',
+          fontSize: '1.2vw',
+          textAlign: 'center',
+          marginTop: '12px',
+          fontStyle: 'italic',
+        }}>
+          Choose an opponent (different team) to ask about your selected card
+        </div>
+      </div>
+    );
+  }
+
 function startClaim(buttonNo){
   let names = ["♣ 2-7", "♦ 2-7", "♥ 2-7", "♠2-7", "♣ 9-A", "♦ 9-A", "♥ 9-A", "♠ 9-A", "8 & Joker",]
   console.log(buttonNo + "clicked")
@@ -212,9 +427,13 @@ const HalfSuit = {
 function getClaimsArray(suits_1,suits_2){
   let claims = [0,0,0,0,0,0,0,0,0]
   
+  // Handle undefined/null cases with default empty arrays
+  const safeCards1 = suits_1 || [];
+  const safeCards2 = suits_2 || [];
+  
   // Convert card arrays to half suit sets
-  const halfSuits1 = cardsToHalfSuit(suits_1);
-  const halfSuits2 = cardsToHalfSuit(suits_2);
+  const halfSuits1 = cardsToHalfSuit(safeCards1);
+  const halfSuits2 = cardsToHalfSuit(safeCards2);
   
   for (let i = 0; i < 9; i++){
     if (halfSuits1.has(i)) {
@@ -226,8 +445,6 @@ function getClaimsArray(suits_1,suits_2){
   return claims;
 }
 
-
-
 function cardToHalfSuit(card) {
   if (card.rank === 0 || card.rank === 8) {
     return HalfSuit.MIDDLE;
@@ -236,6 +453,10 @@ function cardToHalfSuit(card) {
 }
 
 function cardsToHalfSuit(cards) {
+  // Handle undefined/null cases
+  if (!cards || !Array.isArray(cards)) {
+    return new Set();
+  }
   return new Set(cards.map(card => cardToHalfSuit(card)));
 }
 
@@ -336,11 +557,6 @@ function claimButtons(claims) {
   );
 }
 
-
-
-
-
-
 function FishGameScreen() {
     const location = useLocation();
     const { backendUser } = useOutletContext();
@@ -351,8 +567,11 @@ function FishGameScreen() {
     const [users, setUsers] = useState([]);
     const [userDetails, setUserDetails] = useState({});
     
-    // Card selection state
+    // Card selection state - modified to only allow one card for questions
     const [selectedCards, setSelectedCards] = useState([]);
+    
+    // Add state for selected player to ask
+    const [selectedPlayerToAsk, setSelectedPlayerToAsk] = useState(null);
     
     const [games, setGames] = useState([]);
     // Remove hardcoded lastPlayedCards - will get from gameState instead
@@ -374,6 +593,155 @@ function FishGameScreen() {
         setGameId(id);
       }
     }, [location]);
+
+    // Get current user's backend ID
+    const getCurrentUserId = () => {
+      if (backendUser && backendUser.id) {
+        return backendUser.id;
+      }
+      return null;
+    };
+
+    // Get current user's cards from game state
+    const getCurrentUserCards = () => {
+      const currentUserId = getCurrentUserId();
+      if (!gameState || !gameState.owners || !currentUserId) {
+        return [];
+      }
+      
+      const userCards = gameState.owners[currentUserId]?.cards || [];
+      return userCards.map(card => convertCardToString(card));
+    };
+
+    // Function to fetch user details by ID
+    const fetchUserDetails = async (userId) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+        if (response.ok) {
+          const userData = await response.json();
+          return userData;
+        } else {
+          console.error(`Failed to fetch user details for ${userId}`);
+          return null;
+        }
+      } catch (error) {
+        console.error(`Error fetching user details for ${userId}:`, error);
+        return null;
+      }
+    };
+    
+    // Function to fetch multiple user details
+    const fetchAllUserDetails = async (userIds) => {
+      const newUserDetails = { ...userDetails };
+      
+      // Only fetch details for users we don't already have
+      const usersToFetch = userIds.filter(userId => !newUserDetails[userId]);
+      
+      if (usersToFetch.length === 0) return;
+      
+      const fetchPromises = usersToFetch.map(async (userId) => {
+        const userData = await fetchUserDetails(userId);
+        if (userData) {
+          newUserDetails[userId] = userData;
+        }
+        return userData;
+      });
+      
+      await Promise.all(fetchPromises);
+      setUserDetails(newUserDetails);
+    };
+
+    // Set up WebSocket connection for game state
+    useEffect(() => {
+      if (!gameId || !currentUser) return;
+      
+      // Create WebSocket connection for Fish game
+      const wsUrl = getWebSocketURL(`/game/ws/${gameId}`);
+      console.log('Connecting to Fish game WebSocket:', wsUrl);
+      
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('Fish game WebSocket connection established');
+      };
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Received Fish game state:', data);
+        setGameState(data);
+        
+        // Extract users from game state if available
+        if (data.owners) {
+          const playerIds = Object.keys(data.owners).filter(id => 
+            id !== 'suits_1' && 
+            id !== 'suits_2' && 
+            id !== 'options' && 
+            data.owners[id].cards
+          );
+          setUsers(playerIds);
+          fetchAllUserDetails(playerIds);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('Fish game WebSocket error:', error);
+      };
+      
+      ws.onclose = () => {
+        console.log('Fish game WebSocket connection closed');
+      };
+      
+      setWebsocket(ws);
+      
+      // Clean up the WebSocket connection when the component unmounts
+      return () => {
+        if (ws) {
+          ws.close();
+        }
+      };
+    }, [gameId, currentUser]);
+
+    // Function to handle passing turn
+    const handlePass = async () => {
+      const currentUserId = getCurrentUserId();
+      if (!currentUserId) {
+        alert("User not authenticated!");
+        return;
+      }
+      
+      // Check if it's the current user's turn
+      if (gameState?.current_player !== currentUserId) {
+        alert("It's not your turn!");
+        return;
+      }
+      
+      // For Fish game, passing might not be needed, but implementing for now
+      const turnModel = {
+        type: 0, // 0 = asking questions
+        player: currentUserId,
+        transactions: []
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(turnModel)
+        });
+        
+        if (response.ok) {
+          console.log("Passed successfully!");
+        } else {
+          const errorData = await response.json();
+          alert(`Failed to pass: ${errorData.detail || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error passing:', error);
+        alert('Failed to pass. Please try again.');
+      }
+    };
 
     const convertCardToString = (card) => {
         const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
@@ -417,31 +785,48 @@ function FishGameScreen() {
         };
       };
 
-
-      const generatePlayTurnModel = (selectedCards, receiverUser) => {
+      // Function to generate turn model for asking questions (turn_type = 0)
+      const generateQuestionTurnModel = (selectedCard, playerToAsk) => {
         const currentUserId = getCurrentUserId();
-        if (!currentUserId || selectedCards.length === 0) {
+        if (!currentUserId || !selectedCard || !playerToAsk) {
           return null;
         }
         
-        const transactions = selectedCards.map(cardString => ({
-          sender: currentUserId,
-          receiver: receiverUser,
-          card: convertStringToCard(cardString),
-          success: true
-        }));
+        console.log('generateQuestionTurnModel params:', {
+          selectedCard,
+          playerToAsk: playerToAsk,
+          playerToAskType: typeof playerToAsk,
+          currentUserId: currentUserId,
+          currentUserIdType: typeof currentUserId
+        });
         
-        return {
-          player: currentUserId,
-          transactions: transactions,
-          type: 0 // 0 = playing cards
+        // For asking questions: sender = player being asked, receiver = current player
+        const transaction = {
+          sender: playerToAsk,
+          receiver: currentUserId,
+          card: convertStringToCard(selectedCard),
+          success: true
         };
+        
+        const turnModel = {
+          type: 0, // 0 = asking questions
+          player: currentUserId,
+          transactions: [transaction]
+        };
+        
+        console.log('Generated Fish question turn model:', turnModel);
+        return turnModel;
       };
-  
-      
-      const handlePlayCards = async () => {
-        if (selectedCards.length === 0) {
-          alert("Please select cards to play!");
+
+      // Function to handle asking a question
+      const handleAskQuestion = async () => {
+        if (selectedCards.length !== 1) {
+          alert("Please select exactly one card to ask about!");
+          return;
+        }
+        
+        if (!selectedPlayerToAsk) {
+          alert("Please select a player to ask!");
           return;
         }
         
@@ -457,11 +842,17 @@ function FishGameScreen() {
           return;
         }
         
-        const turnModel = generatePlayTurnModel(selectedCards);
+        const turnModel = generateQuestionTurnModel(selectedCards[0], selectedPlayerToAsk);
         if (!turnModel) {
-          alert("Failed to generate turn model!");
+          alert("Failed to generate question!");
           return;
         }
+        
+        console.log('Sending Fish question to API:', {
+          endpoint: `${API_BASE_URL}/games/${gameId}/play`,
+          method: 'PATCH',
+          data: turnModel
+        });
         
         try {
           const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
@@ -473,23 +864,20 @@ function FishGameScreen() {
           });
           
           if (response.ok) {
-            // Clear selected cards on successful play
+            // Clear selections on successful question
             setSelectedCards([]);
-            console.log("Cards played successfully!");
+            setSelectedPlayerToAsk(null);
+            console.log("Question asked successfully!");
           } else {
             const errorData = await response.json();
-            alert(`Failed to play cards: ${errorData.detail || 'Unknown error'}`);
+            console.error('API Error Response:', errorData);
+            alert(`Failed to ask question: ${errorData.detail || 'Unknown error'}`);
           }
         } catch (error) {
-          console.error('Error playing cards:', error);
-          alert('Failed to play cards. Please try again.');
+          console.error('Error asking question:', error);
+          alert('Failed to ask question. Please try again.');
         }
       };
-
-
-
-
-
 
   
   return (
@@ -501,9 +889,40 @@ function FishGameScreen() {
           {getAllPlayers(users, userDetails, gameState, getCurrentUserId())}
         </div>
 
+        {/* Show question options when it's current player's turn */}
+        {(() => {
+          const currentUserId = getCurrentUserId();
+          const isCurrentPlayer = gameState?.current_player === currentUserId;
+          
+          // Get valid question options from game state instead of player's hand
+          const questionOptions = gameState?.owners?.options?.cards || [];
+          const questionOptionStrings = questionOptions.map(card => convertCardToString(card));
+          
+          console.log('Debug Options Display:', {
+            currentUserId,
+            currentPlayer: gameState?.current_player,
+            isCurrentPlayer,
+            questionOptions,
+            questionOptionStrings,
+            gameState: gameState
+          });
+          
+          // Show question options when it's current player's turn and there are valid options
+          if (isCurrentPlayer && questionOptionStrings && questionOptionStrings.length > 0) {
+            return (
+              <div style={{ width: "100%", padding: "0 2%" }}>
+                {questionOptionsFromCards(questionOptionStrings, selectedCards, setSelectedCards)}
+                {playerSelectionForQuestions(users, userDetails, currentUserId, selectedPlayerToAsk, setSelectedPlayerToAsk, gameState)}
+              </div>
+            );
+          }
+          
+          return null;
+        })()}
+
         <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "8%", position: "relative"}}>
           <img
-            src={"/src/assets/table.svg"}
+            src={"/table.svg"}
             alt="table"
             style={{
               width: "100%",
@@ -520,17 +939,17 @@ function FishGameScreen() {
         </div>
            
      
-      <div style={{width: "100%", paddingTop: "4vh"}}>
-        {currentPlayerCards(getCurrentUserCards(), selectedCards, setSelectedCards)}
+      <div style={{width: "100%", paddingTop: "6vh"}}>
+        {currentPlayerCards(getCurrentUserCards())}
       </div>
 
       <div>
             <button 
               style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}
-              onClick={handlePlayCards}
-              disabled={selectedCards.length === 0 || gameState?.current_player !== getCurrentUserId()}
+              onClick={handleAskQuestion}
+              disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
             >
-              Play
+              Ask
             </button>
             <button 
               style={{ padding: '1vh 2vw', fontSize: '5vh' }}
@@ -539,6 +958,31 @@ function FishGameScreen() {
             >
               Pass
             </button>
+            
+            {/* Display current selections for debugging/user feedback */}
+            {(selectedCards.length > 0 || selectedPlayerToAsk) && (
+              <div style={{
+                marginTop: '20px',
+                padding: '15px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                color: '#FFF',
+                fontSize: '1.2vw',
+                textAlign: 'center',
+              }}>
+                <div>
+                  <strong>Selected Card:</strong> {selectedCards.length > 0 ? selectedCards[0] : 'None'}
+                </div>
+                <div>
+                  <strong>Player to Ask:</strong> {selectedPlayerToAsk ? (userDetails[selectedPlayerToAsk]?.name || `Player ${selectedPlayerToAsk.slice(-4)}`) : 'None'}
+                </div>
+                {selectedCards.length === 1 && selectedPlayerToAsk && (
+                  <div style={{ color: '#00FF00', fontWeight: 'bold', marginTop: '8px' }}>
+                    ✅ Ready to ask!
+                  </div>
+                )}
+              </div>
+            )}
       </div>
       </>
   );

@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 function cardClicked(cardname, selectedCards, setSelectedCards) {
   console.log(cardname + " clicked");
-  
+
   // Toggle card selection
   if (selectedCards.includes(cardname)) {
     // Remove card from selection
@@ -19,14 +19,15 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
   }
 }
 
+// Helper function to display other players in the game.
+// Styles are largely consistent with Replay, adapted for VietcongGameScreen context (no POV click)
 function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null) {
   const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
-  
-  // Determine what status text to show based on player status
+
   let statusText = '';
   let statusColor = '#FF6B6B'; // Default red color
   let isFinished = false;
-  
+
   if (playerStatus === -1) {
     statusText = 'PASSED';
     statusColor = '#FF6B6B';
@@ -43,27 +44,28 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
     statusColor = '#CD7F32'; // Bronze
     isFinished = true;
   }
-  
+
   return (
-    <div style={{
+    <div style={{ // Root div for each player
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
+      alignItems: 'center', // Ensures content within this div is centered
       position: 'relative',
+      // cursor: 'default', // No special cursor needed as in Replay's POV change
     }}>
       {/* Username label above cards */}
       <div style={{
-        color: isCurrentUser ? '#FFD700' : '#FFF', // Gold color for current user
+        color: isCurrentUser ? '#FFD700' : '#FFF',
         fontSize: '1.2vw',
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: '0.5vh',
         minHeight: '2vh',
-        textShadow: isCurrentUser ? '2px 2px 4px rgba(0,0,0,0.8)' : 'none', // Shadow for current user
-        border: isCurrentUser ? '2px solid #FFD700' : 'none', // Border for current user
+        textShadow: isCurrentUser ? '2px 2px 4px rgba(0,0,0,0.8)' : 'none',
+        border: isCurrentUser ? '2px solid #FFD700' : 'none',
         borderRadius: isCurrentUser ? '8px' : '0',
         padding: isCurrentUser ? '4px 8px' : '0',
-        backgroundColor: isCurrentUser ? 'rgba(255, 215, 0, 0.2)' : 'transparent', // Semi-transparent background
+        backgroundColor: isCurrentUser ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
       }}>
         {username}
         {statusText && (
@@ -78,7 +80,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
           </div>
         )}
       </div>
-      
+
       <img
         src={"/backicon.svg"}
         alt="card back"
@@ -86,13 +88,13 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
           width: '15vw',
           height: '15vh',
           display: 'block',
-          opacity: (playerStatus === -1 || isFinished) ? 0.6 : 1, // Make card slightly transparent if passed or finished
+          opacity: (playerStatus === -1 || isFinished) ? 0.6 : 1,
         }}
       />
       <span
         style={{
           position: 'absolute',
-          top: '60%',
+          top: '60%', // Adjusted slightly based on common positioning for card counts
           left: '50%',
           transform: 'translate(-50%, -50%)',
           color: 'white',
@@ -106,7 +108,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
 
       {moving && (
         <div style={{
-          width: '80%',
+          width: '80%', // Or adjust as needed, e.g., 'auto' with padding
           color: '#00FF00',
           fontSize: '1.2vw',
           fontWeight: 'bold',
@@ -125,78 +127,107 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
   );
 }
 
+// Helper function to get all players for display.
+// Adopting justifyContent and gap from Replay, keeping VietcongGameScreen's overflow & maxWidth
 function getAllPlayers(users, userDetails, gameState, currentUserId) {
   if (!users || users.length === 0 || !gameState) {
-    return <div style={{color: '#FFF'}}>Loading players...</div>;
+    return <div style={{ color: '#FFF' }}>Loading players...</div>;
   }
-  
-  // Show ALL players (including current user)
-  let players = [];
-  users.forEach((userId, index) => {
-    const isCurrentPlayer = gameState?.current_player === userId;
+
+  let playerElements = [];
+  users.forEach((userId) => {
+    const isCurrentPlayerTurn = gameState?.current_player === userId;
     const cardCount = gameState?.owners?.[userId]?.cards?.length || 0;
     const isCurrentUser = userId === currentUserId;
     const playerStatus = gameState?.player_status?.[userId] || null;
-    players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, playerStatus));
+    // It's good practice for items in an array to have a key.
+    // If otherPlayer is consistently returning a single root element,
+    // React might handle it, but explicit keying on map is better.
+    // For forEach -> push, the element pushed should ideally have a key if it's a component.
+    // Here, we construct the element and push it.
+    // To add a key here, one would typically .map and return <Component key={} /> or similar.
+    // For now, sticking to structural changes based on provided code.
+    playerElements.push(
+      // Assuming 'otherPlayer' function returns a single root JSX element,
+      // key should ideally be on that element or if this was a map:
+      // users.map(userId => <OtherPlayerComponent key={userId} ... />)
+      // For current structure, if issues arise, wrap with <React.Fragment key={userId}> or <div key={userId}>
+      // or refactor otherPlayer to be a full component that accepts a key prop.
+      // For this specific request, we are focusing on style and structure merge.
+      // Adding key to the div returned by otherPlayer would be ideal if otherPlayer was a component.
+      // For now, the direct push:
+      React.createElement(
+        'div', // Temporary wrapper for key, if issues with direct push arise. Or pass key to otherPlayer if it can take it.
+        { key: userId }, // Add key here
+        otherPlayer(userId, userDetails, isCurrentPlayerTurn, cardCount, isCurrentUser, playerStatus)
+      )
+    );
   });
-  
+
   return (
     <div style={{
-      maxWidth: '80%',
+      maxWidth: '80%', // Keep max width for responsiveness in game screen
       display: 'flex',
       flexDirection: 'row',
-      gap: '5%',
+      gap: '20px', // Adjusted gap, inspired by Replay's fixed gap
       alignItems: 'center',
-      overflowX: 'scroll',
+      justifyContent: 'center', // Adopted from Replay for centering player group
+      overflowX: 'auto', // Keep scroll for many players
       scrollbarWidth: 'thin',
-      msOverflowStyle: 'auto'
+      msOverflowStyle: 'auto',
+      // padding: '0 10%' // If content is not centered enough with maxWidth and justifyContent
     }}>
-      {players}
+      {playerElements}
     </div>
   );
 }
 
+
+// Helper function to handle card display logic, adapted for interactivity
 function currentPlayerCards(cards, selectedCards, setSelectedCards) {
   let cardlist = [];
   cards.forEach(cardname => {
     const isSelected = selectedCards.includes(cardname);
     cardlist.push(
-      <img 
+      <img
         key={cardname}
-        src={`/${cardname}icon.svg`} 
+        src={`/${cardname}icon.svg`}
         style={{
           width: "5.5%",
-          display: "flex", 
-          gap: "0px",
-          cursor: "pointer",
-          border: isSelected ? "3px solid #007BFF" : "3px solid transparent", // Blue border when selected
-          borderRadius: "8px",
-          transform: isSelected ? "translateY(-10px)" : "translateY(0px)", // Move up when selected
-          transition: "all 0.2s ease-in-out", // Smooth animation
-          boxShadow: isSelected ? "0 4px 8px rgba(0, 123, 255, 0.3)" : "none", // Blue shadow when selected
-        }} 
-        alt={cardname} 
-        onClick={() => cardClicked(cardname, selectedCards, setSelectedCards)} 
+          cursor: "pointer", // Essential for game interaction
+          padding: "1px", // From Replay
+          border: isSelected ? "3px solid #007BFF" : "1px solid black", // Mix: Replay unselected, VCS selected
+          borderRadius: "8px", // Consistent
+          transform: isSelected ? "translateY(-10px)" : "translateY(0px)", // Essential for game interaction
+          transition: "all 0.2s ease-in-out", // Essential for game interaction
+          boxShadow: isSelected ? "0 4px 8px rgba(0, 123, 255, 0.3)" : "none", // Essential for game interaction
+          // Removed incorrect 'display: flex' and 'gap' from individual img styles
+        }}
+        alt={cardname}
+        onClick={() => cardClicked(cardname, selectedCards, setSelectedCards)}
       />
     );
   });
-  
+
   return (
     <div style={{
-      maxWidth: '95%',
-      display: 'inline-flex',
+      width: '100%', // Take full width for centering content
+      display: 'inline-flex', // Or 'flex' if it should be a block-level flex container
       gap: '0.5vw',
       alignItems: 'center',
+      justifyContent: 'center', // From Replay, ensures cards are centered
       overflowX: 'auto',
-      scrollbarWidth: 'thin',
-      msOverflowStyle: 'auto',
-      justifyContent: 'center',
+      scrollbarWidth: 'thin', // From original VCS
+      msOverflowStyle: 'auto', // From original VCS
+      // padding: '0.5vw 0', // Optional padding for the container
     }}>
       {cardlist}
     </div>
   );
 }
 
+// Helper function to display the last played combination of cards.
+// Styles are identical to Replay, so no change needed from original VietcongGameScreen.
 function lastCombo(cards){
   let cardlist = []
   cards.forEach(cardname => {
@@ -210,8 +241,8 @@ function lastCombo(cards){
     alignItems: 'center',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    scrollbarWidth: 'thin', 
-    msOverflowStyle: 'auto' 
+    scrollbarWidth: 'thin',
+    msOverflowStyle: 'auto'
   }}
   >
     {cardlist}
@@ -219,7 +250,6 @@ function lastCombo(cards){
 }
 
 function VietcongGameScreen() {
-  // WebSocket and game state management
   const location = useLocation();
   const { backendUser } = useOutletContext();
   const [currentUser, setCurrentUser] = useState(null);
@@ -228,23 +258,16 @@ function VietcongGameScreen() {
   const [gameState, setGameState] = useState(null);
   const [users, setUsers] = useState([]);
   const [userDetails, setUserDetails] = useState({});
-  
-  // Card selection state
   const [selectedCards, setSelectedCards] = useState([]);
-  
-  const [games, setGames] = useState([]);
-  // Remove hardcoded lastPlayedCards - will get from gameState instead
+  // const [games, setGames] = useState([]); // This was defined but not used in provided snippet
 
-  // Get the current Firebase user
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
     });
-    
     return () => unsubscribe();
   }, []);
-  
-  // Get the game ID from URL parameters
+
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get('id');
@@ -252,85 +275,70 @@ function VietcongGameScreen() {
       setGameId(id);
     }
   }, [location]);
-  
-  // Function to convert backend card format to frontend format
+
   const convertCardToString = (card) => {
     const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-    const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
-    
+    const suits = ['','C', 'D', 'H', 'S'];
     const rank = ranks[card.rank] || card.rank;
     const suit = suits[card.suit] || card.suit;
-    
     return `${rank}${suit}`;
   };
-  
-  // Function to convert frontend card format to backend format
+
   const convertStringToCard = (cardString) => {
     const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-    const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
-    
-    const rank = cardString.slice(0, -1); // All but last character
-    const suit = cardString.slice(-1); // Last character
-    
+    const suits = ['','C', 'D', 'H', 'S'];
+    const rank = cardString.slice(0, -1);
+    const suit = cardString.slice(-1);
     return {
       rank: ranks.indexOf(rank),
       suit: suits.indexOf(suit)
     };
   };
-  
-  // Function to generate TurnModel for playing cards
-  const generatePlayTurnModel = (selectedCards) => {
+
+  const generatePlayTurnModel = (currentSelectedCards) => {
     const currentUserId = getCurrentUserId();
-    if (!currentUserId || selectedCards.length === 0) {
+    if (!currentUserId || currentSelectedCards.length === 0) {
       return null;
     }
-    
-    const transactions = selectedCards.map(cardString => ({
+    const transactions = currentSelectedCards.map(cardString => ({
       sender: currentUserId,
       receiver: "pile",
       card: convertStringToCard(cardString),
       success: true
     }));
-    
     return {
       player: currentUserId,
       transactions: transactions,
-      type: 0 // 0 = playing cards
+      type: 0
     };
   };
-  
-  // Function to generate TurnModel for passing
+
   const generatePassTurnModel = () => {
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
       return null;
     }
-    
     return {
       player: currentUserId,
       transactions: [],
-      type: 1 // 1 = passing
+      type: 1
     };
   };
-  
-  // Get current user's cards from game state
+
   const getCurrentUserCards = () => {
     const currentUserId = getCurrentUserId();
     if (!gameState || !gameState.owners || !currentUserId) {
       return [];
     }
-    
     const userCards = gameState.owners[currentUserId]?.cards || [];
     return userCards.map(card => convertCardToString(card));
   };
-  
-  // Function to fetch user details by ID
+
   const fetchUserDetails = async (userId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/${userId}`);
       if (response.ok) {
-        const userData = await response.json();
-        return userData;
+        return await response.json();
       } else {
         console.error(`Failed to fetch user details for ${userId}`);
         return null;
@@ -340,117 +348,74 @@ function VietcongGameScreen() {
       return null;
     }
   };
-  
-  // Function to fetch multiple user details
+
   const fetchAllUserDetails = async (userIds) => {
     const newUserDetails = { ...userDetails };
-    
-    // Only fetch details for users we don't already have
     const usersToFetch = userIds.filter(userId => !newUserDetails[userId]);
-    
     if (usersToFetch.length === 0) return;
-    
+
     const fetchPromises = usersToFetch.map(async (userId) => {
       const userData = await fetchUserDetails(userId);
       if (userData) {
         newUserDetails[userId] = userData;
       }
-      return userData;
     });
-    
     await Promise.all(fetchPromises);
     setUserDetails(newUserDetails);
   };
-  
-  // Set up WebSocket connection for game state
+
   useEffect(() => {
     if (!gameId || !currentUser) return;
-    
-    // Create WebSocket connection
     const wsUrl = getWebSocketURL(`/game/ws/${gameId}`);
     console.log('Connecting to game WebSocket:', wsUrl);
-    
     const ws = new WebSocket(wsUrl);
-    
-    ws.onopen = () => {
-      console.log('Game WebSocket connection established');
-    };
-    
+    ws.onopen = () => console.log('Game WebSocket connection established');
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log('Received game state:', data);
       setGameState(data);
-      
-      // Extract users from game state if available
       if (data.owners) {
         const playerIds = Object.keys(data.owners).filter(id => id !== 'pile' && data.owners[id].is_player);
         setUsers(playerIds);
         fetchAllUserDetails(playerIds);
       }
     };
-    
-    ws.onerror = (error) => {
-      console.error('Game WebSocket error:', error);
-    };
-    
-    ws.onclose = () => {
-      console.log('Game WebSocket connection closed');
-    };
-    
+    ws.onerror = (error) => console.error('Game WebSocket error:', error);
+    ws.onclose = () => console.log('Game WebSocket connection closed');
     setWebsocket(ws);
-    
-    // Clean up the WebSocket connection when the component unmounts
     return () => {
-      if (ws) {
-        ws.close();
-      }
+      if (ws) ws.close();
     };
-  }, [gameId, currentUser]);
-  
-  // Get current user's backend ID
-  const getCurrentUserId = () => {
-    if (backendUser && backendUser.id) {
-      return backendUser.id;
-    }
-    return null;
-  };
-  
-  // Function to handle playing selected cards
+  }, [gameId, currentUser]); // Removed userDetails from dependency array as fetchAllUserDetails updates it
+
+  const getCurrentUserId = () => backendUser?.id || null;
+
   const handlePlayCards = async () => {
     if (selectedCards.length === 0) {
       alert("Please select cards to play!");
       return;
     }
-    
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
       alert("User not authenticated!");
       return;
     }
-    
-    // Check if it's the current user's turn
     if (gameState?.current_player !== currentUserId) {
       alert("It's not your turn!");
       return;
     }
-    
     const turnModel = generatePlayTurnModel(selectedCards);
     if (!turnModel) {
       alert("Failed to generate turn model!");
       return;
     }
-    
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(turnModel)
       });
-      
       if (response.ok) {
-        // Clear selected cards on successful play
         setSelectedCards([]);
         console.log("Cards played successfully!");
       } else {
@@ -462,36 +427,28 @@ function VietcongGameScreen() {
       alert('Failed to play cards. Please try again.');
     }
   };
-  
-  // Function to handle passing turn
+
   const handlePass = async () => {
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
       alert("User not authenticated!");
       return;
     }
-    
-    // Check if it's the current user's turn
     if (gameState?.current_player !== currentUserId) {
       alert("It's not your turn!");
       return;
     }
-    
     const turnModel = generatePassTurnModel();
     if (!turnModel) {
       alert("Failed to generate pass turn model!");
       return;
     }
-    
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(turnModel)
       });
-      
       if (response.ok) {
         console.log("Passed successfully!");
       } else {
@@ -504,66 +461,116 @@ function VietcongGameScreen() {
     }
   };
 
-  // Get the last played cards from game state
   const getLastPlayedCards = () => {
     if (!gameState || !gameState.last_turn || !gameState.last_turn.transactions) {
-      return []; // No cards played yet
+      return [];
     }
-    
-    // Convert backend card format to frontend format for display
-    return gameState.last_turn.transactions.map(transaction => 
+    const cardsPlayedToPile = gameState.last_turn.transactions.filter(
+      transaction => transaction.receiver === "pile" // Ensure only cards to pile are shown
+    );
+    return cardsPlayedToPile.map(transaction =>
       convertCardToString(transaction.card)
     );
   };
 
+  if (!currentUser || !backendUser) {
+    return <div style={{ color: '#FFF', textAlign: 'center', paddingTop: '20vh' }}>Authenticating user...</div>;
+  }
+  if (!gameId) {
+    return <div style={{ color: '#FFF', textAlign: 'center', paddingTop: '20vh' }}>No game ID specified.</div>;
+  }
+  if (!gameState) {
+    return <div style={{ color: '#FFF', textAlign: 'center', paddingTop: '20vh' }}>Loading game state...</div>;
+  }
+
   return (
       <>
+        {/* Top section: Display all players */}
         <div style={{
-               paddingBottom: "10px",
+               paddingBottom: "10px", // Consistent with Replay
                width: "100%",
              }}>
           {getAllPlayers(users, userDetails, gameState, getCurrentUserId())}
         </div>
 
-        <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "8%", position: "relative"}}>
+        {/* Middle section: Table and last played combo */}
+        <div style={{
+          width: "100%",
+          height: "35vh", // Adopted from Replay
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          position: "relative"
+          // Removed paddingBottom: "8%" from VCS
+        }}>
           <img
             src={"/table.svg"}
             alt="table"
             style={{
               width: "100%",
-              height: "90%",
+              height: "90%", // Consistent with Replay
               position: "absolute",
               top: 0,
               left: 0,
               zIndex: 0
             }}
           />
-          <div style={{width: "100%", height: "100%", position: "absolute", top: 0, left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex:100}}>
+          <div style={{ // Wrapper for lastCombo
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            top: "45%", // Adopted from Replay for better vertical centering of cards on table
+            left: 0,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 100 // Ensure cards are above table
+          }}>
             {lastCombo(getLastPlayedCards())}
           </div>
         </div>
-           
-     
-      <div style={{width: "100%", paddingTop: "4vh"}}>
-        {currentPlayerCards(getCurrentUserCards(), selectedCards, setSelectedCards)}
-      </div>
 
-      <div>
-            <button 
-              style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}
+        {/* Bottom section: Current player's cards */}
+        <div style={{
+          width: "100%",
+          // Removed paddingTop: "4vh" from VCS, spacing adjusted by middle section height
+          marginTop: "1vh", // Add a small margin for breathing room
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          {currentPlayerCards(getCurrentUserCards(), selectedCards, setSelectedCards)}
+        </div>
+
+        {/* Game action buttons */}
+        <div style={{
+          marginTop: '2vh', // Added margin for spacing, similar to Replay's controls
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '20px' // Add gap between buttons
+        }}>
+            <button
+              style={{ padding: '1% 2%', fontSize: '3vh' }} // Adjusted style for consistency
               onClick={handlePlayCards}
               disabled={selectedCards.length === 0 || gameState?.current_player !== getCurrentUserId()}
             >
-              Play
+              Play Cards
             </button>
-            <button 
-              style={{ padding: '1vh 2vw', fontSize: '5vh' }}
+            <button
+              style={{ padding: '1% 2%', fontSize: '3vh' }} // Adjusted style for consistency
               onClick={handlePass}
               disabled={gameState?.current_player !== getCurrentUserId()}
             >
               Pass
             </button>
-      </div>
+        </div>
+        {/* Link to Replays (example, if needed) */}
+        {gameState && gameState.game_over && (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <h2 style={{ color: 'white' }}>Game Over!</h2>
+            {/* You might want to navigate to a replay page or show a summary */}
+            <Link to="/lobby" style={{ color: '#87CEFA', fontSize: '2vh' }}>Back to Lobby</Link>
+          </div>
+        )}
       </>
   );
 }

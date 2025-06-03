@@ -7,7 +7,7 @@ function Navbar({ onSignOut, onToggleSidebar }) {
       <button onClick={onToggleSidebar} className="navbar-menu-button"> 
         Menu
       </button>
-      <span className="navbar-title">Multiplayer Card Games</span> 
+      <span className="navbar-title" style={{ color: "white" }}>Multiplayer Card Games</span>
       <button 
         onClick={onSignOut}
         className="navbar-signout-button" 

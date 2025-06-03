@@ -112,7 +112,7 @@ function ReplaySearch() {
     };
 
     const viewReplay = (replayId) => {
-        navigate(`/replays/${replayId}`);
+        navigate(`/app/replay?id=${replayId}`);
     };
 
     const formatDate = (timestamp) => {

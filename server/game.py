@@ -535,7 +535,7 @@ class FishGame(Game):
         if turn.transactions[0].to_ != player:
             return False
         
-        if card in self.options_owner.get_cards():
+        if card not in self.options_owner.get_cards():
             return False
         
         if self.player_status[turn.transactions[0].from_] == self.player_status[player]:

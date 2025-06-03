@@ -4,6 +4,19 @@ import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { API_BASE_URL, getWebSocketURL } from '../config';
 
+// Half suit enum constants
+const HalfSuit = {
+  MIDDLE: 8,
+  SPADES_LOW: 0,
+  HEARTS_LOW: 1, 
+  DIAMONDS_LOW: 2,
+  CLUBS_LOW: 3,
+  SPADES_HIGH: 4,
+  HEARTS_HIGH: 5,
+  DIAMONDS_HIGH: 6,
+  CLUBS_HIGH: 7
+};
+
 function cardClicked(cardname, selectedCards, setSelectedCards) {
     console.log(cardname + " clicked");
     
@@ -200,10 +213,11 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
 
   // Function to display current player's cards as question options
   function questionOptionsFromCards(cardStrings, selectedCards, setSelectedCards) {
+    /*
     console.log('questionOptionsFromCards called with:', {
       cardStrings,
       selectedCards
-    });
+    });*/
 
     if (!cardStrings || !Array.isArray(cardStrings) || cardStrings.length === 0) {
       console.log('questionOptionsFromCards returning null - no valid cards');
@@ -234,8 +248,8 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
         />
       );
     });
-
-    console.log('questionOptionsFromCards rendering with', optionCards.length, 'cards');
+    /*
+    console.log('questionOptionsFromCards rendering with', optionCards.length, 'cards');*/
 
     return (
       <div style={{
@@ -276,7 +290,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
           marginTop: '8px',
           fontStyle: 'italic',
         }}>
-          Choose from your hand - you can only ask about cards you have
+          You may only ask for cards from half-suits you already have at least one card from
         </div>
       </div>
     );
@@ -406,24 +420,6 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     );
   }
 
-function startClaim(buttonNo){
-  let names = ["♣ 2-7", "♦ 2-7", "♥ 2-7", "♠2-7", "♣ 9-A", "♦ 9-A", "♥ 9-A", "♠ 9-A", "8 & Joker",]
-  console.log(buttonNo + "clicked")
-  // API call to initialize the claim
-
-}
-// Half suit enum constants
-const HalfSuit = {
-  MIDDLE: 8,
-  SPADES_LOW: 0,
-  HEARTS_LOW: 1, 
-  DIAMONDS_LOW: 2,
-  CLUBS_LOW: 3,
-  SPADES_HIGH: 4,
-  HEARTS_HIGH: 5,
-  DIAMONDS_HIGH: 6,
-  CLUBS_HIGH: 7
-};
 function getClaimsArray(suits_1,suits_2){
   let claims = [0,0,0,0,0,0,0,0,0]
   
@@ -460,8 +456,37 @@ function cardsToHalfSuit(cards) {
   return new Set(cards.map(card => cardToHalfSuit(card)));
 }
 
-function claimButtons(claims) {
+function claimButtons(claims, handleInitiateClaim) {
   let names = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"]
+  
+  // Function to render button text with colored suits
+  const renderButtonText = (name, index) => {
+    if (index === 4) {
+      // Special styling for "8 & Joker"
+      return (
+        <span style={{ 
+          fontSize: '1.3vw', 
+          fontWeight: 'bold',
+          textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+        }}>
+          8's & Jokers
+        </span>
+      );
+    }
+    
+    // For other suits, color hearts and diamonds red
+    if (name.includes('♥') || name.includes('♦')) {
+      const parts = name.split(' ');
+      return (
+        <span>
+          <span style={{ color: '#DC143C' }}>{parts[0]}</span> {parts[1]}
+        </span>
+      );
+    } else {
+      return name;
+    }
+  };
+
   return (
     <div style={{
       maxWidth: '80%',
@@ -471,6 +496,37 @@ function claimButtons(claims) {
       justifyContent: 'center',
       gap: '1vw',
     }}>
+      {/* Header for claims section */}
+      <div style={{
+        color: '#FFD700',
+        fontSize: '2.2vw',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: '0.5vw',
+        textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
+        background: 'rgba(255, 215, 0, 0.1)',
+        padding: '8px 16px',
+        borderRadius: '12px',
+        border: '2px solid #FFD700',
+      }}>
+         HALF-SUIT CLAIMS 
+      </div>
+      
+      {/* Instructional text */}
+      <div style={{
+        color: '#FFF',
+        fontSize: '1.3vw',
+        textAlign: 'center',
+        marginBottom: '1vw',
+        fontStyle: 'italic',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        background: 'rgba(255, 255, 255, 0.1)',
+        padding: '6px 12px',
+        borderRadius: '8px',
+      }}>
+        Click any unclaimed half-suit to initiate a claim
+      </div>
+      
       <div style={{
         display: 'flex',
         flexDirection: 'row',
@@ -493,20 +549,20 @@ function claimButtons(claims) {
             transition: 'background 0.2s',
           };
           if (claims[i] === 1) {
-            style.background = '#3b82f6'; // blue
-            style.color = '#1a3b78';
+            style.background = '#3b82f6'; // blue for team 1
+            style.color = '#fff';
           } else if (claims[i] === 2) {
-            style.background = '#ef4444'; // red
-            style.color = '#78211a';
+            style.background = '#ef4444'; // red for team 2
+            style.color = '#fff';
           }
           return (
             <button
               key={i}
               style={style}
               disabled={claims[i] !== 0}
-              onClick={() => startClaim(i)}
+              onClick={() => handleInitiateClaim(i)}
             >
-              {names[i]}
+              {renderButtonText(names[i], i)}
             </button>
           );
         })}
@@ -520,7 +576,7 @@ function claimButtons(claims) {
         marginTop: '1vw',
       }}>
         {Array.from({ length: 5 }).map((_, j) => {
-          let i = j + 5;
+          let i = j + 4; // This should be j + 4, not j + 5 to get the correct indices
           let style = {
             width: '13vw',
             height: '5vw',
@@ -534,24 +590,41 @@ function claimButtons(claims) {
             boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
             transition: 'background 0.2s',
           };
+          
           if (claims[i] === 1) {
-            style.background = '#3b82f6'; // blue
-            style.color = '#1a3b78';
+            style.background = '#3b82f6'; // blue for team 1
+            style.color = '#fff';
           } else if (claims[i] === 2) {
-            style.background = '#ef4444'; // red
-            style.color = '#78211a';
+            style.background = '#ef4444'; // red for team 2
+            style.color = '#fff';
           }
           return (
             <button
               key={i}
               style={style}
               disabled={claims[i] !== 0}
-              onClick={() => startClaim(i)}
+              onClick={() => handleInitiateClaim(i)}
             >
-              {names[i]}
+              {renderButtonText(names[i], i)}
             </button>
           );
         })}
+      </div>
+      
+      {/* Warning text at bottom */}
+      <div style={{
+        color: '#FF6B6B',
+        fontSize: '1.1vw',
+        textAlign: 'center',
+        marginTop: '0.5vw',
+        fontWeight: 'bold',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        background: 'rgba(255, 107, 107, 0.1)',
+        padding: '4px 8px',
+        borderRadius: '6px',
+        border: '1px solid #FF6B6B',
+      }}>
+         Warning: Failed claims give the opposing team that half-suit!
       </div>
     </div>
   );
@@ -667,7 +740,7 @@ function FishGameScreen() {
       
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log('Received Fish game state:', data);
+        /*console.log('Received Fish game state:', data);*/
         setGameState(data);
         
         // Extract users from game state if available
@@ -791,14 +864,14 @@ function FishGameScreen() {
         if (!currentUserId || !selectedCard || !playerToAsk) {
           return null;
         }
-        
+        /*
         console.log('generateQuestionTurnModel params:', {
           selectedCard,
           playerToAsk: playerToAsk,
           playerToAskType: typeof playerToAsk,
           currentUserId: currentUserId,
           currentUserIdType: typeof currentUserId
-        });
+        });*/
         
         // For asking questions: sender = player being asked, receiver = current player
         const transaction = {
@@ -820,6 +893,11 @@ function FishGameScreen() {
 
       // Function to handle asking a question
       const handleAskQuestion = async () => {
+        // Debug: Print entire game state when ask button is pressed
+        /*console.log('=== ASK BUTTON PRESSED - FULL GAME STATE ===');
+        console.log('Game State:', JSON.stringify(gameState, null, 2));
+        console.log('=== END GAME STATE DEBUG ===');*/
+        
         if (selectedCards.length !== 1) {
           alert("Please select exactly one card to ask about!");
           return;
@@ -879,6 +957,59 @@ function FishGameScreen() {
         }
       };
 
+      // Function to handle initiating a claim
+      const handleInitiateClaim = async (halfSuitIndex) => {
+        const halfSuitNames = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"];
+        
+        const currentUserId = getCurrentUserId();
+        if (!currentUserId) {
+          alert("User not authenticated!");
+          return;
+        }
+        
+        // Confirm the claim with user
+        const confirmMessage = `Are you sure you want to initiate a claim for ${halfSuitNames[halfSuitIndex]}?\n\nRemember: Failed claims give the opposing team that half-suit automatically!`;
+        if (!window.confirm(confirmMessage)) {
+          return;
+        }
+        
+        // Create turn model for initiating claim (turn_type = 1, empty transactions)
+        const turnModel = {
+          type: 1, // 1 = initiating claim
+          player: currentUserId,
+          transactions: [] // Empty transactions array for initiating claim
+        };
+        
+        console.log('Initiating claim for half-suit:', halfSuitNames[halfSuitIndex]);
+        console.log('Sending claim initiation to API:', {
+          endpoint: `${API_BASE_URL}/games/${gameId}/play`,
+          method: 'PATCH',
+          data: turnModel
+        });
+        
+        try {
+          const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(turnModel)
+          });
+          
+          if (response.ok) {
+            console.log("Claim initiated successfully!");
+            alert(`Claim for ${halfSuitNames[halfSuitIndex]} has been initiated!`);
+          } else {
+            const errorData = await response.json();
+            console.error('API Error Response:', errorData);
+            alert(`Failed to initiate claim: ${errorData.detail || 'Unknown error'}`);
+          }
+        } catch (error) {
+          console.error('Error initiating claim:', error);
+          alert('Failed to initiate claim. Please try again.');
+        }
+      };
+
   
   return (
       <>
@@ -934,7 +1065,7 @@ function FishGameScreen() {
             }}
           />
           <div style={{width: "100%", height: "100%", position: "absolute", top: 0, left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex:100}}>
-            {claimButtons(getClaimsArray(gameState?.owners?.["suits_1"]?.cards, gameState?.owners?.["suits_2"]?.cards))}
+            {claimButtons(getClaimsArray(gameState?.owners?.["suits_1"]?.cards, gameState?.owners?.["suits_2"]?.cards), handleInitiateClaim)}
           </div>
         </div>
            

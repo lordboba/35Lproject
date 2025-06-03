@@ -568,7 +568,7 @@ async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get
 
 @router.get(
     "/replays/search",
-    response_model=List[ReplaySummaryModel],
+    response_model=ReplayCollectionModel,
     response_description="Search replays with filters"
 )
 async def search_replays(filters: ReplaySearchModel = Depends()):

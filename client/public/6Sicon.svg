@@ -22,7 +22,7 @@
     </symbol>
   </defs>
   <g id="Layer_5" data-name="Layer 5">
-    <rect class="cls-1" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <rect class="cls-1" x="0" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
     <use width="153.9497" height="187.3612" transform="translate(30.8779 44.7831)" xlink:href="#Black_6"/>
     <use width="153.9497" height="187.3612" transform="translate(801.9025 1127.2678) rotate(-180)" xlink:href="#Black_6"/>
     <use width="252.1667" height="232.5147" transform="translate(47.9491 260.316) scale(.4513)" xlink:href="#Club"/>

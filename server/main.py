@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from users_api import router as users_router
 from games_api import router as games_router
 from game_manager import GameTracker
@@ -11,54 +12,39 @@ import os
 
 app = FastAPI(title="Card Game API")
 
-# Updated CORS configuration for CloudFront
+# CORS configuration - more permissive for CloudFront
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000", 
-        "http://localhost:5173", 
-        "https://35-lproject.vercel.app",
-        "https://*.elasticbeanstalk.com",
-        "http://*.elasticbeanstalk.com",
-        "https://*.cloudfront.net",
-        "https://d11u6fgyzepl0v.cloudfront.net",
-        "https://*.amazonaws.com",
-        "*"  # Temporarily allow all origins for debugging
-    ],
-    allow_credentials=False,  # Changed to False for broader compatibility
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
-    allow_headers=[
-        "Accept",
-        "Accept-Language",
-        "Content-Language", 
-        "Content-Type",
-        "X-Requested-With",
-        "X-Forwarded-Host",
-        "Origin",
-        "Referer",
-        "User-Agent",
-        "Sec-WebSocket-Key",
-        "Sec-WebSocket-Version", 
-        "Sec-WebSocket-Protocol",
-        "Sec-WebSocket-Extensions"
-    ],
+    allow_origins=["*"],  # Allow all origins temporarily to debug
+    allow_credentials=False,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
-# Add middleware to handle CloudFront headers and CORS
+# Enhanced middleware to handle CloudFront headers and ensure CORS
 @app.middleware("http")
 async def handle_cloudfront_and_cors(request: Request, call_next):
-    # Handle preflight OPTIONS requests
+    # Get the origin from the request
+    origin = request.headers.get("origin", "*")
+    
+    # Debug logging for CORS issues
+    print(f"Request: {request.method} {request.url}")
+    print(f"Origin: {origin}")
+    print(f"Headers: {dict(request.headers)}")
+    
+    # Handle preflight OPTIONS requests explicitly
     if request.method == "OPTIONS":
-        from fastapi.responses import Response
-        response = Response()
-        response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+        response = Response(status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
-        response.headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, X-Forwarded-Proto, X-Forwarded-Host, Origin, Referer, User-Agent"
+        response.headers["Access-Control-Allow-Headers"] = "*"
         response.headers["Access-Control-Max-Age"] = "86400"
-        response.status_code = 200
+        response.headers["Access-Control-Allow-Credentials"] = "false"
+        response.headers["Vary"] = "Origin"
+        print(f"OPTIONS response headers: {dict(response.headers)}")
         return response
     
-    # CloudFront sends X-Forwarded-Proto header
+    # CloudFront forwarding headers
     forwarded_proto = request.headers.get("x-forwarded-proto")
     forwarded_host = request.headers.get("x-forwarded-host")
     
@@ -68,30 +54,44 @@ async def handle_cloudfront_and_cors(request: Request, call_next):
     if forwarded_host:
         request.scope["server"] = (forwarded_host, request.scope.get("server", ("localhost", 80))[1])
     
+    # Process the request
     response = await call_next(request)
     
-    # Add CORS headers to all responses
-    origin = request.headers.get("origin")
-    if origin:
-        response.headers["Access-Control-Allow-Origin"] = origin
-    else:
-        response.headers["Access-Control-Allow-Origin"] = "*"
-    
+    # Always add CORS headers to all responses
+    response.headers["Access-Control-Allow-Origin"] = origin
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
-    response.headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, X-Forwarded-Proto, X-Forwarded-Host, Origin, Referer, User-Agent"
-    response.headers["Access-Control-Expose-Headers"] = "Content-Length, Content-Range"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "false"
+    response.headers["Access-Control-Expose-Headers"] = "*"
+    response.headers["Vary"] = "Origin"
     
-    # Add security headers for HTTPS
-    if forwarded_proto == "https":
+    # Additional headers for CloudFront compatibility
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    
+    # Additional headers for security when using HTTPS
+    if forwarded_proto == "https" or request.url.scheme == "https":
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
         response.headers["X-XSS-Protection"] = "1; mode=block"
     
+    print(f"Response headers: {dict(response.headers)}")
     return response
 
 app.include_router(users_router)
 app.include_router(games_router)
+
+@app.get("/")
+async def root():
+    """Root endpoint for basic health check"""
+    return {"message": "35L Backend API is running", "status": "ok"}
+
+@app.get("/test-cors")
+async def test_cors():
+    """Test endpoint to verify CORS headers are working"""
+    return {"message": "CORS test successful", "timestamp": "2024-01-01T00:00:00Z"}
 
 @app.get("/health")
 async def health_check():
@@ -101,12 +101,18 @@ async def health_check():
 @app.options("/{path:path}")
 async def options_handler(request: Request):
     """Handle all OPTIONS requests for CORS preflight"""
-    from fastapi.responses import Response
-    response = Response()
-    response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+    origin = request.headers.get("origin", "*")
+    print(f"Global OPTIONS handler for path: {request.url.path}, Origin: {origin}")
+    
+    response = Response(status_code=200)
+    response.headers["Access-Control-Allow-Origin"] = origin
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
-    response.headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, X-Forwarded-Proto, X-Forwarded-Host, Origin, Referer, User-Agent"
+    response.headers["Access-Control-Allow-Headers"] = "*"
     response.headers["Access-Control-Max-Age"] = "86400"
+    response.headers["Access-Control-Allow-Credentials"] = "false"
+    response.headers["Vary"] = "Origin"
+    
+    print(f"Global OPTIONS response headers: {dict(response.headers)}")
     return response
 
 if __name__ == "__main__":

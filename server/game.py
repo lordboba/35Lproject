@@ -234,7 +234,7 @@ class VietCongGame(Game):
         random.shuffle(cards)
 
         # Initializing Owners
-        owners: dict[str, Owner] = {players[i]:Owner(cards[i*13:(i+1)*13]) for i in range(4)}
+        owners: dict[str, Owner] = {players[i]:Owner(sorted(cards[i*13:(i+1)*13], key=VietCongGame.get_card_value)) for i in range(4)}
         owners["pile"] = Owner([], False)
 
         super().__init__(manager, owners, cards, players)
@@ -484,7 +484,7 @@ class FishGame(Game):
 
         # Dealing Cards
         random.shuffle(cards)
-        owners: dict[str, Owner] = {players[i]: Owner(cards[i*9:(i+1)*9]) for i in range(6)}
+        owners: dict[str, Owner] = {players[i]: Owner(sorted(cards[i*9:(i+1)*9], key=self.get_card_value)) for i in range(6)}
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)
 
@@ -505,6 +505,10 @@ class FishGame(Game):
         # self.manager.game_log.log_state(self.to_game_state())
 
     @staticmethod
+    def get_card_value(card: Card):
+        return card.rank + FishGame.card_to_half_suit(card).value*20
+
+    @staticmethod
     def card_to_half_suit(card: Card):
         if card.rank == 0 or card.rank == 8:
             return FishGame.HalfSuit.MIDDLE
@@ -522,6 +526,7 @@ class FishGame(Game):
     
     def transact(self, trans):
         super().transact(trans)
+        self.owners[trans.to_].cards.sort(key=FishGame.get_card_value)
         self.owner_half_suits[trans.to_].add(self.card_to_half_suit(trans.card))
         self.owner_half_suits[trans.from_] = self.cards_to_half_suit(self.owners[trans.from_].get_cards())
     

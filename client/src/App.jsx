@@ -13,6 +13,8 @@ import CreateGame from './screens/CreateGame';
 import Game from './screens/Game';
 import VietcongGameScreen from './screens/VietcongGameScreen';
 import FishGameScreen from './screens/FishGameScreen';
+import PlayerSearch from './screens/PlayerSearch';
+import ReplaySearch from './screens/ReplaySearch';
 import FishWinScreen from './screens/FishWinScreen';
 import VietCongWinScreen from './screens/VietCongWinScreen';
 import { API_BASE_URL } from './config';
@@ -159,11 +161,14 @@ function App() {
         <Route index element={<Navigate to="lobby" />} />
         <Route path="lobby" element={<Lobby />} />
         <Route path="stats" element={<UserStats />} />
+        <Route path="stats/:id" element={<UserStats />} />
         <Route path="instructions" element={<GameInstructions />} />
         <Route path="create-game" element={<CreateGame />} />
         <Route path="game" element={<Game />} />
         <Route path="vietcong-game" element={<VietcongGameScreen />} />
         <Route path="fish-game" element={<FishGameScreen />} />
+        <Route path="player-search" element={<PlayerSearch />} />
+        <Route path="replay-search" element={<ReplaySearch />} />
         <Route path="fish-win" element={<FishWinScreen />} />
         <Route path="vietcong-win" element={<VietCongWinScreen />} />
       </Route>

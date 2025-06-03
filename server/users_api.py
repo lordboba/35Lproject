@@ -526,7 +526,7 @@ async def lobby_ws(websocket: WebSocket, tracker: GameTracker = Depends(get_trac
         tracker.lobby_websocket_manager.disconnect("lobby", websocket)
 
 
-# Dev
+# Active Games
 
 @router.get(
     "/games/active",
@@ -556,6 +556,20 @@ async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get
         for card in owner_obj.cards:
             result.append(f"{owner_name}: {card}")
     return result
+
+@router.delete(
+    "/games/active/{game_id}",
+    response_description="Delete game",
+    status_code=204
+)
+async def delete_active_game(game_id: str, tracker: GameTracker = Depends(get_tracker)):
+    """
+    Delete an active game.
+    """
+    if tracker.delete_game(game_id):
+        return {}
+    else:
+        raise HTTPException(status_code=404, detail=f"Game {game_id} not found")
 
 
 # async def get_active_game_debug(game_id: str, tracker: GameTracker = Depends(get_tracker)):

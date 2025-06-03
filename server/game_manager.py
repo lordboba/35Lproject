@@ -26,9 +26,11 @@ class GameTracker:
     async def broadcast(self, game_id: str, message: dict):
         await self.websocket_manager.broadcast(game_id, message)
 
-    def delete_game(self, game_id: str):
+    def delete_game(self, game_id: str) -> bool:
         if game_id in self.games:
             del self.games[game_id]
+            return True
+        return False
 
     def get_active_games(self):
         return list(self.games.keys())

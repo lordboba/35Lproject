@@ -191,7 +191,21 @@ class VietCongGame(Game):
         QUAD = 4
 
         SEQUENCE = 10
+        SEQ_3 = 13
+        SEQ_4 = 14
+        SEQ_5 = 15
+        SEQ_6 = 16
+        SEQ_7 = 17
+        SEQ_8 = 18
+        SEQ_9 = 19
+        SEQ_10 = 20
+        SEQ_11 = 21
+        SEQ_12 = 22
+
         DB_SEQUENCE = 30
+        DB_SEQ_3 = 33
+        DB_SEQ_4 = 34
+        DB_SEQ_5 = 35
 
     suit_to_value = {Suit.SPADE: 0, Suit.CLUB: 1, Suit.DIAMOND: 2, Suit.HEART: 3}
 
@@ -261,6 +275,7 @@ class VietCongGame(Game):
         sequence_len = VietCongGame.is_multiple_sequence(cards,1)
         if sequence_len != 0:
             return VietCongGame.Combo(VietCongGame.Combo.SEQUENCE.value + sequence_len)
+
         
         # double sequence by length
         double_sequence_len = VietCongGame.is_multiple_sequence(cards,2)

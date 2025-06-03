@@ -163,7 +163,7 @@ function CreateGame() {
                     onChange={(e) => setGameType(e.target.value)}
                     disabled={loading}
                 >
-                    <option value="simple">Simple (2 players)</option>
+
                     <option value="fish">Fish (up to 6 players)</option>
                     <option value="vietcong">Vietcong (4 players)</option>
                 </select>

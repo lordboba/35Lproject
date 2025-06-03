@@ -93,6 +93,11 @@ function ReplaySearch() {
         }
     };
 
+    // Auto-search on page load
+    useEffect(() => {
+        handleSearch({ preventDefault: () => {} });
+    }, []);
+
     const handleClearFilters = () => {
         setFilters({
             player_id: '',
@@ -140,7 +145,7 @@ function ReplaySearch() {
                     {/* Player ID */}
                     <div>
                         <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                            Player ID:
+                            Player Name:
                         </label>
                         <input
                             type="text"

@@ -501,7 +501,7 @@ class FishGame(Game):
     def half_suit_cards(half_suit):
         if half_suit == FishGame.HalfSuit.MIDDLE:
             return [Card(8, Suit(i+1)) for i in range(4)] + [Card(0, Suit(i+1)) for i in range(2)]
-        return [Card((half_suit.value//4*8+i+1)%13+1, Suit(half_suit.value%4)) for i in range(6)]
+        return [Card((half_suit.value//4*8+i+1)%13+1, Suit(half_suit.value%4+1)) for i in range(6)]
     
     def transact(self, trans):
         super().transact(trans)

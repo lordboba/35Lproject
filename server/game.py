@@ -368,7 +368,23 @@ class VietCongGame(Game):
         game_state.game_type = "vietcong"
         game_state.player_status = {self.players[i]: self.player_status[self.players[i]] if place == 4 else place for i, place in enumerate(self.places)}
         return game_state
-            
+
+    async def update_vietcong_stats(self, results: dict[str, int]):
+        for user_id, place in results.items():
+            place_mapper = ["first", "second", "third", "fourth"]
+            place_str = place_mapper[place-1]
+            print(f"Updating stats for {user_id}: place = {place}")
+            await user_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {
+                    "$inc": 
+                    {
+                        "stats.vietcong.games": 1,
+                        f"stats.vietcong.place_finishes.{place_str}": 1
+                    }
+                }
+            )
+
     async def play_turn(self, turn: Turn) -> bool: #true if move was successful and no need for redo, false for redo needed
         if not self.is_valid_turn(turn):
             return False
@@ -412,7 +428,9 @@ class VietCongGame(Game):
                     for i in range(4):
                         self.player_status[self.players[i]] = self.places[i]
                     await self.broadcast_state()
-                    await self.manager.end_game({self.players[i]:self.places[i] for i in range(4)})
+                    results = {self.players[i]:self.places[i] for i in range(4)}
+                    await self.update_vietcong_stats(results)
+                    await self.manager.end_game(results)
         
         # Pass turn to next player
         if not self.get_next_player():

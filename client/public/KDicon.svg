@@ -299,7 +299,7 @@
     <radialGradient id="radial-gradient-25" cx="20782.7125" cy="11519.9988" fx="20782.7125" fy="11519.9988" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient"/>
     <radialGradient id="radial-gradient-26" cx="20771.0492" cy="11508.3354" fx="20771.0492" fy="11508.3354" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient-10"/>
     <radialGradient id="radial-gradient-27" cx="20832.5786" cy="11471.2766" fx="20832.5786" fy="11471.2766" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient"/>
-    <radialGradient id="radial-gradient-28" cx="20820.9152" cy="11459.6133" fx="20820.9152" fy="11459.6133" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient-10"/>
+    <radialGradient id="radial-gradient-28" cx="20820.9152" cy="11459.6133" fx="20820.9152" fy="11459.6133" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient-10"/>
     <linearGradient id="linear-gradient-12" x1="14743.9223" y1="19537.1806" x2="15018.7615" y2="19537.1806" gradientTransform="translate(15194.6386 20359.4173) rotate(-180)" xlink:href="#linear-gradient"/>
     <linearGradient id="linear-gradient-13" x1="14860.9041" y1="19724.749" x2="14905.4753" y2="19724.749" gradientTransform="translate(15194.6386 20359.4173) rotate(-180)" xlink:href="#linear-gradient-6"/>
     <symbol id="Red_King" data-name="Red King" viewBox="0 0 510.6922 1006.1682">

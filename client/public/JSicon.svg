@@ -254,7 +254,7 @@
     </symbol>
   </defs>
   <g id="Layer_5" data-name="Layer 5">
-    <rect class="cls-19" y="0" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <rect class="cls-19" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
     <use width="252.1667" height="232.5147" transform="translate(47.9491 262.7654) scale(.4513)" xlink:href="#Club"/>
     <use width="252.1667" height="232.5147" transform="translate(784.292 898.6275) rotate(-180) scale(.4513)" xlink:href="#Club"/>
     <use width="443.1038" height="926.5202" transform="translate(204.4954 131.5134)" xlink:href="#Jack"/>

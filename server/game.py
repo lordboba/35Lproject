@@ -488,7 +488,6 @@ class FishGame(Game):
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)
 
-        self.options_owner = Owner([])
         self.unclaimed = {self.HalfSuit(i) for i in range(9)}
         self.temp_current_player = 0
         
@@ -501,6 +500,8 @@ class FishGame(Game):
         random.shuffle(team_list)
         for i in range(6):
             self.player_status[players[team_list[i]]] = i//3+1 
+
+        self.options_owner = Owner(self.get_question_options(),False)
 
         # self.manager.game_log.log_state(self.to_game_state())
 
@@ -522,7 +523,7 @@ class FishGame(Game):
     def half_suit_cards(half_suit):
         if half_suit == FishGame.HalfSuit.MIDDLE:
             return [Card(8, Suit(i+1)) for i in range(4)] + [Card(0, Suit(i+1)) for i in range(2)]
-        return [Card((half_suit.value//4*8+i+1)%13+1, Suit(half_suit.value%4)) for i in range(6)]
+        return [Card((half_suit.value//4*7+i+1)%13+1, Suit(half_suit.value%4+1)) for i in range(6)]
     
     def transact(self, trans):
         super().transact(trans)
@@ -557,7 +558,7 @@ class FishGame(Game):
         if turn.transactions[0].to_ != player:
             return False
         
-        if card in self.options_owner.get_cards():
+        if card not in self.options_owner.get_cards():
             return False
         
         if self.player_status[turn.transactions[0].from_] == self.player_status[player]:
@@ -622,11 +623,11 @@ class FishGame(Game):
         # Claim
         elif turn.turn_type == 1:
             # Initiate Claim
-            if self.status == 0 and len(turn.transactions) == 1 and self.is_unclaimed(turn.transactions[0].card[0]):
+            if self.status == 0 and len(turn.transactions) == 1 and self.is_unclaimed(turn.transactions[0].card):
                 self.status = 2
                 self.temp_current_player = self.current_player
                 self.current_player = self.players.index(turn.player)
-                self.options_owner = Owner(self.half_suits_cards(self.card_to_half_suit(turn.transactions[0].card[0])), False)
+                self.options_owner = Owner(self.half_suits_cards([self.card_to_half_suit(turn.transactions[0].card)]), False)
                 await super().broadcast_state()
                 return True
             
@@ -642,10 +643,15 @@ class FishGame(Game):
                 await super().play_turn(turn)
                 self.last_turn = turn
                 # End Game
-                if len(self.owner_half_suits[turn.transactions[0].to_]) == 5:
+                winner = 0
+                if len(self.owner_half_suits["suits_1"]) == 5:
+                    winner = 1
+                elif len(self.owner_half_suits["suits_2"]) == 5:
+                    winner = 2
+                if winner != 0:
                     self.status = 1
                     for i in range(6):
-                        self.player_status[self.players[i]] = suit_team == self.player_status[self.players[i]]
+                        self.player_status[self.players[i]] = winner == self.player_status[self.players[i]]
                     await super().broadcast_state()
                     results = {self.players[i]: self.player_status[self.players[i]] for i in range(6)}
                     await self.update_fish_stats(results)

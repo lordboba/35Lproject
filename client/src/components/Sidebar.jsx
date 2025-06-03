@@ -14,6 +14,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
                 <li><Link to="/app/lobby" onClick={toggleSidebar}>Play Game (Lobby)</Link></li>
                 <li><Link to="/app/stats" onClick={toggleSidebar}>User Statistics</Link></li>
                 <li><Link to="/app/instructions" onClick={toggleSidebar}>Game Instructions</Link></li>
+                <li><Link to="/app/player-search" onClick={toggleSidebar}>Player Search</Link></li>
             </ul>
         </div>
     );

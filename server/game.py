@@ -587,7 +587,10 @@ class FishGame(Game):
         cards = set(self.half_suits_cards(self.owner_half_suits[player]))
         return list(cards.difference(set(self.owners[player].get_cards())))
     
-    async def update_fish_stats(self, claim_player_id: str, winning_team: int):
+    def is_unclaimed(self,card: Card):
+        return self.belongs_to[card] not in ["suits_1","suits_2"]
+    
+    async def update_fish_stats(self, winning_team: int):
         for user_id in self.players:
             inc_fields = {
                 "stats.fish.games": 1
@@ -598,20 +601,31 @@ class FishGame(Game):
             if cur_team == winning_team:
                 inc_fields["stats.fish.wins"] = 1
 
-            if user_id == claim_player_id:
-                inc_fields["stats.fish.claims"] = 1
-                if cur_team == winning_team:
-                    inc_fields["stats.fish.successful_claims"] = 1
+            # if user_id == claim_player_id:
+            #     inc_fields["stats.fish.claims"] = 1
+            #     if cur_team == winning_team:
+            #         inc_fields["stats.fish.successful_claims"] = 1
 
-            print(f"Updating fish stats for {user_id}")
+            print(f"[GAME] Updating game stats for: {user_id}")
             await user_collection.update_one(
                 {"_id": ObjectId(user_id)},
                 {"$inc": inc_fields}
             )
 
-    def is_unclaimed(self,card: Card):
-        return self.belongs_to[card] not in ["suits_1","suits_2"]
+    async def update_fish_claims(self, claimer_id: str, success: bool):
+        inc_fields = {
+            "stats.fish.claims": 1
+        }
+        if success:
+            inc_fields["stats.fish.successful_claims"] = 1
+        
+        print(f"[CLAIM] {claimer_id} made a claim. Success: {success}")
+        print(f"Updating claim stats for {claimer_id}")
 
+        await user_collection.update_one(
+            {"_id": ObjectId(claimer_id)},
+            {"$inc": inc_fields}
+        )
     
     async def play_turn(self, turn: Turn) -> bool:
 
@@ -647,11 +661,13 @@ class FishGame(Game):
             elif self.status == 2 and self.is_valid_claim(turn):
                 suit_team = turn.transactions[0].to_[-1]
                 # Unsuccessful Claim
-                if not self.has_cards(turn):
+                was_successful_claim = self.has_cards(turn)
+                if not was_successful_claim:
                     suit_team = self.player_status[turn.player]%2+1
                     for trans in turn.transactions:
                         trans.success = False
                     turn.transactions += [Transaction(trans.card,self.belongs_to[trans.card],f"suits_{suit_team}") for trans in turn.transactions]
+                await self.update_fish_claims(turn.player, was_successful_claim)
                 await super().play_turn(turn)
                 self.last_turn = turn
                 # End Game
@@ -666,7 +682,7 @@ class FishGame(Game):
                         self.player_status[self.players[i]] = winner == self.player_status[self.players[i]]
                     await super().broadcast_state()
                     results = {self.players[i]: self.player_status[self.players[i]] for i in range(6)}
-                    await self.update_fish_stats(results, winner)
+                    await self.update_fish_stats(winner)
                     await self.manager.end_game(results)
                 else:
                     self.current_player = self.temp_current_player

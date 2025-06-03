@@ -42,14 +42,21 @@ function App() {
   const [cardInput, setCardInput] = useState("");
   const [selectedHalfSuit, setSelectedHalfSuit] = useState("");
   const [claimAssignments, setClaimAssignments] = useState([]);
+  const [claimPlayer, setClaimPlayer] = useState(usernames[0]);
 
   const currentPlayer = gameState?.current_player;
   const owners = gameState?.owners ?? {};
   const playerStatus = gameState?.player_status ?? {};
   const currentTeam = playerStatus[currentPlayer];
 
-  const opponents = Object.keys(owners).filter(id => owners[id].is_player && id !== currentPlayer && playerStatus[id] !== currentTeam);
-  const teammates = Object.keys(owners).filter(id => owners[id].is_player && id !== currentPlayer && playerStatus[id] === currentTeam);
+  const playerIds = Object.keys(owners).filter(id => owners[id].is_player);
+  const opponents = playerIds.filter(id => id !== currentPlayer && playerStatus[id] !== currentTeam);
+  const teammates = playerIds.filter(id => id !== currentPlayer && playerStatus[id] === currentTeam);
+
+  function displayNameFromId(id) {
+    const index = playerIds.indexOf(id);
+    return index >= 0 ? usernames[index] : id;
+  }
 
   const logMsg = (msg) => setLog(prev => [...prev, msg]);
 
@@ -79,19 +86,39 @@ function App() {
     const transactions = [];
 
     if (turnType === 0) {
-      const r = cardInput[0], s = cardInput[1];
       const rankDict = { "0": 0, A: 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, T: 10, J: 11, Q: 12, K: 13 };
       const suitDict = { C: 1, D: 2, H: 3, S: 4 };
+    
+      let rank, suit;
+    
+      if (cardInput === "JB") {
+        rank = 0;
+        suit = 1;
+      } else if (cardInput === "JR") {
+        rank = 0;
+        suit = 2;
+      } else {
+        const r = cardInput[0];
+        const s = cardInput[1];
+        rank = rankDict[r];
+        suit = suitDict[s];
+      }
+    
+      if (rank === undefined || suit === undefined) {
+        alert("Invalid card input.");
+        return;
+      }
+    
       transactions.push({
         sender: questionTarget,
         receiver: currentPlayer,
-        card: { rank: rankDict[r], suit: suitDict[s] },
+        card: { rank, suit },
         success: true
       });
     } else if (gameState.status === 0) {
       const cards = getHalfSuitCards(halfSuits.indexOf(selectedHalfSuit));
       transactions.push({
-        sender: currentPlayer,
+        sender: claimPlayer,
         receiver: "",
         card: cards[0],
         success: true
@@ -110,7 +137,7 @@ function App() {
       }
     }
 
-    const turn = { player: currentPlayer, type: turnType, transactions };
+    const turn = { player: turnType === 1 ? claimPlayer : currentPlayer, type: turnType, transactions };
     try {
       await axios.patch(`${API}/games/${gameId}/play`, turn);
       setCardInput("");
@@ -139,18 +166,29 @@ function App() {
         </>
       ) : (
         <>
-          <h1>🐟 Fish Turn Play</h1>
+          <h1>🐟 Fish Tester</h1>
+          <p><strong>Current Player:</strong> <span style={{ color: "orange" }}>{displayNameFromId(currentPlayer)} <span style={{ fontSize: "0.8em", color: "#bbb" }}>(ID: {currentPlayer})</span></span></p>
           <p><strong>Game ID:</strong> {gameId}</p>
-          <p><strong>Current Player:</strong> <span style={{ color: "orange" }}>{currentPlayer}</span></p>
+
+          <div style={{ marginBottom: "1em" }}>
+            <strong>Team Legend:</strong>
+            <div style={{ display: "flex", gap: "1em", marginTop: "0.5em" }}>
+              <div style={{ background: "#004488", color: "white", padding: "4px 10px", borderRadius: "5px" }}>Team 1</div>
+              <div style={{ background: "#884400", color: "white", padding: "4px 10px", borderRadius: "5px" }}>Team 2</div>
+              <div style={{ background: "#222", color: "white", padding: "4px 10px", borderRadius: "5px" }}>No Team</div>
+            </div>
+          </div>
 
           <h3>All Player Hands:</h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1em" }}>
-            {Object.entries(owners).filter(([id, o]) => o.is_player).map(([id, o]) => {
+            {playerIds.map((id) => {
+              const o = owners[id];
               const team = playerStatus[id];
               const bg = team === 1 ? "#004488" : team === 2 ? "#884400" : "#222";
               return (
                 <div key={id} style={{ border: id === currentPlayer ? "2px solid gold" : "1px solid gray", background: bg, color: "white", padding: 10, borderRadius: 8 }}>
-                  <strong>{id} (Team {team})</strong>
+                  <strong>{displayNameFromId(id)}</strong>
+                  <div style={{ fontSize: "0.8em", color: "#ccc" }}>(ID: {id})</div>
                   <p>{o.cards.map(formatCard).join(", ") || "(no cards)"}</p>
                 </div>
               );
@@ -172,7 +210,7 @@ function App() {
               <select value={questionTarget ?? ""} onChange={(e) => setQuestionTarget(e.target.value)}>
                 <option value="">Select Opponent</option>
                 {opponents.map((id) => (
-                  <option key={id} value={id}>{id}</option>
+                  <option key={id} value={id}>{displayNameFromId(id)}</option>
                 ))}
               </select>
             </>
@@ -180,6 +218,13 @@ function App() {
 
           {turnType === 1 && (
             <>
+              <p><strong>Who is submitting the claim?</strong></p>
+              <select value={claimPlayer} onChange={e => setClaimPlayer(e.target.value)}>
+                {playerIds.map((id) => (
+                  <option key={id} value={id}>{displayNameFromId(id)} (ID: {id})</option>
+                ))}
+              </select>
+
               <p><strong>Select Half-Suit to Claim:</strong></p>
               <select value={selectedHalfSuit} onChange={e => setSelectedHalfSuit(e.target.value)}>
                 <option value="">Select Half-Suit</option>
@@ -199,7 +244,7 @@ function App() {
                       }}>
                       <option value="">Who has this card?</option>
                       {[currentPlayer, ...teammates].map((id) => (
-                        <option key={id} value={id}>{id}</option>
+                        <option key={id} value={id}>{displayNameFromId(id)}</option>
                       ))}
                     </select>
                   </div>

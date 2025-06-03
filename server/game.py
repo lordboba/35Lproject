@@ -470,7 +470,6 @@ class FishGame(Game):
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)
 
-        self.options_owner = Owner([])
         self.unclaimed = {self.HalfSuit(i) for i in range(9)}
         self.temp_current_player = 0
         
@@ -483,6 +482,8 @@ class FishGame(Game):
         random.shuffle(team_list)
         for i in range(6):
             self.player_status[players[team_list[i]]] = i//3+1 
+
+        self.options_owner = Owner(self.get_question_options(),False)
 
         # self.manager.game_log.log_state(self.to_game_state())
 

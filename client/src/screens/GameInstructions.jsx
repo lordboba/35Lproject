@@ -44,32 +44,35 @@ const VietcongRules = () => (
       </li>
     </ul>
 
-    <h2>Valid Combinations</h2>
+    <h2>Combinations</h2>
     <ul style={{textAlign: 'left'}}>
       <li><strong>Single:</strong> One card.</li>
       <li><strong>Pair:</strong> Two cards of the same rank.</li>
       <li><strong>Triple:</strong> Three cards of the same rank.</li>
-      <li><strong>Quartet (Four of a Kind):</strong> Four cards of the same rank.</li>
       <li>
-        <strong>Sequence (Run):</strong> Three or more consecutive cards, regardless of suit (cannot include 2s; runs go from 3 up to A).
-      </li>
-      <li>
-        <strong>Double Sequence:</strong> Sequence of three or more consecutive pairs.
+        <strong>Sequence:</strong> Three or more consecutive cards, regardless of suit (cannot include 2s; sequences go from 3 up to A). Sequences of the same length are considered the same type. 
       </li>
     </ul>
 
-    <h2>Special Combinations (Bombs/Slams)</h2>
+    <h2>Special Combinations (Bombs)</h2>
     <ul style={{textAlign: 'left'}}>
       <li>
-        Bombs (<strong>Four of a Kind</strong> or <strong>three consecutive pairs</strong>) can beat a single 2.
+        <strong>Quad:</strong> Four cards of the same rank.
+        <ul style={{textAlign: 'left'}}>
+          <li>A quad can beat a single or pair of 2s</li>
+        </ul>
       </li>
       <li>
-        <strong>Two consecutive four of a kinds</strong> or <strong>five consecutive pairs</strong> can beat a pair of 2s.
+        <strong>Double Sequence:</strong> Sequence of three or more consecutive pairs. Double sequences of the same length are considered the same type.
+        <ul style={{textAlign: 'left'}}>
+          <li>A double sequence of 3 or higher can beat a single 2</li>
+          <li>A double sequence of 4 or higher can beat a pair of 2s</li>
+          <li>A double sequence of 5 or higher can beat a triple of 2s</li>
+          <li>A double sequence of 6 or higher can beat a quad of 2s</li>
+        </ul>
       </li>
-      <li>
-        <strong>Three consecutive four of a kinds</strong> or <strong>seven consecutive pairs</strong> can beat three 2s.
-      </li>
-      <li>Bombs/slams can only be beaten by higher bombs/slams of the same type.</li>
+      <li>Bombs can only be played on top of 2(s) or other bombs</li>
+      <li>Bombs can only be beaten by higher bombs of the same type.</li>
     </ul>
 
 

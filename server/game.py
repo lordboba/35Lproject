@@ -536,6 +536,12 @@ class FishGame(Game):
             all(trans.to_ == f"suits_{self.player_status[turn.player]}" for trans in turn.transactions)
     
     def is_valid_question(self, turn: Turn):
+        print(f"[TURN DEBUG] Type: {turn.turn_type}, Player: {turn.player}, Status: {self.status}")
+        print(f"[VALID_QUESTION] Asking: {turn.transactions[0].card} from {turn.transactions[0].from_} → {turn.transactions[0].to_}")
+        print(f"[OWNER_CARDS] {turn.transactions[0].from_}: {[str(c) for c in self.owners[turn.transactions[0].from_].get_cards()]}")
+        print(f"[OWNER_HALF_SUITS] {turn.player}: {self.owner_half_suits[turn.player]}")
+        print(f"[OPTIONS_OWNER] Cards: {[str(c) for c in self.options_owner.get_cards()]}")
+
         if len(turn.transactions) != 1:
             return False
         

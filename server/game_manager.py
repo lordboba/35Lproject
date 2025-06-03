@@ -2,7 +2,7 @@ from game import *
 import time
 from fastapi import WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
-from core import CardModel, TransactionModel, TurnModel, ReplayModel, replay_collection, GameModel, GameCollection, GameStateModel
+from core import CardModel, TransactionModel, TurnModel, ReplayModel, replay_collection, GameModel, GameCollection, GameStateModel, user_collection
 from bson import ObjectId
 import game
 from core import game_collection
@@ -89,13 +89,19 @@ class GameLog:
         """
         Save the game replay to MongoDB.
         """
-
-        player_obj_ids = {ObjectId(pid): score for pid, score in results.items()}
+        # Look up player names by their ObjectId
+        player_names = {}
+        for pid, score in results.items():
+            user = await user_collection.find_one({"_id": ObjectId(pid)})
+            if user and user.get("name"):
+                player_names[user["name"]] = score
+            else:
+                player_names[str(pid)] = score  # fallback to pid if name not found
 
         replay = ReplayModel(
             type=self.game_type,
             name=self.name,
-            players=player_obj_ids,
+            players=player_names,
             game_states=self.game_states,
             timestamp=self.timestamp,
         )

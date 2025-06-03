@@ -1,0 +1,483 @@
+import React, { useState, useEffect } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
+import { API_BASE_URL } from '../config'; // Assuming you still need API_BASE_URL for fetching replays
+
+// Helper function to handle card display logic.
+function currentPlayerCards(cards) {
+  let cardlist = [];
+  cards.forEach(cardname => {
+    cardlist.push(
+      <img
+        key={cardname}
+        src={`/${cardname}icon.svg`}
+        style={{
+          width: "5.5%",
+          display: "flex",
+          gap: "0px",
+          cursor: "default", // Cursors are default as no interaction
+              padding: "1px",
+          border: "1px solid black", // No selection border
+          borderRadius: "8px",
+          transform: "translateY(0px)", // No lift on selection
+          transition: "none", // No animation
+          boxShadow: "none", // No shadow
+        }}
+        alt={cardname}
+      />
+    );
+  });
+
+  return (
+    <div style={{
+      display: 'inline-flex',
+      gap: '0.5vw',
+      alignItems: 'center',
+      overflowX: 'auto',
+      justifyContent: 'center',
+    }}>
+      {cardlist}
+    </div>
+  );
+}
+
+// Helper function to display the last played combination of cards.
+function lastCombo(cards) {
+  let cardlist = []
+  cards.forEach(cardname => {
+    cardlist.push(<img src={`/${cardname}icon.svg`} style={{ width: "10%", display: "block" }} alt={cardname} key={cardname} />)
+  })
+  return <div
+    style={{
+      width: '100%',
+      display: 'flex',
+      gap: '1vw',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+      scrollbarWidth: 'thin',
+      msOverflowStyle: 'auto'
+    }}
+  >
+    {cardlist}
+  </div>
+}
+
+// Helper function to display other players in the game.
+// Now accepts a handlePlayerClick prop
+function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null, handlePlayerClick) {
+  const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
+
+  // Determine what status text to show based on player status
+  let statusText = '';
+  let statusColor = '#FF6B6B'; // Default red color
+  let isFinished = false;
+
+  if (playerStatus === -1) {
+    statusText = 'PASSED';
+    statusColor = '#FF6B6B';
+  } else if (playerStatus === 1) {
+    statusText = '1st PLACE';
+    statusColor = '#FFD700'; // Gold
+    isFinished = true;
+  } else if (playerStatus === 2) {
+    statusText = '2nd PLACE';
+    statusColor = '#C0C0C0'; // Silver
+    isFinished = true;
+  } else if (playerStatus === 3) {
+    statusText = '3rd PLACE';
+    statusColor = '#CD7F32'; // Bronze
+    isFinished = true;
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignContent: 'center',
+        position: 'relative',
+        cursor: 'pointer', // Make it clear it's clickable
+      }}
+      onClick={() => handlePlayerClick(userId)} // Add onClick event
+    >
+      {/* Username label above cards */}
+      <div style={{
+        color: isCurrentUser ? '#FFD700' : '#FFF', // Gold color for the player whose hand is shown
+        fontSize: '1.2vw',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: '0.5vh',
+        minHeight: '2vh',
+        textShadow: isCurrentUser ? '2px 2px 4px rgba(0,0,0,0.8)' : 'none',
+        border: isCurrentUser ? '2px solid #FFD700' : 'none',
+        borderRadius: isCurrentUser ? '8px' : '0',
+        padding: isCurrentUser ? '4px 8px' : '0',
+        backgroundColor: isCurrentUser ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
+      }}>
+        {username}
+        {statusText && (
+          <div style={{
+            color: statusColor,
+            fontSize: '0.9vw',
+            fontWeight: 'bold',
+            marginTop: '2px',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+          }}>
+            {statusText}
+          </div>
+        )}
+      </div>
+
+      <img
+        src={"/backicon.svg"}
+        alt="card back"
+        style={{
+          width: '15vw',
+          height: '15vh',
+          display: 'block',
+          opacity: (playerStatus === -1 || isFinished) ? 0.6 : 1, // Make card slightly transparent if passed or finished
+        }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          top: '60%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: 'white',
+          fontSize: '4vh',
+          fontWeight: 'bold',
+          pointerEvents: 'none',
+        }}
+      >
+        {cardCount}
+      </span>
+
+      {moving && (
+        <div style={{
+          width: '80%',
+          color: '#00FF00',
+          fontSize: '1.2vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginTop: '0.5vh',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+          backgroundColor: 'rgba(0, 255, 0, 0.1)',
+          borderRadius: '8px',
+          padding: '2px 6px',
+          border: '2px solid #00FF00',
+        }}>
+          CURRENT TURN
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Helper function to get all players for display.
+// Now accepts a handlePlayerClick prop
+function getAllPlayers(users, userDetails, gameState, mainPlayerId, handlePlayerClick) {
+  if (!users || users.length === 0 || !gameState) {
+    return <div style={{ color: '#FFF' }}>Loading players...</div>;
+  }
+
+  let players = [];
+  users.forEach((userId) => {
+    const isCurrentPlayerTurn = gameState?.current_player === userId;
+    const cardCount = gameState?.owners?.[userId]?.cards?.length || 0;
+    // Highlight the 'mainPlayerId' if it's set, otherwise no one is highlighted.
+    const isMainReplayPlayer = userId === mainPlayerId;
+    const playerStatus = gameState?.player_status?.[userId] || 0; // Default to 0 (playing)
+
+    players.push(otherPlayer(userId, userDetails, isCurrentPlayerTurn, cardCount, isMainReplayPlayer, playerStatus, handlePlayerClick));
+  });
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'row',
+      gap: '10px',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      {players}
+    </div>
+  );
+}
+
+function Replay() {
+  const { replayId } = useParams(); // Get replayId from URL
+  const location = useLocation(); // Used to get query parameters for the 'id'
+  const [replayData, setReplayData] = useState(null);
+  const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
+  const [isReplaying, setIsReplaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1000); // Milliseconds per turn
+
+  const [gameState, setGameState] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [userDetails, setUserDetails] = useState({});
+  const [mainPlayerId, setMainPlayerId] = useState(null); // The ID of the player whose hand is shown
+
+  // Function to convert backend card format to frontend format
+  const convertCardToString = (card) => {
+    const ranks = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+    const suits = ['', 'C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
+
+    const rank = ranks[card.rank] || card.rank;
+    const suit = suits[card.suit] || card.suit;
+
+    return `${rank}${suit}`;
+  };
+
+  // Function to fetch user details by ID
+  const fetchUserDetails = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+      if (response.ok) {
+        const userData = await response.json();
+        return userData;
+      } else {
+        console.error(`Failed to fetch user details for ${userId}`);
+        return null;
+      }
+    } catch (error) {
+      console.error(`Error fetching user details for ${userId}:`, error);
+      return null;
+    }
+  };
+
+  // Function to fetch multiple user details
+  const fetchAllUserDetails = async (userIds) => {
+    const newUserDetails = { ...userDetails };
+
+    // Only fetch details for users we don't already have
+    const usersToFetch = userIds.filter(userId => !newUserDetails[userId]);
+
+    if (usersToFetch.length === 0) return;
+
+    const fetchPromises = usersToFetch.map(async (userId) => {
+      const userData = await fetchUserDetails(userId);
+      if (userData) {
+        newUserDetails[userId] = userData;
+      }
+      return userData;
+    });
+
+    await Promise.all(fetchPromises);
+    setUserDetails(newUserDetails);
+  };
+
+  // Fetch replay data on component mount
+  useEffect(() => {
+    // Determine the replay ID. Prefer useParams, but fallback to query param for robustness.
+    const id = replayId || new URLSearchParams(location.search).get('id');
+
+    if (!id) return;
+
+    const fetchReplayData = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/replays/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setReplayData(data);
+
+          if (data.game_states && data.game_states.length > 0) {
+            setGameState(data.game_states[0]); // Start with the initial state
+            const playerIds = Object.keys(data.players);
+            setUsers(playerIds);
+            fetchAllUserDetails(playerIds);
+
+            // Set the first player in the replay as the "main" player for hand display
+            if (playerIds.length > 0) {
+              setMainPlayerId(playerIds[0]);
+            }
+          }
+        } else {
+          console.error(`Failed to fetch replay data for ${id}`);
+          setReplayData(null); // Clear replay data on error
+        }
+      } catch (error) {
+        console.error('Error fetching replay data:', error);
+        setReplayData(null); // Clear replay data on error
+      }
+    };
+
+    fetchReplayData();
+  }, [replayId, location]); // Depend on replayId and location for robustness
+
+  // Replay playback logic
+  useEffect(() => {
+    if (!isReplaying || !replayData || currentTurnIndex >= replayData.game_states.length) {
+      setIsReplaying(false); // Stop if no data or end of turns
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setGameState(replayData.game_states[currentTurnIndex]);
+      setCurrentTurnIndex(prevIndex => prevIndex + 1);
+    }, playbackSpeed);
+
+    return () => clearTimeout(timer);
+  }, [isReplaying, replayData, currentTurnIndex, playbackSpeed]);
+
+  // Get the main player's cards from the current game state
+  const getMainPlayerCards = () => {
+    if (!gameState || !gameState.owners || !mainPlayerId) {
+      return [];
+    }
+    const userCards = gameState.owners[mainPlayerId]?.cards || [];
+    return userCards.map(card => convertCardToString(card));
+  };
+
+  // Get the last played cards from game state
+  const getLastPlayedCards = () => {
+    if (!gameState || !gameState.last_turn || !gameState.last_turn.transactions) {
+      return []; // No cards played yet
+    }
+
+    // Filter out transactions not involving the pile (e.g., from player to player, if any)
+    const cardsPlayedToPile = gameState.last_turn.transactions.filter(
+      transaction => transaction.receiver === "pile"
+    );
+
+    // Convert backend card format to frontend format for display
+    return cardsPlayedToPile.map(transaction =>
+      convertCardToString(transaction.card)
+    );
+  };
+
+  // --- Replay Controls ---
+  const handlePlayPauseReplay = () => {
+    setIsReplaying(!isReplaying);
+  };
+
+  const handleNextTurn = () => {
+    if (replayData && currentTurnIndex < replayData.game_states.length - 1) {
+      setGameState(replayData.game_states[currentTurnIndex + 1]);
+      setCurrentTurnIndex(prevIndex => prevIndex + 1);
+      setIsReplaying(false); // Pause on manual step
+    }
+  };
+
+  const handlePrevTurn = () => {
+    if (currentTurnIndex > 0) {
+      setGameState(replayData.game_states[currentTurnIndex - 1]);
+      setCurrentTurnIndex(prevIndex => prevIndex - 1);
+      setIsReplaying(false); // Pause on manual step
+    }
+  };
+
+  const handleFirstTurn = () => {
+    if (replayData && replayData.game_states.length > 0) {
+      setGameState(replayData.game_states[0]);
+      setCurrentTurnIndex(0);
+      setIsReplaying(false);
+    }
+  };
+
+  const handleLastTurn = () => {
+    if (replayData && replayData.game_states.length > 0) {
+      const lastIndex = replayData.game_states.length - 1;
+      setGameState(replayData.game_states[lastIndex]);
+      setCurrentTurnIndex(lastIndex);
+      setIsReplaying(false);
+    }
+  };
+
+  const handleSpeedChange = (event) => {
+    setPlaybackSpeed(parseInt(event.target.value));
+  };
+
+  // Feature: Change POV to clicked player's hand
+  const handlePlayerClick = (clickedPlayerId) => {
+    setMainPlayerId(clickedPlayerId);
+  };
+
+  if (!replayData) {
+    return <div style={{ color: '#FFF', fontSize: '2vw', textAlign: 'center', paddingTop: '20vh' }}>Loading replay...</div>;
+  }
+
+  return (
+    <>
+      <div style={{
+        paddingBottom: "10px",
+        width: "100%",
+      }}>
+        {/* Pass mainPlayerId and handlePlayerClick to highlight and allow changing POV */}
+        {getAllPlayers(users, userDetails, gameState, mainPlayerId, handlePlayerClick)}
+      </div>
+
+      <div style={{ width: "100%", height: "35vh", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
+        <img
+          src={"/table.svg"}
+          alt="table"
+          style={{
+            width: "100%",
+            height: "90%",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 0
+          }}
+        />
+        <div style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex: 100 }}>
+          {lastCombo(getLastPlayedCards())}
+        </div>
+      </div>
+
+      <div style={{ width: "100%" }}>
+        {/* Only display the main player's cards for observation */}
+        {currentPlayerCards(getMainPlayerCards())}
+      </div>
+
+      <div style={{ marginTop: '2vh', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+        <button
+          style={{ padding: '1% 2%', fontSize: '3vh' }}
+          onClick={handleFirstTurn}
+          disabled={currentTurnIndex === 0}
+        >
+          First
+        </button>
+        <button
+          style={{ padding: '1% 2%', fontSize: '3vh' }}
+          onClick={handlePrevTurn}
+          disabled={currentTurnIndex === 0}
+        >
+          Previous
+        </button>
+        <button
+          style={{ padding: '1% 2%', fontSize: '3vh' }}
+          onClick={handlePlayPauseReplay}
+        >
+          {isReplaying ? 'Pause' : 'Play'}
+        </button>
+        <button
+          style={{ padding: '1% 2%', fontSize: '3vh' }}
+          onClick={handleNextTurn}
+          disabled={currentTurnIndex >= replayData.game_states.length - 1}
+        >
+          Next
+        </button>
+        <button
+          style={{ padding: '1% 2%', fontSize: '3vh' }}
+          onClick={handleLastTurn}
+          disabled={currentTurnIndex >= replayData.game_states.length - 1}
+        >
+          Last
+        </button>
+        <select onChange={handleSpeedChange} value={playbackSpeed}
+          style={{ padding: '1% 1%', fontSize: '3vh', backgroundColor: '#333', color: 'white', borderRadius: '5px' }}>
+          <option value={2000}>Slow (2s)</option>
+          <option value={1000}>Normal (1s)</option>
+          <option value={500}>Fast (0.5s)</option>
+          <option value={250}>Very Fast (0.25s)</option>
+        </select>
+        <span style={{ color: '#FFF', fontSize: '2vh' }}>
+          Turn: {currentTurnIndex} / {replayData.game_states.length}
+        </span>
+      </div>
+    </>
+  );
+}
+
+export default Replay;

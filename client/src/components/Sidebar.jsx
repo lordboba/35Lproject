@@ -11,9 +11,11 @@ function Sidebar({ isOpen, toggleSidebar }) {
         <div className="sidebar">
             <button onClick={toggleSidebar} className="sidebar-close-button">Close</button>
             <ul>
+                <li><Link to="/app/instructions" onClick={toggleSidebar}>Game Instructions</Link></li>
                 <li><Link to="/app/lobby" onClick={toggleSidebar}>Play Game (Lobby)</Link></li>
                 <li><Link to="/app/stats" onClick={toggleSidebar}>User Statistics</Link></li>
-                <li><Link to="/app/instructions" onClick={toggleSidebar}>Game Instructions</Link></li>
+                <li><Link to="/app/replay-search" onClick={toggleSidebar}>Replay Search</Link></li>
+                <li><Link to="/app/player-search" onClick={toggleSidebar}>Player Search</Link></li>
             </ul>
         </div>
     );

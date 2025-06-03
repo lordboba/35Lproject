@@ -420,7 +420,7 @@ function Replay() {
             zIndex: 0
           }}
         />
-        <div style={{ width: "100%", height: "100%", position: "absolute", top: "45%", left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex: 100 }}>
+        <div style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex: 100 }}>
           {lastCombo(getLastPlayedCards())}
         </div>
       </div>

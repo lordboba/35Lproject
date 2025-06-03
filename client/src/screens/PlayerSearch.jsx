@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../config';
+import { useNavigate } from 'react-router-dom';
 
 function PlayerSearch() {
     const [filters, setFilters] = useState({
@@ -14,6 +15,7 @@ function PlayerSearch() {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -39,6 +41,10 @@ function PlayerSearch() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRowClick = (user) => {
+        navigate(`/app/stats/${user.id || user._id}`);
     };
 
     return (
@@ -90,7 +96,7 @@ function PlayerSearch() {
                             const claimRate = fish.claims ? (fish.successful_claims / fish.claims).toFixed(2) : 'N/A';
                             const vietScore = vietcong.games ? (((vietcong.place_finishes?.first || 0) * 1.0 + (vietcong.place_finishes?.second || 0) * 0.6 + (vietcong.place_finishes?.third || 0) * 0.3) / vietcong.games).toFixed(2) : 'N/A';
                             return (
-                                <tr key={user.id || user._id} style={{ borderBottom: '1px solid #eee' }}>
+                                <tr key={user.id || user._id} style={{ borderBottom: '1px solid #eee', cursor: 'pointer' }} onClick={() => handleRowClick(user)}>
                                     <td style={{ border: '1px solid #ccc', padding: '8px', background: 'var(--table-row-bg, #fafafa)', minWidth: '180px', width: '220px', color: 'var(--table-text, #222)' }}><strong>{user.name || '(no name)'}</strong></td>
                                     {/* Fish Stats */}
                                     <td style={{ border: '1px solid #ccc', padding: '8px' }}>{fish.games || 0}</td>

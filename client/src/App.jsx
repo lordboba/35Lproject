@@ -158,6 +158,7 @@ function App() {
         <Route index element={<Navigate to="lobby" />} />
         <Route path="lobby" element={<Lobby />} />
         <Route path="stats" element={<UserStats />} />
+        <Route path="stats/:id" element={<UserStats />} />
         <Route path="instructions" element={<GameInstructions />} />
         <Route path="create-game" element={<CreateGame />} />
         <Route path="game" element={<Game />} />

@@ -224,8 +224,10 @@ function VietcongGameScreen() {
   // WebSocket and game state management
   const location = useLocation();
   const { backendUser } = useOutletContext();
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [gameId, setGameId] = useState(null);
+  const [gameName, setGameName] = useState('');
   const [websocket, setWebsocket] = useState(null);
   const [gameState, setGameState] = useState(null);
   const [users, setUsers] = useState([]);
@@ -233,6 +235,9 @@ function VietcongGameScreen() {
   
   // Card selection state
   const [selectedCards, setSelectedCards] = useState([]);
+  
+  // Add state for game end handling
+  const [gameEnded, setGameEnded] = useState(false);
   
   const [games, setGames] = useState([]);
   // Remove hardcoded lastPlayedCards - will get from gameState instead
@@ -246,14 +251,64 @@ function VietcongGameScreen() {
     return () => unsubscribe();
   }, []);
   
-  // Get the game ID from URL parameters
+  // Get the game ID from URL parameters and fetch game details
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get('id');
     if (id) {
       setGameId(id);
+      
+      // Fetch game details to get the name
+      const fetchGameDetails = async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/games/${id}`);
+          if (response.ok) {
+            const gameData = await response.json();
+            setGameName(gameData.name || '');
+          }
+        } catch (error) {
+          console.error('Error fetching game details:', error);
+        }
+      };
+      
+      fetchGameDetails();
     }
   }, [location]);
+
+  // Detect game end and navigate to win screen
+  useEffect(() => {
+    if (!gameState) return;
+    
+    // Check if game has ended
+    if (gameState.status === 1 && !gameEnded) {
+      console.log('=== VIET CONG GAME END DETECTED ===');
+      console.log('Game has ended! Final status:', gameState);
+      console.log('Current user details:', userDetails);
+      console.log('All users:', users);
+      console.log('Game ID:', gameId);
+      console.log('=== END VIET CONG GAME END DEBUG ===');
+      
+      setGameEnded(true);
+      
+      // Navigate to win page with game results
+      const gameResults = {
+        gameState: gameState,
+        userDetails: userDetails,
+        users: users,
+        gameId: gameId,
+        gameName: gameName
+      };
+      
+      console.log('Storing Viet Cong game results:', gameResults);
+      
+      // Store results in sessionStorage for the win page
+      sessionStorage.setItem('vietcongGameResults', JSON.stringify(gameResults));
+      
+      // Navigate to win page
+      console.log('Navigating to vietcong-win page...');
+      navigate(`/app/vietcong-win`);
+    }
+  }, [gameState, gameEnded, navigate, userDetails, users, gameId, gameName]);
   
   // Function to convert backend card format to frontend format
   const convertCardToString = (card) => {

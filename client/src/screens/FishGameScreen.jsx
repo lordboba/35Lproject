@@ -7,14 +7,14 @@ import { API_BASE_URL, getWebSocketURL } from '../config';
 // Half suit enum constants
 const HalfSuit = {
   MIDDLE: 8,
-  SPADES_LOW: 0,
-  HEARTS_LOW: 1, 
-  DIAMONDS_LOW: 2,
-  CLUBS_LOW: 3,
-  SPADES_HIGH: 4,
-  HEARTS_HIGH: 5,
-  DIAMONDS_HIGH: 6,
-  CLUBS_HIGH: 7
+  SPADES_LOW: 3,
+  HEARTS_LOW: 2, 
+  DIAMONDS_LOW: 1,
+  CLUBS_LOW: 0,
+  SPADES_HIGH: 7,
+  HEARTS_HIGH: 6,
+  DIAMONDS_HIGH: 5,
+  CLUBS_HIGH: 4
 };
 
 function cardClicked(cardname, selectedCards, setSelectedCards) {
@@ -420,6 +420,157 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     );
   }
 
+  // Function to display claim assignment interface when gameState.status = 2
+  const renderClaimAssignmentInterface = () => {
+    if (!gameState || gameState?.status !== 2) {
+      return null;
+    }
+    
+    const currentUserId = getCurrentUserId();
+    
+    // Get unclaimed cards that need to be assigned
+    const unclaimedCards = gameState?.owners?.options?.cards || [];
+    const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
+    
+    // Check if all cards have been assigned
+    const unassignedCards = unclaimedCardStrings.filter(cardString => !claimAssignments[cardString]);
+    if (unassignedCards.length > 0) {
+      alert(`Please assign all cards before submitting claim. Unassigned cards: ${unassignedCards.join(', ')}`);
+      return;
+    }
+    
+    // Get current player's team number
+    const currentPlayerTeam = gameState?.player_status?.[currentUserId];
+    if (!currentPlayerTeam) {
+      alert("Error: Cannot determine your team number. Please refresh the page and try again.");
+      return;
+    }
+    
+    return (
+      <div style={{
+        width: '100%',
+        padding: '25px',
+        backgroundColor: 'rgba(255, 0, 0, 0.15)', // Light red background for claims
+        borderRadius: '12px',
+        border: '3px solid #FF0000',
+        marginBottom: '20px',
+      }}>
+        <div style={{
+          color: '#FF0000',
+          fontSize: '2.2vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: '15px',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        }}>
+          🏆 MAKING CLAIM - ASSIGN CARDS TO TEAMMATES 🏆
+        </div>
+        
+        <div style={{
+          color: '#FFF',
+          fontSize: '1.4vw',
+          textAlign: 'center',
+          marginBottom: '20px',
+          fontStyle: 'italic',
+          textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+        }}>
+          Assign each unclaimed card to one of your teammates:
+        </div>
+        
+        {/* Cards in horizontal row with dropdowns */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '20px',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          marginBottom: '20px',
+        }}>
+          {unclaimedCardStrings.map(cardString => {
+            const assignedPlayer = claimAssignments[cardString];
+            // Include current user + teammates in dropdown options
+            const allTeamOptions = [currentUserId, ...teammates];
+            
+            return (
+              <div key={`claim-${cardString}`} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px',
+              }}>
+                {/* Card display */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}>
+                  <img 
+                    src={`/${cardString}icon.svg`}
+                    style={{
+                      width: '80px',
+                      height: '120px',
+                      border: '2px solid #FFD700',
+                      borderRadius: '8px',
+                      marginBottom: '8px',
+                    }} 
+                    alt={cardString}
+                  />
+                  <span style={{
+                    color: '#FFD700',
+                    fontSize: '1.2vw',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                  }}>
+                    {cardString}
+                  </span>
+                </div>
+                
+                {/* Dropdown selector */}
+                <select
+                  value={assignedPlayer || ''}
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    setClaimAssignments(prev => ({
+                      ...prev,
+                      [cardString]: selectedValue || null
+                    }));
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    fontSize: '1.1vw',
+                    fontWeight: 'bold',
+                    borderRadius: '6px',
+                    border: assignedPlayer ? '2px solid #00FF00' : '2px solid #FFD700',
+                    background: assignedPlayer ? '#e6ffe6' : '#fff',
+                    color: '#000',
+                    cursor: 'pointer',
+                    minWidth: '120px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <option value="" style={{ color: '#666' }}>
+                    Select Player
+                  </option>
+                  {allTeamOptions.map(userId => {
+                    const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
+                    const playerTeam = gameState?.player_status?.[userId];
+                    const isCurrentUser = userId === currentUserId;
+                    
+                    return (
+                      <option key={userId} value={userId}>
+                        {username} {isCurrentUser ? '(You)' : `(Team #${playerTeam})`}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
 function getClaimsArray(suits_1,suits_2){
   let claims = [0,0,0,0,0,0,0,0,0]
   
@@ -633,8 +784,10 @@ function claimButtons(claims, handleInitiateClaim) {
 function FishGameScreen() {
     const location = useLocation();
     const { backendUser } = useOutletContext();
+    const navigate = useNavigate();
     const [currentUser, setCurrentUser] = useState(null);
     const [gameId, setGameId] = useState(null);
+    const [gameName, setGameName] = useState('');
     const [websocket, setWebsocket] = useState(null);
     const [gameState, setGameState] = useState(null);
     const [users, setUsers] = useState([]);
@@ -646,9 +799,61 @@ function FishGameScreen() {
     // Add state for selected player to ask
     const [selectedPlayerToAsk, setSelectedPlayerToAsk] = useState(null);
     
+    // Add state for claim assignments - maps card to player
+    const [claimAssignments, setClaimAssignments] = useState({});
+    
+    // Add state for claim processing
+    const [isProcessingClaim, setIsProcessingClaim] = useState(false);
+    
+    // Add state for game end handling
+    const [gameEnded, setGameEnded] = useState(false);
+    
     const [games, setGames] = useState([]);
     // Remove hardcoded lastPlayedCards - will get from gameState instead
   
+    // Card conversion functions - moved to top for availability
+    const convertCardToString = (card) => {
+        const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+        const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
+        if (card.rank == 0) {
+            if (card.suit == 1 || card.suit == 4) {
+                return "JB"
+            } else if (card.suit == 2 || card.suit == 3) {
+                return "JR"
+            }
+        }
+        const rank = ranks[card.rank] || card.rank;
+        const suit = suits[card.suit] || card.suit;
+        
+        return `${rank}${suit}`;
+      };
+      
+      // Function to convert frontend card format to backend format
+      const convertStringToCard = (cardString) => {
+        const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+        const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
+        
+        const rank = cardString.slice(0, -1); // All but last character
+        const suit = cardString.slice(-1); // Last character
+        if (suit == "B" ) {
+            return {
+                rank: 0,
+                suit: 1
+            };
+        }
+        else if (suit == "R") {
+            return {
+                rank: 0,
+                suit: 2
+            };
+        }
+        
+        return {
+          rank: ranks.indexOf(rank),
+          suit: suits.indexOf(suit)
+        };
+      };
+
     // Get the current Firebase user
     useEffect(() => {
       const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -658,14 +863,89 @@ function FishGameScreen() {
       return () => unsubscribe();
     }, []);
     
-    // Get the game ID from URL parameters
+    // Get the game ID from URL parameters and fetch game details
     useEffect(() => {
       const searchParams = new URLSearchParams(location.search);
       const id = searchParams.get('id');
       if (id) {
         setGameId(id);
+        
+        // Fetch game details to get the name
+        const fetchGameDetails = async () => {
+          try {
+            const response = await fetch(`${API_BASE_URL}/games/${id}`);
+            if (response.ok) {
+              const gameData = await response.json();
+              setGameName(gameData.name || '');
+            }
+          } catch (error) {
+            console.error('Error fetching game details:', error);
+          }
+        };
+        
+        fetchGameDetails();
       }
     }, [location]);
+
+    // Detect claim results when game state changes
+    useEffect(() => {
+      if (!gameState) return;
+      
+      // If we were processing a claim and now we're back to normal status
+      if (isProcessingClaim && gameState.status === 0) {
+        console.log('Claim processing completed, game returned to normal status');
+        setIsProcessingClaim(false);
+      }
+      
+      // Check for recent claim results in last_turn if available
+      if (gameState.last_turn && gameState.last_turn.type === 1) {
+        const lastTurn = gameState.last_turn;
+        console.log('Recent claim detected in last_turn:', lastTurn);
+        
+        // Check if this was a recent claim by the current user
+        const currentUserId = getCurrentUserId();
+        if (lastTurn.player === currentUserId && lastTurn.success !== undefined) {
+          // Show detailed claim result notification
+          const claimResult = lastTurn.success ? 'SUCCESSFUL' : 'FAILED';
+          const claimColor = lastTurn.success ? '#00FF00' : '#FF0000';
+          
+          console.log(`Your recent claim was ${claimResult}:`, lastTurn);
+          
+          // You could add a toast notification here instead of alert
+          // For now, we'll log it for debugging
+        }
+      }
+      
+      // Check if game has ended
+      if (gameState.status === 1 && !gameEnded) {
+        console.log('=== GAME END DETECTED ===');
+        console.log('Game has ended! Final status:', gameState);
+        console.log('Current user details:', userDetails);
+        console.log('All users:', users);
+        console.log('Game ID:', gameId);
+        console.log('=== END GAME END DEBUG ===');
+        
+        setGameEnded(true);
+        
+        // Navigate to win page with game results
+        const gameResults = {
+          gameState: gameState,
+          userDetails: userDetails,
+          users: users,
+          gameId: gameId,
+          gameName: gameName
+        };
+        
+        console.log('Storing game results:', gameResults);
+        
+        // Store results in sessionStorage for the win page
+        sessionStorage.setItem('fishGameResults', JSON.stringify(gameResults));
+        
+        // Navigate to win page
+        console.log('Navigating to fish-win page...');
+        navigate(`/app/fish-win`);
+      }
+    }, [gameState, isProcessingClaim, gameEnded, navigate, userDetails, users, gameId, gameName]);
 
     // Get current user's backend ID
     const getCurrentUserId = () => {
@@ -773,9 +1053,58 @@ function FishGameScreen() {
         }
       };
     }, [gameId, currentUser]);
+   
 
-    // Function to handle passing turn
-    const handlePass = async () => {
+    // Function to generate turn model for asking questions (turn_type = 0)
+    const generateQuestionTurnModel = (selectedCard, playerToAsk) => {
+      const currentUserId = getCurrentUserId();
+      if (!currentUserId || !selectedCard || !playerToAsk) {
+        return null;
+      }
+      /*
+      console.log('generateQuestionTurnModel params:', {
+        selectedCard,
+        playerToAsk: playerToAsk,
+        playerToAskType: typeof playerToAsk,
+        currentUserId: currentUserId,
+        currentUserIdType: typeof currentUserId
+      });*/
+      
+      // For asking questions: sender = player being asked, receiver = current player
+      const transaction = {
+        sender: playerToAsk,
+        receiver: currentUserId,
+        card: convertStringToCard(selectedCard), // Keep as card object for questions
+        success: true
+      };
+      
+      const turnModel = {
+        type: 0, // 0 = asking questions
+        player: currentUserId,
+        transactions: [transaction]
+      };
+      
+      console.log('Generated Fish question turn model:', turnModel);
+      return turnModel;
+    };
+
+    // Function to handle asking a question
+    const handleAskQuestion = async () => {
+      // Debug: Print entire game state when ask button is pressed
+      /*console.log('=== ASK BUTTON PRESSED - FULL GAME STATE ===');
+      console.log('Game State:', JSON.stringify(gameState, null, 2));
+      console.log('=== END GAME STATE DEBUG ===');*/
+      
+      if (selectedCards.length !== 1) {
+        alert("Please select exactly one card to ask about!");
+        return;
+      }
+      
+      if (!selectedPlayerToAsk) {
+        alert("Please select a player to ask!");
+        return;
+      }
+      
       const currentUserId = getCurrentUserId();
       if (!currentUserId) {
         alert("User not authenticated!");
@@ -788,12 +1117,17 @@ function FishGameScreen() {
         return;
       }
       
-      // For Fish game, passing might not be needed, but implementing for now
-      const turnModel = {
-        type: 0, // 0 = asking questions
-        player: currentUserId,
-        transactions: []
-      };
+      const turnModel = generateQuestionTurnModel(selectedCards[0], selectedPlayerToAsk);
+      if (!turnModel) {
+        alert("Failed to generate question!");
+        return;
+      }
+      
+      console.log('Sending Fish question to API:', {
+        endpoint: `${API_BASE_URL}/games/${gameId}/play`,
+        method: 'PATCH',
+        data: turnModel
+      });
       
       try {
         const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
@@ -805,210 +1139,403 @@ function FishGameScreen() {
         });
         
         if (response.ok) {
-          console.log("Passed successfully!");
+          // Clear selections on successful question
+          setSelectedCards([]);
+          setSelectedPlayerToAsk(null);
+          console.log("Question asked successfully!");
         } else {
           const errorData = await response.json();
-          alert(`Failed to pass: ${errorData.detail || 'Unknown error'}`);
+          console.error('API Error Response:', errorData);
+          alert(`Failed to ask question: ${errorData.detail || 'Unknown error'}`);
         }
       } catch (error) {
-        console.error('Error passing:', error);
-        alert('Failed to pass. Please try again.');
+        console.error('Error asking question:', error);
+        alert('Failed to ask question. Please try again.');
       }
     };
 
-    const convertCardToString = (card) => {
-        const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-        const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
-        if (card.rank == 0) {
-            if (card.suit == 1 || card.suit == 4) {
-                return "JB"
-            } else if (card.suit == 2 || card.suit == 3) {
-                return "JR"
-            }
-        }
-        const rank = ranks[card.rank] || card.rank;
-        const suit = suits[card.suit] || card.suit;
-        
-        return `${rank}${suit}`;
+    // Function to handle initiating a claim
+    const handleInitiateClaim = async (halfSuitIndex) => {
+      const halfSuitNames = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"];
+      
+      // Example cards for each half suit (required by backend for claim initiation)
+      const halfSuitEx = [
+        "2C", // ♠ 2-7
+        "2D", // ♥ 2-7
+        "2H", // ♦ 2-7
+        "2S", // ♣ 2-7
+        "9C", // ♠ 9-A
+        "9D", // ♥ 9-A
+        "9H", // ♦ 9-A
+        "9S",  // ♣ 9-A
+        "8S" // 8 & Joker (using 8 of Spades as example)
+      ];
+      
+      const currentUserId = getCurrentUserId();
+      if (!currentUserId) {
+        alert("User not authenticated!");
+        return;
+      }
+      
+      // Debug: Log current game state and user info
+      console.log('=== CLAIM INITIATION DEBUG ===');
+      console.log('Current User ID:', currentUserId);
+      console.log('Current Player:', gameState?.current_player);
+      console.log('Game Status:', gameState?.status);
+      console.log('Is Current Player Turn:', gameState?.current_player === currentUserId);
+      console.log('Half Suit Index:', halfSuitIndex);
+      console.log('Example Card for Half Suit:', halfSuitEx[halfSuitIndex]);
+      console.log('Full Game State:', JSON.stringify(gameState, null, 2));
+      console.log('=== END DEBUG ===');
+      
+      // Check if it's the current user's turn
+      // Claims can be initiated at any time, not just during your turn
+      // if (gameState?.current_player !== currentUserId) {
+      //   alert("It's not your turn! Cannot initiate claim.");
+      //   return;
+      // }
+      
+      // Check game status
+      if (gameState?.status !== 0) {
+        alert(`Cannot initiate claim. Game status is ${gameState?.status} (expected 0 for normal play)`);
+        return;
+      }
+      
+      // Confirm the claim with user
+      const confirmMessage = `Are you sure you want to initiate a claim for ${halfSuitNames[halfSuitIndex]}?\n\nRemember: Failed claims give the opposing team that half-suit automatically!`;
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+      
+      // Create turn model for initiating claim (turn_type = 1, with example card from half suit)
+      const exampleCard = halfSuitEx[halfSuitIndex];
+      
+      // Create transaction model with sample card (other fields don't matter for claim initiation)
+      const transaction = {
+        sender: currentUserId,
+        receiver: currentUserId,
+        card: convertStringToCard(exampleCard),
+        success: true
       };
       
-      // Function to convert frontend card format to backend format
-      const convertStringToCard = (cardString) => {
-        const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-        const suits = ['','C', 'D', 'H', 'S']; // Clubs, Diamonds, Hearts, Spades
+      const turnModel = {
+        type: 1, // 1 = initiating claim
+        player: currentUserId,
+        transactions: [transaction] // Array with transaction model containing sample card
+      };
+      
+      console.log('Initiating claim for half-suit:', halfSuitNames[halfSuitIndex]);
+      console.log('Using example card:', exampleCard);
+      console.log('Sending claim initiation to API:', {
+        endpoint: `${API_BASE_URL}/games/${gameId}/play`,
+        method: 'PATCH',
+        data: turnModel
+      });
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(turnModel)
+        });
         
-        const rank = cardString.slice(0, -1); // All but last character
-        const suit = cardString.slice(-1); // Last character
-        if (suit == "B" ) {
-            return {
-                rank: 0,
-                suit: 1
-            };
+        console.log('Claim response status:', response.status);
+        console.log('Claim response ok:', response.ok);
+        console.log('Claim response headers:', response.headers);
+        
+        let responseData = null;
+        let responseText = '';
+        
+        try {
+          // Read the response text first
+          responseText = await response.text();
+          console.log('Raw response text:', responseText);
+          
+          // Only try to parse as JSON if there's content
+          if (responseText) {
+            try {
+              responseData = JSON.parse(responseText);
+              console.log('Parsed response data:', responseData);
+            } catch (jsonError) {
+              console.log('Response was not valid JSON:', jsonError);
+              // Not a JSON parsing error - just means response wasn't JSON
+            }
+          }
+          
+          // If response is ok, treat as success regardless of JSON parsing
+          if (response.ok) {
+            console.log("Claim submitted successfully!");
+            setClaimAssignments({});
+            
+            // Show success message based on parsed data if available
+            if (responseData && responseData.success !== undefined) {
+              if (responseData.success) {
+                alert("🎉 Claim SUCCESSFUL! Your team now owns this half-suit!");
+              } else {
+                alert("❌ Claim FAILED! The opposing team now owns this half-suit.");
+              }
+            } else {
+              alert("Claim submitted! Check the game state for results.");
+            }
+            return;
+          }
+          
+          // Handle error cases
+          console.error('Claim submission failed:', {
+            status: response.status,
+            statusText: response.statusText,
+            responseText,
+            responseData,
+            request: {
+              url: `${API_BASE_URL}/games/${gameId}/play`,
+              method: 'PATCH',
+              body: turnModel
+            }
+          });
+          
+          // Handle specific error cases with more details
+          if (response.status === 422) {
+            console.error('Validation error details:', responseData);
+            // Try to extract more specific error information
+            if (responseData && responseData.detail && Array.isArray(responseData.detail)) {
+              const errorMessages = responseData.detail.map(err => 
+                `${err.loc?.join?.('.') || 'Unknown field'}: ${err.msg || 'Invalid value'}`
+              ).join('\n');
+              alert(`Claim validation errors:\n${errorMessages}`);
+            } else {
+              alert(`Claim validation error: ${responseData?.detail || responseText || 'Invalid claim format'}`);
+            }
+          } else if (response.status === 400) {
+            alert(`Claim error: ${responseData?.detail || responseText || 'Bad request'}`);
+          } else if (response.status === 403) {
+            alert("Not authorized to make this claim. Make sure it's your team's turn to claim.");
+          } else if (response.status === 404) {
+            alert("Game not found. Please refresh the page and try again.");
+          } else {
+            alert(`Failed to submit claim: ${responseData?.detail || responseText || `Server error (${response.status})`}`);
+          }
+          
+        } catch (error) {
+          // Only a real error if it's not the "body stream already read" error
+          if (!error.message.includes('body stream already read')) {
+            console.error('Error processing claim response:', error);
+            alert(`Error processing server response: ${error.message}`);
+          }
         }
-        else if (suit == "R") {
-            return {
-                rank: 0,
-                suit: 2
-            };
+      } catch (error) {
+        console.error('Actual network error submitting claim:', error);
+        // Only show network error for actual fetch failures
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          alert('Network error while submitting claim. Please check your connection and try again.');
+        } else if (!error.message.includes('body stream already read')) {
+          // Don't show error for "body stream already read" as it's not a real error
+          alert(`Unexpected error while submitting claim: ${error.message}`);
         }
+      } finally {
+        // Always clear loading state
+        setIsProcessingClaim(false);
+      }
+    };
+
+    // Function to handle submitting the actual claim with card assignments
+    const handleSubmitClaim = async () => {
+      const currentUserId = getCurrentUserId();
+      if (!currentUserId) {
+        alert("User not authenticated!");
+        return;
+      }
+      
+      // Get unclaimed cards that need to be assigned
+      const unclaimedCards = gameState?.owners?.options?.cards || [];
+      const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
+      
+      // Check if all cards have been assigned
+      const unassignedCards = unclaimedCardStrings.filter(cardString => !claimAssignments[cardString]);
+      if (unassignedCards.length > 0) {
+        alert(`Please assign all cards before submitting claim. Unassigned cards: ${unassignedCards.join(', ')}`);
+        return;
+      }
+      
+      // Get current player's team number
+      const currentPlayerTeam = gameState?.player_status?.[currentUserId];
+      if (!currentPlayerTeam) {
+        alert("Error: Cannot determine your team number. Please refresh the page and try again.");
+        return;
+      }
+      
+      // Confirm the claim submission
+      const assignmentSummary = unclaimedCardStrings.map(cardString => {
+        const playerId = claimAssignments[cardString];
+        const playerName = userDetails[playerId]?.name || `Player ${playerId.slice(-4)}`;
+        const isCurrentUser = playerId === currentUserId;
+        return `${cardString} → ${playerName}${isCurrentUser ? ' (You)' : ''}`;
+      }).join('\n');
+      
+      const confirmMessage = `Are you sure you want to submit this claim?\n\n${assignmentSummary}\n\nRemember: If any assignment is wrong, you lose the claim!`;
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+      
+      // Build transactions array for the claim
+      const transactions = unclaimedCards.map(card => {
+        const cardString = convertCardToString(card);
+        const assignedPlayerId = claimAssignments[cardString];
+        
+        const receiver = `suits_${currentPlayerTeam}`;
         
         return {
-          rank: ranks.indexOf(rank),
-          suit: suits.indexOf(suit)
+          sender: assignedPlayerId, // The teammate who supposedly has the card
+          receiver: receiver,       // The team's suits collection (e.g., "suits_1")
+          card: card,               // Single card object (not wrapped in array)
+          success: true             // Backend will verify if this is actually correct
         };
+      });
+      
+      // Validate transactions before sending
+      const invalidTransactions = transactions.filter(transaction => 
+        !transaction.sender || 
+        !transaction.receiver || 
+        !transaction.card ||
+        typeof transaction.card !== 'object' ||
+        !transaction.card.hasOwnProperty('rank') ||
+        !transaction.card.hasOwnProperty('suit')
+      );
+      
+      if (invalidTransactions.length > 0) {
+        console.error('Invalid transactions detected:', invalidTransactions);
+        alert('Error: Some card assignments are invalid. Please try again.');
+        setIsProcessingClaim(false);
+        return;
+      }
+      
+      // Create turn model for submitting claim (turn_type = 1, with transactions)
+      const turnModel = {
+        type: 1, // 1 = submitting claim
+        player: currentUserId,
+        transactions: transactions
       };
-
-      // Function to generate turn model for asking questions (turn_type = 0)
-      const generateQuestionTurnModel = (selectedCard, playerToAsk) => {
-        const currentUserId = getCurrentUserId();
-        if (!currentUserId || !selectedCard || !playerToAsk) {
-          return null;
-        }
-        /*
-        console.log('generateQuestionTurnModel params:', {
-          selectedCard,
-          playerToAsk: playerToAsk,
-          playerToAskType: typeof playerToAsk,
-          currentUserId: currentUserId,
-          currentUserIdType: typeof currentUserId
-        });*/
-        
-        // For asking questions: sender = player being asked, receiver = current player
-        const transaction = {
-          sender: playerToAsk,
-          receiver: currentUserId,
-          card: convertStringToCard(selectedCard),
-          success: true
-        };
-        
-        const turnModel = {
-          type: 0, // 0 = asking questions
-          player: currentUserId,
-          transactions: [transaction]
-        };
-        
-        console.log('Generated Fish question turn model:', turnModel);
-        return turnModel;
-      };
-
-      // Function to handle asking a question
-      const handleAskQuestion = async () => {
-        // Debug: Print entire game state when ask button is pressed
-        /*console.log('=== ASK BUTTON PRESSED - FULL GAME STATE ===');
-        console.log('Game State:', JSON.stringify(gameState, null, 2));
-        console.log('=== END GAME STATE DEBUG ===');*/
-        
-        if (selectedCards.length !== 1) {
-          alert("Please select exactly one card to ask about!");
-          return;
-        }
-        
-        if (!selectedPlayerToAsk) {
-          alert("Please select a player to ask!");
-          return;
-        }
-        
-        const currentUserId = getCurrentUserId();
-        if (!currentUserId) {
-          alert("User not authenticated!");
-          return;
-        }
-        
-        // Check if it's the current user's turn
-        if (gameState?.current_player !== currentUserId) {
-          alert("It's not your turn!");
-          return;
-        }
-        
-        const turnModel = generateQuestionTurnModel(selectedCards[0], selectedPlayerToAsk);
-        if (!turnModel) {
-          alert("Failed to generate question!");
-          return;
-        }
-        
-        console.log('Sending Fish question to API:', {
-          endpoint: `${API_BASE_URL}/games/${gameId}/play`,
+      
+      console.log('=== CLAIM SUBMISSION DEBUG ===');
+      console.log('Current Game State:', gameState);
+      console.log('Unclaimed Cards (raw):', unclaimedCards);
+      console.log('Unclaimed Card Strings:', unclaimedCardStrings);
+      console.log('Claim Assignments:', claimAssignments);
+      console.log('Generated Transactions:', transactions);
+      console.log('Complete Turn Model:', turnModel);
+      console.log('Turn Model JSON:', JSON.stringify(turnModel, null, 2));
+      console.log('=== END CLAIM SUBMISSION DEBUG ===');
+      
+      // Set loading state
+      setIsProcessingClaim(true);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
           method: 'PATCH',
-          data: turnModel
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(turnModel)
         });
         
-        try {
-          const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(turnModel)
-          });
-          
-          if (response.ok) {
-            // Clear selections on successful question
-            setSelectedCards([]);
-            setSelectedPlayerToAsk(null);
-            console.log("Question asked successfully!");
-          } else {
-            const errorData = await response.json();
-            console.error('API Error Response:', errorData);
-            alert(`Failed to ask question: ${errorData.detail || 'Unknown error'}`);
-          }
-        } catch (error) {
-          console.error('Error asking question:', error);
-          alert('Failed to ask question. Please try again.');
-        }
-      };
-
-      // Function to handle initiating a claim
-      const handleInitiateClaim = async (halfSuitIndex) => {
-        const halfSuitNames = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"];
+        console.log('Claim response status:', response.status);
+        console.log('Claim response ok:', response.ok);
+        console.log('Claim response headers:', response.headers);
         
-        const currentUserId = getCurrentUserId();
-        if (!currentUserId) {
-          alert("User not authenticated!");
-          return;
-        }
-        
-        // Confirm the claim with user
-        const confirmMessage = `Are you sure you want to initiate a claim for ${halfSuitNames[halfSuitIndex]}?\n\nRemember: Failed claims give the opposing team that half-suit automatically!`;
-        if (!window.confirm(confirmMessage)) {
-          return;
-        }
-        
-        // Create turn model for initiating claim (turn_type = 1, empty transactions)
-        const turnModel = {
-          type: 1, // 1 = initiating claim
-          player: currentUserId,
-          transactions: [] // Empty transactions array for initiating claim
-        };
-        
-        console.log('Initiating claim for half-suit:', halfSuitNames[halfSuitIndex]);
-        console.log('Sending claim initiation to API:', {
-          endpoint: `${API_BASE_URL}/games/${gameId}/play`,
-          method: 'PATCH',
-          data: turnModel
-        });
+        let responseData = null;
+        let responseText = '';
         
         try {
-          const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(turnModel)
+          // Read the response text first
+          responseText = await response.text();
+          console.log('Raw response text:', responseText);
+          
+          // Only try to parse as JSON if there's content
+          if (responseText) {
+            try {
+              responseData = JSON.parse(responseText);
+              console.log('Parsed response data:', responseData);
+            } catch (jsonError) {
+              console.log('Response was not valid JSON:', jsonError);
+              // Not a JSON parsing error - just means response wasn't JSON
+            }
+          }
+          
+          // If response is ok, treat as success regardless of JSON parsing
+          if (response.ok) {
+            console.log("Claim submitted successfully!");
+            setClaimAssignments({});
+            
+            // Show success message based on parsed data if available
+            if (responseData && responseData.success !== undefined) {
+              if (responseData.success) {
+                alert("🎉 Claim SUCCESSFUL! Your team now owns this half-suit!");
+              } else {
+                alert("❌ Claim FAILED! The opposing team now owns this half-suit.");
+              }
+            } else {
+              alert("Claim submitted! Check the game state for results.");
+            }
+            return;
+          }
+          
+          // Handle error cases
+          console.error('Claim submission failed:', {
+            status: response.status,
+            statusText: response.statusText,
+            responseText,
+            responseData,
+            request: {
+              url: `${API_BASE_URL}/games/${gameId}/play`,
+              method: 'PATCH',
+              body: turnModel
+            }
           });
           
-          if (response.ok) {
-            console.log("Claim initiated successfully!");
-            alert(`Claim for ${halfSuitNames[halfSuitIndex]} has been initiated!`);
+          // Handle specific error cases with more details
+          if (response.status === 422) {
+            console.error('Validation error details:', responseData);
+            // Try to extract more specific error information
+            if (responseData && responseData.detail && Array.isArray(responseData.detail)) {
+              const errorMessages = responseData.detail.map(err => 
+                `${err.loc?.join?.('.') || 'Unknown field'}: ${err.msg || 'Invalid value'}`
+              ).join('\n');
+              alert(`Claim validation errors:\n${errorMessages}`);
+            } else {
+              alert(`Claim validation error: ${responseData?.detail || responseText || 'Invalid claim format'}`);
+            }
+          } else if (response.status === 400) {
+            alert(`Claim error: ${responseData?.detail || responseText || 'Bad request'}`);
+          } else if (response.status === 403) {
+            alert("Not authorized to make this claim. Make sure it's your team's turn to claim.");
+          } else if (response.status === 404) {
+            alert("Game not found. Please refresh the page and try again.");
           } else {
-            const errorData = await response.json();
-            console.error('API Error Response:', errorData);
-            alert(`Failed to initiate claim: ${errorData.detail || 'Unknown error'}`);
+            alert(`Failed to submit claim: ${responseData?.detail || responseText || `Server error (${response.status})`}`);
           }
+          
         } catch (error) {
-          console.error('Error initiating claim:', error);
-          alert('Failed to initiate claim. Please try again.');
+          // Only a real error if it's not the "body stream already read" error
+          if (!error.message.includes('body stream already read')) {
+            console.error('Error processing claim response:', error);
+            alert(`Error processing server response: ${error.message}`);
+          }
         }
-      };
+      } catch (error) {
+        console.error('Actual network error submitting claim:', error);
+        // Only show network error for actual fetch failures
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          alert('Network error while submitting claim. Please check your connection and try again.');
+        } else if (!error.message.includes('body stream already read')) {
+          // Don't show error for "body stream already read" as it's not a real error
+          alert(`Unexpected error while submitting claim: ${error.message}`);
+        }
+      } finally {
+        // Always clear loading state
+        setIsProcessingClaim(false);
+      }
+    };
 
   
   return (
@@ -1038,12 +1565,157 @@ function FishGameScreen() {
             gameState: gameState
           });
           
-          // Show question options when it's current player's turn and there are valid options
-          if (isCurrentPlayer && questionOptionStrings && questionOptionStrings.length > 0) {
+          // Show question options when it's current player's turn, there are valid options, AND not in claim state
+          if (isCurrentPlayer && questionOptionStrings && questionOptionStrings.length > 0 && gameState?.status !== 2) {
             return (
               <div style={{ width: "100%", padding: "0 2%" }}>
                 {questionOptionsFromCards(questionOptionStrings, selectedCards, setSelectedCards)}
                 {playerSelectionForQuestions(users, userDetails, currentUserId, selectedPlayerToAsk, setSelectedPlayerToAsk, gameState)}
+              </div>
+            );
+          }
+          
+          return null;
+        })()}
+
+        {/* Show claim assignment interface when gameState.status = 2 */}
+        {(() => {
+          const currentUserId = getCurrentUserId();
+          
+          // Show claim assignment interface when status = 2 (claim occurring)
+          if (gameState?.status === 2) {
+            const unclaimedCards = gameState?.owners?.options?.cards || [];
+            const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
+            const currentPlayerTeam = gameState?.player_status?.[currentUserId];
+            const teammates = users.filter(userId => {
+              if (userId === currentUserId) return false;
+              const playerTeam = gameState?.player_status?.[userId];
+              return playerTeam && playerTeam === currentPlayerTeam;
+            });
+            
+            return (
+              <div style={{ width: "100%", padding: "0 2%" }}>
+                <div style={{
+                  width: '100%',
+                  padding: '25px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.15)',
+                  borderRadius: '12px',
+                  border: '3px solid #FF0000',
+                  marginBottom: '20px',
+                }}>
+                  <div style={{
+                    color: '#FF0000',
+                    fontSize: '2.2vw',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    marginBottom: '15px',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                  }}>
+                    🏆 MAKING CLAIM - ASSIGN CARDS TO TEAMMATES 🏆
+                  </div>
+                  
+                  <div style={{
+                    color: '#FFF',
+                    fontSize: '1.4vw',
+                    textAlign: 'center',
+                    marginBottom: '20px',
+                    fontStyle: 'italic',
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                  }}>
+                    Assign each unclaimed card to one of your teammates:
+                  </div>
+                  
+                  {/* Cards in horizontal row with dropdowns */}
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '20px',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                    marginBottom: '20px',
+                  }}>
+                    {unclaimedCardStrings.map(cardString => {
+                      const assignedPlayer = claimAssignments[cardString];
+                      // Include current user + teammates in dropdown options
+                      const allTeamOptions = [currentUserId, ...teammates];
+                      
+                      return (
+                        <div key={`claim-${cardString}`} style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '10px',
+                        }}>
+                          {/* Card display */}
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                            <img 
+                              src={`/${cardString}icon.svg`}
+                              style={{
+                                width: '80px',
+                                height: '120px',
+                                border: '2px solid #FFD700',
+                                borderRadius: '8px',
+                                marginBottom: '8px',
+                              }} 
+                              alt={cardString}
+                            />
+                            <span style={{
+                              color: '#FFD700',
+                              fontSize: '1.2vw',
+                              fontWeight: 'bold',
+                              textAlign: 'center',
+                            }}>
+                              {cardString}
+                            </span>
+                          </div>
+                          
+                          {/* Dropdown selector */}
+                          <select
+                            value={assignedPlayer || ''}
+                            onChange={(e) => {
+                              const selectedValue = e.target.value;
+                              setClaimAssignments(prev => ({
+                                ...prev,
+                                [cardString]: selectedValue || null
+                              }));
+                            }}
+                            style={{
+                              padding: '8px 12px',
+                              fontSize: '1.1vw',
+                              fontWeight: 'bold',
+                              borderRadius: '6px',
+                              border: assignedPlayer ? '2px solid #00FF00' : '2px solid #FFD700',
+                              background: assignedPlayer ? '#e6ffe6' : '#fff',
+                              color: '#000',
+                              cursor: 'pointer',
+                              minWidth: '120px',
+                              textAlign: 'center',
+                            }}
+                          >
+                            <option value="" style={{ color: '#666' }}>
+                              Select Player
+                            </option>
+                            {allTeamOptions.map(userId => {
+                              const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
+                              const playerTeam = gameState?.player_status?.[userId];
+                              const isCurrentUser = userId === currentUserId;
+                              
+                              return (
+                                <option key={userId} value={userId}>
+                                  {username} {isCurrentUser ? '(You)' : `(Team #${playerTeam})`}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             );
           }
@@ -1075,23 +1747,55 @@ function FishGameScreen() {
       </div>
 
       <div>
-            <button 
-              style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}
-              onClick={handleAskQuestion}
-              disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
-            >
-              Ask
-            </button>
-            <button 
-              style={{ padding: '1vh 2vw', fontSize: '5vh' }}
-              onClick={handlePass}
-              disabled={gameState?.current_player !== getCurrentUserId()}
-            >
-              Pass
-            </button>
+            {/* Show different buttons based on game state */}
+            {(() => {
+              const currentUserId = getCurrentUserId();
+              const unclaimedCards = gameState?.owners?.options?.cards || [];
+              const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
+              const allCardsAssigned = unclaimedCardStrings.length > 0 && unclaimedCardStrings.every(cardString => claimAssignments[cardString]);
+              
+              if (gameState?.status === 2) {
+                // Show submit claim button when in claim state
+                return (
+                  <button 
+                    style={{ 
+                      padding: '2% 4%', 
+                      fontSize: '6vh',
+                      backgroundColor: allCardsAssigned && !isProcessingClaim ? '#FF0000' : '#666',
+                      color: '#FFF',
+                      border: '3px solid #FFF',
+                      borderRadius: '12px',
+                      cursor: allCardsAssigned && !isProcessingClaim ? 'pointer' : 'not-allowed',
+                      fontWeight: 'bold',
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                      boxShadow: allCardsAssigned && !isProcessingClaim ? '0 4px 8px rgba(255, 0, 0, 0.4)' : 'none',
+                      opacity: isProcessingClaim ? 0.7 : 1,
+                    }}
+                    onClick={handleSubmitClaim}
+                    disabled={!allCardsAssigned || isProcessingClaim}
+                  >
+                    {isProcessingClaim ? '⏳ PROCESSING CLAIM...' : '🏆 SUBMIT CLAIM 🏆'}
+                  </button>
+                );
+              } else {
+                // Show regular ask/pass buttons for normal gameplay
+                return (
+                  <>
+                    <button 
+                      style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}
+                      onClick={handleAskQuestion}
+                      disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
+                    >
+                      Ask
+                    </button>
+                   
+                  </>
+                );
+              }
+            })()}
             
-            {/* Display current selections for debugging/user feedback */}
-            {(selectedCards.length > 0 || selectedPlayerToAsk) && (
+            {/* Display current selections for debugging/user feedback during regular play */}
+            {gameState?.status !== 2 && (selectedCards.length > 0 || selectedPlayerToAsk) && (
               <div style={{
                 marginTop: '20px',
                 padding: '15px',
@@ -1112,6 +1816,53 @@ function FishGameScreen() {
                     ✅ Ready to ask!
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Display claim assignment progress during claim state */}
+            {gameState?.status === 2 && (
+              <div style={{
+                marginTop: '20px',
+                padding: '15px',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                borderRadius: '8px',
+                border: '2px solid #FF0000',
+                color: '#FFF',
+                fontSize: '1.3vw',
+                textAlign: 'center',
+              }}>
+                <div style={{ color: '#FF0000', fontWeight: 'bold', marginBottom: '8px' }}>
+                  🏆 CLAIM IN PROGRESS 🏆
+                </div>
+                {(() => {
+                  const unclaimedCards = gameState?.owners?.options?.cards || [];
+                  const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
+                  const assignedCount = unclaimedCardStrings.filter(cardString => claimAssignments[cardString]).length;
+                  
+                  if (isProcessingClaim) {
+                    return (
+                      <div>
+                        <div style={{ color: '#FFD700', fontWeight: 'bold', marginBottom: '8px' }}>
+                          ⏳ Processing claim submission...
+                        </div>
+                        <div style={{ fontSize: '1.1vw' }}>
+                          Please wait while the claim is being processed
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div>
+                      <strong>Progress:</strong> {assignedCount} / {unclaimedCardStrings.length} cards assigned
+                      {assignedCount === unclaimedCardStrings.length && (
+                        <div style={{ color: '#00FF00', fontWeight: 'bold', marginTop: '8px' }}>
+                          ✅ All cards assigned - Ready to submit claim!
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
       </div>

@@ -501,7 +501,7 @@ class FishGame(Game):
     def half_suit_cards(half_suit):
         if half_suit == FishGame.HalfSuit.MIDDLE:
             return [Card(8, Suit(i+1)) for i in range(4)] + [Card(0, Suit(i+1)) for i in range(2)]
-        return [Card((half_suit.value//4*8+i+1)%13+1, Suit(half_suit.value%4+1)) for i in range(6)]
+        return [Card((half_suit.value//4*7+i+1)%13+1, Suit(half_suit.value%4+1)) for i in range(6)]
     
     def transact(self, trans):
         super().transact(trans)
@@ -600,11 +600,11 @@ class FishGame(Game):
         # Claim
         elif turn.turn_type == 1:
             # Initiate Claim
-            if self.status == 0 and len(turn.transactions) == 1 and self.is_unclaimed(turn.transactions[0].card[0]):
+            if self.status == 0 and len(turn.transactions) == 1 and self.is_unclaimed(turn.transactions[0].card):
                 self.status = 2
                 self.temp_current_player = self.current_player
                 self.current_player = self.players.index(turn.player)
-                self.options_owner = Owner(self.half_suits_cards(self.card_to_half_suit(turn.transactions[0].card[0])), False)
+                self.options_owner = Owner(self.half_suits_cards([self.card_to_half_suit(turn.transactions[0].card)]), False)
                 await super().broadcast_state()
                 return True
             
@@ -620,10 +620,15 @@ class FishGame(Game):
                 await super().play_turn(turn)
                 self.last_turn = turn
                 # End Game
-                if len(self.owner_half_suits[turn.transactions[0].to_]) == 5:
+                winner = 0
+                if len(self.owner_half_suits["suits_1"]) == 5:
+                    winner = 1
+                elif len(self.owner_half_suits["suits_2"]) == 5:
+                    winner = 2
+                if winner != 0:
                     self.status = 1
                     for i in range(6):
-                        self.player_status[self.players[i]] = suit_team == self.player_status[self.players[i]]
+                        self.player_status[self.players[i]] = winner == self.player_status[self.players[i]]
                     await super().broadcast_state()
                     results = {self.players[i]: self.player_status[self.players[i]] for i in range(6)}
                     await self.update_fish_stats(results)

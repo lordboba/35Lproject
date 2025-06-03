@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
 
@@ -47,6 +47,11 @@ function PlayerSearch() {
         navigate(`/app/stats/${user.id || user._id}`);
     };
 
+    useEffect(() => {
+        handleSearch({ preventDefault: () => {} });
+        // eslint-disable-next-line
+    }, []);
+
     return (
         <div>
             <h1>Player Search</h1>
@@ -54,10 +59,10 @@ function PlayerSearch() {
                 <input name="name" value={filters.name} onChange={handleChange} placeholder="Username (partial)" />
                 <input name="min_fish_games" value={filters.min_fish_games} onChange={handleChange} placeholder="Min Fish Games" type="number" min="0" />
                 <input name="min_vietcong_games" value={filters.min_vietcong_games} onChange={handleChange} placeholder="Min Vietcong Games" type="number" min="0" />
-                <input name="min_fish_win_rate" value={filters.min_fish_win_rate} onChange={handleChange} placeholder="Min Fish Win Rate (0-1)" type="number" step="0.01" min="0" max="1" />
-                <input name="min_vietcong_score_rate" value={filters.min_vietcong_score_rate} onChange={handleChange} placeholder="Min Vietcong Score Rate (0-1)" type="number" step="0.01" min="0" max="1" />
+                <input name="min_fish_win_rate" value={filters.min_fish_win_rate} onChange={handleChange} placeholder="Min Fish Win Rate (0-1)" type="number" step="0.01" min="0" max="1" style={{ width: '140px' }} />
+                <input name="min_vietcong_score_rate" value={filters.min_vietcong_score_rate} onChange={handleChange} placeholder="Min Weighted Win Rate (0-1)" type="number" step="0.01" min="0" max="1" style={{ width: '170px' }} />
                 <input name="min_claims" value={filters.min_claims} onChange={handleChange} placeholder="Min Claims" type="number" min="0" />
-                <input name="min_claim_rate" value={filters.min_claim_rate} onChange={handleChange} placeholder="Min Claim Rate (0-1)" type="number" step="0.01" min="0" max="1" />
+                <input name="min_claim_rate" value={filters.min_claim_rate} onChange={handleChange} placeholder="Min Claim Rate (0-1)" type="number" step="0.01" min="0" max="1" style={{ width: '140px' }} />
                 <button type="submit" disabled={loading}>Search</button>
             </form>
             {loading && <div>Searching...</div>}
@@ -82,7 +87,7 @@ function PlayerSearch() {
                             <th style={{ border: '1px solid #ccc', padding: '8px' }}>2nd Place</th>
                             <th style={{ border: '1px solid #ccc', padding: '8px' }}>3rd Place</th>
                             <th style={{ border: '1px solid #ccc', padding: '8px' }}>4th Place</th>
-                            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Score Rate</th>
+                            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Weighted Win Rate</th>
                         </tr>
                     </thead>
                     <tbody>

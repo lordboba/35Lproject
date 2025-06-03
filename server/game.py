@@ -408,6 +408,8 @@ class VietCongGame(Game):
             self.current_combo = []
             self.current_combo_type = self.Combo.NONE
 
+            self.last_turn.transactions = []
+
             # Designate starting player
             self.current_player = self.players.index(self.last_turn.player)
             print(f"New round. Starting player is now {self.current_player}")

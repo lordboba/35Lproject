@@ -268,7 +268,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
           marginBottom: '15px', // More space before cards
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
         }}>
-          🃏 Select a Card to Ask About 🃏
+          Select a Card to Ask About
         </div>
         <div style={{
           display: 'flex',
@@ -331,7 +331,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
             textAlign: 'center',
             textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
           }}>
-            ⚠️ No opponents available to ask
+            No opponents available to ask
           </div>
         </div>
       );
@@ -354,7 +354,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
           marginBottom: '15px',
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
         }}>
-          🎯 Select an Opponent to Ask 🎯
+          Select an Opponent to Ask
         </div>
         <div style={{
           display: 'flex',
@@ -463,7 +463,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
           marginBottom: '15px',
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
         }}>
-          🏆 MAKING CLAIM - ASSIGN CARDS TO TEAMMATES 🏆
+          Making Claim - Assign Cards To Teammates
         </div>
         
         <div style={{
@@ -1272,9 +1272,9 @@ function FishGameScreen() {
             // Show success message based on parsed data if available
             if (responseData && responseData.success !== undefined) {
               if (responseData.success) {
-                alert("🎉 Claim SUCCESSFUL! Your team now owns this half-suit!");
+                alert("Claim Successful! Your team now owns this half-suit!");
               } else {
-                alert("❌ Claim FAILED! The opposing team now owns this half-suit.");
+                alert("Claim Failed! The opposing team now owns this half-suit.");
               }
             } else {
               alert("Claim submitted! Check the game state for results.");
@@ -1470,9 +1470,9 @@ function FishGameScreen() {
             // Show success message based on parsed data if available
             if (responseData && responseData.success !== undefined) {
               if (responseData.success) {
-                alert("🎉 Claim SUCCESSFUL! Your team now owns this half-suit!");
+                alert("Claim Successful! Your team now owns this half-suit!");
               } else {
-                alert("❌ Claim FAILED! The opposing team now owns this half-suit.");
+                alert("Claim Failed! The opposing team now owns this half-suit.");
               }
             } else {
               alert("Claim submitted! Check the game state for results.");
@@ -1611,7 +1611,7 @@ function FishGameScreen() {
                     marginBottom: '15px',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
                   }}>
-                    🏆 MAKING CLAIM - ASSIGN CARDS TO TEAMMATES 🏆
+                    Making Claim - Assign Cards To Teammates
                   </div>
                   
                   <div style={{
@@ -1774,7 +1774,7 @@ function FishGameScreen() {
                     onClick={handleSubmitClaim}
                     disabled={!allCardsAssigned || isProcessingClaim}
                   >
-                    {isProcessingClaim ? '⏳ PROCESSING CLAIM...' : '🏆 SUBMIT CLAIM 🏆'}
+                    {isProcessingClaim ? 'Processing Claim...' : 'Submit Claim'}
                   </button>
                 );
               } else {
@@ -1813,7 +1813,7 @@ function FishGameScreen() {
                 </div>
                 {selectedCards.length === 1 && selectedPlayerToAsk && (
                   <div style={{ color: '#00FF00', fontWeight: 'bold', marginTop: '8px' }}>
-                    ✅ Ready to ask!
+                    Ready to ask!
                   </div>
                 )}
               </div>
@@ -1832,7 +1832,7 @@ function FishGameScreen() {
                 textAlign: 'center',
               }}>
                 <div style={{ color: '#FF0000', fontWeight: 'bold', marginBottom: '8px' }}>
-                  🏆 CLAIM IN PROGRESS 🏆
+                  Claim In Progress
                 </div>
                 {(() => {
                   const unclaimedCards = gameState?.owners?.options?.cards || [];
@@ -1843,7 +1843,7 @@ function FishGameScreen() {
                     return (
                       <div>
                         <div style={{ color: '#FFD700', fontWeight: 'bold', marginBottom: '8px' }}>
-                          ⏳ Processing claim submission...
+                          Processing claim submission...
                         </div>
                         <div style={{ fontSize: '1.1vw' }}>
                           Please wait while the claim is being processed
@@ -1857,7 +1857,7 @@ function FishGameScreen() {
                       <strong>Progress:</strong> {assignedCount} / {unclaimedCardStrings.length} cards assigned
                       {assignedCount === unclaimedCardStrings.length && (
                         <div style={{ color: '#00FF00', fontWeight: 'bold', marginTop: '8px' }}>
-                          ✅ All cards assigned - Ready to submit claim!
+                          All cards assigned - Ready to submit claim!
                         </div>
                       )}
                     </div>

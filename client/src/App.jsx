@@ -13,6 +13,7 @@ import CreateGame from './screens/CreateGame';
 import Game from './screens/Game';
 import VietcongGameScreen from './screens/VietcongGameScreen';
 import FishGameScreen from './screens/FishGameScreen';
+import ReplaySearch from './screens/ReplaySearch';
 import { API_BASE_URL } from './config';
 
 function ProtectedLayout({ onSignOut, backendUser }) {
@@ -162,6 +163,7 @@ function App() {
         <Route path="game" element={<Game />} />
         <Route path="vietcong-game" element={<VietcongGameScreen />} />
         <Route path="fish-game" element={<FishGameScreen />} />
+        <Route path="replay-search" element={<ReplaySearch />} />
       </Route>
     </Routes>
   );

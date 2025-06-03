@@ -26,7 +26,7 @@
     </symbol>
   </defs>
   <g id="Layer_5" data-name="Layer 5">
-    <rect class="cls-1" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
+    <rect class="cls-1" x="0" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
     <use width="150" height="177.0669" transform="translate(32.8527 49.9303)" xlink:href="#Red_4"/>
     <use width="150" height="177.0669" transform="translate(799.9276 1122.1206) rotate(-180)" xlink:href="#Red_4"/>
     <use width="256.5537" height="261.0955" transform="translate(46.9591 253.8665) scale(.4513)" xlink:href="#Heart"/>

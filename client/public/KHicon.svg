@@ -298,7 +298,7 @@
     <radialGradient id="radial-gradient-25" cx="20782.7125" cy="11519.9988" fx="20782.7125" fy="11519.9988" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient"/>
     <radialGradient id="radial-gradient-26" cx="20771.0492" cy="11508.3354" fx="20771.0492" fy="11508.3354" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient-10"/>
     <radialGradient id="radial-gradient-27" cx="20832.5786" cy="11471.2766" fx="20832.5786" fy="11471.2766" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient"/>
-    <radialGradient id="radial-gradient-28" cx="20820.9152" cy="11459.6133" fx="20820.9152" fy="11459.6133" r="13.6948" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient-10"/>
+    <radialGradient id="radial-gradient-28" cx="20820.9152" cy="11459.6133" fx="20820.9152" fy="11459.6133" gradientTransform="translate(6669.3099 23491.5212) rotate(-135)" xlink:href="#radial-gradient-10"/>
     <linearGradient id="linear-gradient-12" x1="14743.9223" y1="19537.1806" x2="15018.7615" y2="19537.1806" gradientTransform="translate(15194.6386 20359.4173) rotate(-180)" xlink:href="#linear-gradient"/>
     <linearGradient id="linear-gradient-13" x1="14860.9041" y1="19724.749" x2="14905.4753" y2="19724.749" gradientTransform="translate(15194.6386 20359.4173) rotate(-180)" xlink:href="#linear-gradient-6"/>
     <symbol id="Red_King" data-name="Red King" viewBox="0 0 510.6922 1006.1682">
@@ -387,13 +387,11 @@
       </g>
     </symbol>
   </defs>
-  <g id="Layer_9" data-name="Layer 9">
+  <g id="Layer_5" data-name="Layer 5">
     <rect class="cls-39" width="837.0066" height="1192.4994" rx="71.1963" ry="71.1963"/>
     <use width="256.5537" height="261.0955" transform="translate(46.9591 274.3159) scale(.4513)" xlink:href="#Heart"/>
     <use width="256.5537" height="261.0955" transform="translate(785.282 905.077) rotate(-180) scale(.4513)" xlink:href="#Heart"/>
     <use width="510.6922" height="1006.1682" transform="translate(153.8531 98.0739)" xlink:href="#Red_King"/>
-  </g>
-  <g id="Layer_5" data-name="Layer 5">
     <use width="168.5153" height="179.4338" transform="translate(48.8546 44.9339)" xlink:href="#Red_K"/>
     <use width="168.5153" height="179.4338" transform="translate(797.6297 1101.1891) rotate(-180)" xlink:href="#Red_K"/>
   </g>

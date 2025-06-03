@@ -191,7 +191,21 @@ class VietCongGame(Game):
         QUAD = 4
 
         SEQUENCE = 10
+        SEQ_3 = 13
+        SEQ_4 = 14
+        SEQ_5 = 15
+        SEQ_6 = 16
+        SEQ_7 = 17
+        SEQ_8 = 18
+        SEQ_9 = 19
+        SEQ_10 = 20
+        SEQ_11 = 21
+        SEQ_12 = 22
+
         DB_SEQUENCE = 30
+        DB_SEQ_3 = 33
+        DB_SEQ_4 = 34
+        DB_SEQ_5 = 35
 
     suit_to_value = {Suit.SPADE: 0, Suit.CLUB: 1, Suit.DIAMOND: 2, Suit.HEART: 3}
 
@@ -261,6 +275,7 @@ class VietCongGame(Game):
         sequence_len = VietCongGame.is_multiple_sequence(cards,1)
         if sequence_len != 0:
             return VietCongGame.Combo(VietCongGame.Combo.SEQUENCE.value + sequence_len)
+
         
         # double sequence by length
         double_sequence_len = VietCongGame.is_multiple_sequence(cards,2)
@@ -408,6 +423,8 @@ class VietCongGame(Game):
             self.current_combo = []
             self.current_combo_type = self.Combo.NONE
 
+            self.last_turn.transactions = []
+
             # Designate starting player
             self.current_player = self.players.index(self.last_turn.player)
             print(f"New round. Starting player is now {self.current_player}")
@@ -453,7 +470,6 @@ class FishGame(Game):
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)
 
-        self.options_owner = Owner([])
         self.unclaimed = {self.HalfSuit(i) for i in range(9)}
         self.temp_current_player = 0
         
@@ -466,6 +482,8 @@ class FishGame(Game):
         random.shuffle(team_list)
         for i in range(6):
             self.player_status[players[team_list[i]]] = i//3+1 
+
+        self.options_owner = Owner(self.get_question_options(),False)
 
         # self.manager.game_log.log_state(self.to_game_state())
 

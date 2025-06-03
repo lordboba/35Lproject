@@ -93,13 +93,14 @@ class GameLog:
         player_obj_ids = {ObjectId(pid): score for pid, score in results.items()}
 
         replay = ReplayModel(
+            type=self.game_type,
             name=self.name,
             players=player_obj_ids,
             game_states=self.game_states,
             timestamp=self.timestamp,
         )
 
-        await replay_collection.insert_one(replay.model_dump(by_alias=True))
+        await replay_collection.insert_one(replay.model_dump(by_alias=True, exclude={"id"}))
 
 async def safe_send_json(websocket: WebSocket, data: dict) -> bool:
     """Safely send JSON data to websocket with proper error handling."""

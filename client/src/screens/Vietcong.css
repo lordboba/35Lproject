@@ -1,0 +1,43 @@
+/* src/styles/themes.css */
+
+:root {
+  /* Light mode defaults */
+  --background-color: #f0f0f0;
+  --text-color: #000;
+  --primary-color: #007BFF; /* Blue for selected cards */
+  --highlight-color: #FFD700; /* Gold for current user */
+  --success-color: #00FF00; /* Green for current turn */
+  --error-color: #FF6B6B; /* Red for passed status */
+  --card-border-color: #000000;
+  --card-shadow-color: rgba(0, 123, 255, 0.3);
+  --player-border-color: #FFD700;
+  --player-bg-color: rgba(255, 215, 0, 0.2);
+  --card-count-text-color: black;
+  --card-count-shadow-color: #FEDE62;
+  --current-turn-bg-color: rgba(0, 255, 0, 0.1);
+  --current-turn-border-color: #00FF00;
+}
+
+[data-theme='dark'] {
+  /* Dark mode overrides */
+  --background-color: #242424;
+  --text-color: #fafaeb;
+  --primary-color: #8fceff; /* Lighter blue for selected cards */
+  --highlight-color: #FFEA00; /* Brighter gold for current user */
+  --success-color: #39FF14; /* Brighter green for current turn */
+  --error-color: #FF4444; /* Brighter red for passed status */
+  --card-border-color: #ffffff;
+  --card-shadow-color: rgba(143, 206, 255, 0.3);
+  --player-border-color: #FFEA00;
+  --player-bg-color: rgba(255, 234, 0, 0.1);
+  --card-count-text-color: black;
+  --card-count-shadow-color: #FFEA00;
+  --current-turn-bg-color: rgba(57, 255, 20, 0.1);
+  --current-turn-border-color: #39FF14;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}

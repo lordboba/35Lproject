@@ -9,7 +9,7 @@ function CreateGame() {
     const navigate = useNavigate();
     const { backendUser } = useOutletContext();
     const [gameName, setGameName] = useState('');
-    const [gameType, setGameType] = useState('simple');
+    const [gameType, setGameType] = useState('fish');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [currentUser, setCurrentUser] = useState(null);

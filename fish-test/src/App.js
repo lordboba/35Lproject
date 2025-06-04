@@ -84,13 +84,13 @@ function App() {
 
   async function playTurn() {
     const transactions = [];
-
+  
     if (turnType === 0) {
+      // ❓ Question
       const rankDict = { "0": 0, A: 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, T: 10, J: 11, Q: 12, K: 13 };
       const suitDict = { C: 1, D: 2, H: 3, S: 4 };
-    
+  
       let rank, suit;
-    
       if (cardInput === "JB") {
         rank = 0;
         suit = 1;
@@ -103,19 +103,21 @@ function App() {
         rank = rankDict[r];
         suit = suitDict[s];
       }
-    
+  
       if (rank === undefined || suit === undefined) {
         alert("Invalid card input.");
         return;
       }
-    
+  
       transactions.push({
         sender: questionTarget,
         receiver: currentPlayer,
         card: { rank, suit },
         success: true
       });
-    } else if (gameState.status === 0) {
+  
+    } else if (turnType === 1 && gameState.status === 0) {
+      // ✅ Claim initiation
       const cards = getHalfSuitCards(halfSuits.indexOf(selectedHalfSuit));
       transactions.push({
         sender: claimPlayer,
@@ -123,7 +125,9 @@ function App() {
         card: cards[0],
         success: true
       });
-    } else if (gameState.status === 2) {
+  
+    } else if (turnType === 1 && gameState.status === 2) {
+      // ✅ Full claim
       const cards = getHalfSuitCards(halfSuits.indexOf(selectedHalfSuit));
       const suitTeam = `suits_${playerStatus[currentPlayer]}`;
       for (let i = 0; i < 6; i++) {
@@ -135,7 +139,9 @@ function App() {
           success: true
         });
       }
+  
     } else if (turnType === 2) {
+      // 🔁 Delegation
       if (!questionTarget) return alert("Select a teammate to delegate to.");
       transactions.push({
         sender: questionTarget,
@@ -143,19 +149,26 @@ function App() {
         card: { rank: 1, suit: 1 }, // dummy card
         success: true
       });
-      
     }
-
-
-    const turn = { player: turnType === 1 ? claimPlayer : currentPlayer, type: turnType, transactions };
+  
+    const turn = {
+      player: turnType === 1 ? claimPlayer : currentPlayer,
+      type: turnType,
+      transactions
+    };
+  
+    console.log("[DEBUG] Sending turn to backend:", turn);
+  
     try {
       await axios.patch(`${API}/games/${gameId}/play`, turn);
       setCardInput("");
       setClaimAssignments([]);
     } catch (err) {
-      alert("Invalid move! " + (err.response?.data?.detail ?? ""));
+      console.error("[DEBUG] Backend error:", err.response?.data ?? err);
+      alert("Invalid move! " + (err.response?.data?.detail ?? "Unknown error"));
     }
   }
+  
 
   useEffect(() => {
     if (!gameId || screen !== "play") return;

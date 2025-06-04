@@ -89,19 +89,22 @@ class GameLog:
         """
         Save the game replay to MongoDB.
         """
+        player_obj_ids = {ObjectId(pid): score for pid, score in results.items()}
+
         # Look up player names by their ObjectId
         player_names = {}
         for pid, score in results.items():
             user = await user_collection.find_one({"_id": ObjectId(pid)})
             if user and user.get("name"):
-                player_names[user["name"]] = score
+                player_names[ObjectId(pid)] = user["name"]
             else:
-                player_names[str(pid)] = score  # fallback to pid if name not found
+                player_names[ObjectId(pid)] = str(pid)  # fallback to pid if name not found
 
         replay = ReplayModel(
             type=self.game_type,
             name=self.name,
-            players=player_names,
+            players=player_obj_ids,
+            player_names=player_names,
             game_states=self.game_states,
             timestamp=self.timestamp,
         )

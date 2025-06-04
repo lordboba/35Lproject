@@ -483,7 +483,7 @@ class FishGame(Game):
         cards.append(Card(0,Suit.DIAMOND))
 
         # Dealing Cards
-        # random.shuffle(cards)
+        random.shuffle(cards)
         owners: dict[str, Owner] = {players[i]: Owner(sorted(cards[i*9:(i+1)*9], key=self.get_card_value)) for i in range(6)}
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)
@@ -601,11 +601,6 @@ class FishGame(Game):
             if cur_team == winning_team:
                 inc_fields["stats.fish.wins"] = 1
 
-            # if user_id == claim_player_id:
-            #     inc_fields["stats.fish.claims"] = 1
-            #     if cur_team == winning_team:
-            #         inc_fields["stats.fish.successful_claims"] = 1
-
             print(f"[GAME] Updating game stats for: {user_id}")
             await user_collection.update_one(
                 {"_id": ObjectId(user_id)},
@@ -648,7 +643,9 @@ class FishGame(Game):
                 return False
             if not self.owners[teammate].get_cards():
                 return False
+
             self.current_player = self.players.index(teammate)
+            self.options_owner = Owner(self.get_question_options(), False)  # ✅ add this line
             await super().broadcast_state()
             print(f"[DELEGATE] {player} delegated to {teammate}")
             return True
@@ -683,9 +680,12 @@ class FishGame(Game):
                 was_successful_claim = self.has_cards(turn)
                 if not was_successful_claim:
                     suit_team = self.player_status[turn.player]%2+1
-                    for trans in turn.transactions:
-                        trans.success = False
-                    turn.transactions += [Transaction(trans.card,self.belongs_to[trans.card],f"suits_{suit_team}") for trans in turn.transactions]
+                    trans_len = len(turn.transactions)
+                    for i in range(trans_len):
+                        trans = turn.transactions[i]
+                        if self.belongs_to[trans.card] != trans.from_:
+                            trans.success = False
+                            turn.transactions.append(Transaction(trans.card,self.belongs_to[trans.card],f"suits_{suit_team}"))  
                 await self.update_fish_claims(turn.player, was_successful_claim)
                 await super().play_turn(turn)
                 self.last_turn = turn

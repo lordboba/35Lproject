@@ -1749,6 +1749,8 @@ function FishGameScreen() {
                     cursor: allCardsAssigned && !isProcessingClaim ? 'pointer' : 'not-allowed',
                     boxShadow: allCardsAssigned && !isProcessingClaim ? '0 4px 8px rgba(255, 0, 0, 0.4)' : 'none',
                     opacity: isProcessingClaim ? 0.7 : 1,
+                    padding: '10px 20px', // Reduced padding
+                    fontSize: '1.2vw', // Reduced font size
                   };
                   
                   return (

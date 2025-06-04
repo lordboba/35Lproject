@@ -135,7 +135,17 @@ function App() {
           success: true
         });
       }
+    } else if (turnType === 2) {
+      if (!questionTarget) return alert("Select a teammate to delegate to.");
+      transactions.push({
+        sender: questionTarget,
+        receiver: currentPlayer,
+        card: { rank: 1, suit: 1 }, // dummy card
+        success: true
+      });
+      
     }
+
 
     const turn = { player: turnType === 1 ? claimPlayer : currentPlayer, type: turnType, transactions };
     try {
@@ -202,6 +212,10 @@ function App() {
           <label style={{ marginRight: 10 }}>
             <input type="radio" checked={turnType === 1} onChange={() => setTurnType(1)} /> ✅ Claim
           </label>
+          <label style={{ marginRight: 10 }}>
+            <input type="radio" checked={turnType === 2} onChange={() => setTurnType(2)} /> 🔁 Delegate Turn
+          </label>
+
 
           {turnType === 0 && (
             <>
@@ -250,6 +264,18 @@ function App() {
                   </div>
                 ))
               )}
+            </>
+          )}
+
+          {turnType === 2 && (
+            <>
+              <p><strong>Select a teammate to delegate to:</strong></p>
+              <select value={questionTarget} onChange={(e) => setQuestionTarget(e.target.value)}>
+                <option value="">Select Teammate</option>
+                {teammates.map((id) => (
+                  <option key={id} value={id}>{displayNameFromId(id)}</option>
+                ))}
+              </select>
             </>
           )}
 

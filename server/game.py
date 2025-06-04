@@ -483,7 +483,7 @@ class FishGame(Game):
         cards.append(Card(0,Suit.DIAMOND))
 
         # Dealing Cards
-        random.shuffle(cards)
+        # random.shuffle(cards)
         owners: dict[str, Owner] = {players[i]: Owner(sorted(cards[i*9:(i+1)*9], key=self.get_card_value)) for i in range(6)}
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)
@@ -633,6 +633,25 @@ class FishGame(Game):
         print(f"[DEBUG] turn.player={turn.player}, from_={turn.transactions[0].from_}, to_={turn.transactions[0].to_}")
         print(f"[DEBUG] card={turn.transactions[0].card}")
         print(f"[DEBUG] valid_question={self.is_valid_question(turn)}")
+
+        # Delegation (turn_type == 2)
+        if turn.turn_type == 2 and self.status == 0:
+            player = self.players[self.current_player]
+            if player != turn.player:
+                return False
+            if self.owners[player].get_cards():
+                return False
+            if len(turn.transactions) != 1:
+                return False
+            teammate = turn.transactions[0].from_
+            if self.player_status[teammate] != self.player_status[player]:
+                return False
+            if not self.owners[teammate].get_cards():
+                return False
+            self.current_player = self.players.index(teammate)
+            await super().broadcast_state()
+            print(f"[DELEGATE] {player} delegated to {teammate}")
+            return True
 
         # Question
         if turn.turn_type == 0 and self.status == 0 and self.is_valid_question(turn):

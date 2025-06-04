@@ -70,28 +70,29 @@
   }
 }
 
-/* Player Display Styles */
+/* Player Display Styles - More compact */
 .player-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  margin: 0 0.3vw; /* Added small horizontal margin between players */
 }
 
 .player-info {
-  font-size: 1.2vw;
+  font-size: 1.0vw; /* Reduced from 1.2vw to 1.0vw */
   font-weight: bold;
   text-align: center;
-  margin-bottom: 0.5vh;
-  min-height: 2vh;
+  margin-bottom: 0.3vh; /* Reduced from 0.5vh to 0.3vh */
+  min-height: 1.5vh; /* Reduced from 2vh to 1.5vh */
 }
 
 .player-info-current {
   color: #FFD700;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   border: 2px solid #FFD700;
-  border-radius: 8px;
-  padding: 4px 8px;
+  border-radius: 6px; /* Reduced from 8px to 6px */
+  padding: 3px 6px; /* Reduced from 4px 8px to 3px 6px */
   background-color: rgba(255, 215, 0, 0.2);
 }
 
@@ -100,15 +101,15 @@
 }
 
 .player-status {
-  font-size: 0.9vw;
+  font-size: 0.7vw; /* Reduced from 0.9vw to 0.7vw */
   font-weight: bold;
-  margin-top: 2px;
+  margin-top: 1px; /* Reduced from 2px to 1px */
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
 .player-card-back {
-  width: 15vw;
-  height: 15vh;
+  width: 10vw; /* Reduced from 15vw to 10vw */
+  height: 10vh; /* Reduced from 15vh to 10vh */
   display: block;
 }
 
@@ -118,7 +119,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
-  font-size: 4vh;
+  font-size: 3vh; /* Reduced from 4vh to 3vh */
   font-weight: bold;
   pointer-events: none;
 }
@@ -126,60 +127,62 @@
 .player-current-turn {
   width: 80%;
   color: #00FF00;
-  font-size: 1.2vw;
+  font-size: 1.0vw; /* Reduced from 1.2vw to 1.0vw */
   font-weight: bold;
   text-align: center;
-  margin-top: 0.5vh;
+  margin-top: 0.3vh; /* Reduced from 0.5vh to 0.3vh */
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   background-color: rgba(0, 255, 0, 0.1);
-  border-radius: 8px;
-  padding: 2px 6px;
+  border-radius: 6px; /* Reduced from 8px to 6px */
+  padding: 1px 4px; /* Reduced from 2px 6px to 1px 4px */
   border: 2px solid #00FF00;
 }
 
-/* Players Container */
+/* Players Container - Tighter spacing */
 .players-container {
   max-width: 95%;
   display: flex;
   flex-direction: row;
-  gap: 0%;
+  gap: 0.2vw; /* Added small gap between players */
   align-items: center;
   overflow-x: scroll;
   scrollbar-width: thin;
   -ms-overflow-style: auto;
+  justify-content: center; /* Center the players when they fit */
 }
 
 .game-container {
-  padding-bottom: 10px;
+  padding-bottom: 8px; /* Reduced from 10px to 8px */
   width: 100%;
 }
 
-/* Current Player Cards */
+/* Current Player Cards - Better horizontal utilization */
 .current-player-cards {
-  max-width: 95%;
+  max-width: 98%; /* Increased from 95% to use more space */
   display: inline-flex;
-  gap: 0.5vw;
+  gap: 0.3vw; /* Reduced from 0.5vw for tighter spacing */
   align-items: center;
   overflow-x: auto;
   scrollbar-width: thin;
   -ms-overflow-style: auto;
-  justify-content: center;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  justify-content: flex-start; /* Changed from center to flex-start for left alignment */
+  padding-top: 8px; /* Reduced from 10px */
+  padding-bottom: 8px; /* Reduced from 10px */
+  flex-wrap: wrap; /* Allow wrapping for smaller screens */
 }
 
 .current-player-label {
   color: #FFF;
-  font-size: 1.4vw;
+  font-size: 1.2vw; /* Reduced from 1.4vw */
   font-weight: bold;
   text-align: center;
-  margin-right: 15px;
+  margin-right: 12px; /* Reduced from 15px */
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   min-width: fit-content;
 }
 
 .player-card {
-  width: 5.5%;
+  width: 5%; /* Reduced from 5.5% to fit more cards */
   display: flex;
   gap: 0px;
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -188,43 +191,43 @@
   opacity: 0.9;
 }
 
-/* Question Options */
+/* Question Options - More compact */
 .question-options-container {
   width: 100%;
-  padding: 25px 15px 15px 15px;
+  padding: 15px 10px 10px 10px; /* Reduced from 25px 15px 15px 15px */
   background-color: rgba(255, 215, 0, 0.15);
-  border-radius: 12px;
+  border-radius: 8px; /* Reduced from 12px to 8px */
   border: 2px solid #FFD700;
-  margin-bottom: 20px;
+  margin-bottom: 12px; /* Reduced from 20px to 12px */
 }
 
 .question-options-title {
   color: #FFD700;
-  font-size: 1.8vw;
+  font-size: 1.2vw; /* Reduced from 1.5vw to 1.2vw */
   font-weight: bold;
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 8px; /* Reduced from 10px to 8px */
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .question-options-cards {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px; /* Reduced from 8px to 6px */
   align-items: flex-end;
   justify-content: center;
-  max-height: 30vh;
+  max-height: 20vh; /* Reduced from 30vh to 20vh */
   overflow-y: auto;
-  padding-top: 20px;
-  padding-bottom: 10px;
+  padding-top: 12px; /* Reduced from 20px to 12px */
+  padding-bottom: 8px; /* Reduced from 10px to 8px */
 }
 
 .question-option-card {
-  width: 4%;
+  width: 3.5%; /* Reduced from 4% to 3.5% */
   display: flex;
   cursor: pointer;
-  border: 3px solid #FFD700;
-  border-radius: 8px;
+  border: 2px solid #FFD700; /* Reduced from 3px to 2px */
+  border-radius: 6px; /* Reduced from 8px to 6px */
   transform: translateY(0px);
   transition: all 0.3s ease-in-out;
   box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
@@ -232,26 +235,26 @@
 }
 
 .question-option-card-selected {
-  border: 3px solid #00FF00;
-  transform: translateY(-15px) scale(1.1);
-  box-shadow: 0 6px 12px rgba(0, 255, 0, 0.4);
+  border: 2px solid #00FF00; /* Reduced from 3px to 2px */
+  transform: translateY(-12px) scale(1.08); /* Reduced translation and scale */
+  box-shadow: 0 4px 8px rgba(0, 255, 0, 0.4); /* Reduced shadow */
   opacity: 1;
 }
 
 .question-options-instruction {
   color: #FFF;
-  font-size: 1.2vw;
+  font-size: 1.0vw; /* Reduced from 1.2vw to 1.0vw */
   text-align: center;
-  margin-top: 8px;
+  margin-top: 6px; /* Reduced from 8px to 6px */
   font-style: italic;
 }
 
-/* Player Selection */
+/* Player Selection - More compact */
 .player-selection-container {
   width: 100%;
-  padding: 20px 15px;
-  border-radius: 12px;
-  margin-bottom: 20px;
+  padding: 12px 10px; /* Reduced from 20px 15px */
+  border-radius: 8px; /* Reduced from 12px to 8px */
+  margin-bottom: 12px; /* Reduced from 20px to 12px */
 }
 
 .player-selection-opponents {
@@ -260,15 +263,15 @@
 }
 
 .player-selection-delegation {
-  background-color: rgba(0,255,255,0.1);
-  border: 2px solid cyan;
+  background-color: rgba(0, 123, 255, 0.15);
+  border: 2px solid #007BFF;
 }
 
 .player-selection-title {
-  font-size: 1.8vw;
+  font-size: 1.2vw; /* Reduced from 1.5vw to 1.2vw */
   font-weight: bold;
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 8px; /* Reduced from 10px to 8px */
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
@@ -277,93 +280,105 @@
 }
 
 .player-selection-title-delegation {
-  color: cyan;
+  color: #007BFF;
 }
 
 .player-selection-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px; /* Reduced from 12px to 8px */
   justify-content: center;
   align-items: center;
 }
 
 .player-selection-button {
-  padding: 12px 20px;
-  font-size: 1.4vw;
+  padding: 8px 14px; /* Reduced from 12px 20px */
+  font-size: 1.2vw; /* Reduced from 1.4vw to 1.2vw */
   font-weight: bold;
-  border-radius: 8px;
-  border: 3px solid;
+  border-radius: 6px; /* Reduced from 8px to 6px */
+  border: 2px solid; /* Reduced from 3px to 2px */
   color: #FFF;
   cursor: pointer;
   transform: scale(1);
   transition: all 0.2s ease-in-out;
-  min-width: 120px;
+  min-width: 100px; /* Reduced from 120px to 100px */
 }
 
 .player-selection-button-selected {
-  border: 3px solid #00FF00;
+  border: 2px solid #00FF00; /* Reduced from 3px to 2px */
   background: #00FF00;
   color: #000;
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 255, 0, 0.4);
+  transform: scale(1.03); /* Reduced from 1.05 to 1.03 */
+  box-shadow: 0 3px 6px rgba(0, 255, 0, 0.4); /* Reduced shadow */
 }
 
 .player-team-info {
-  font-size: 0.8em;
-  margin-top: 2px;
+  font-size: 0.75em; /* Reduced from 0.8em to 0.75em */
+  margin-top: 1px; /* Reduced from 2px to 1px */
 }
 
 .player-selection-instruction {
   color: #FFF;
-  font-size: 1.2vw;
+  font-size: 1.0vw; /* Reduced from 1.2vw to 1.0vw */
   text-align: center;
-  margin-top: 12px;
+  margin-top: 8px; /* Reduced from 12px to 8px */
   font-style: italic;
 }
 
-/* Claim Interface */
+/* Claim Interface - Much more compact */
 .claim-interface {
   width: 100%;
-  padding: 25px;
+  padding: 12px; /* Reduced from 25px to 12px (52% reduction) */
   background-color: rgba(255, 0, 0, 0.15);
-  border-radius: 12px;
-  border: 3px solid #FF0000;
-  margin-bottom: 20px;
+  border-radius: 8px; /* Reduced from 12px to 8px */
+  border: 2px solid #FF0000; /* Reduced from 3px to 2px */
+  margin-bottom: 10px; /* Reduced from 20px to 10px */
 }
 
 .claim-interface-title {
-  color: #FF0000;
-  font-size: 2.2vw;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 15px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  display: none; /* Hide "Making Claim - Assign Cards To Teammates" text */
 }
 
 .claim-interface-instruction {
-  color: #FFF;
-  font-size: 1.4vw;
-  text-align: center;
-  margin-bottom: 20px;
-  font-style: italic;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  display: none; /* Hide the instruction text */
 }
 
+/* Claim Interface - Better horizontal card layout - More compact */
 .claim-cards-container {
-  display: flex;
+  display: flex; /* Changed from grid to flex for single row */
   flex-direction: row;
-  gap: 20px;
+  gap: 10px;
   justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  max-width: 100%;
+  flex-wrap: nowrap; /* Ensure single row */
+  overflow-x: auto; /* Allow horizontal scroll if needed */
+}
+
+@media (min-width: 1200px) {
+  .claim-cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Reduced from 160px to 120px */
+    gap: 12px; /* Reduced from 20px to 12px */
+  }
+}
+
+@media (max-width: 767px) {
+  .claim-cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Reduced from 120px to 80px */
+    gap: 8px; /* Reduced from 10px to 8px */
+  }
+  
+  .claim-card-image {
+    width: 40px; /* Reduced from 60px to 40px */
+    height: 60px; /* Reduced from 90px to 60px */
+  }
 }
 
 .claim-card-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px; /* Reduced from 10px to 6px */
 }
 
 .claim-card-display {
@@ -373,30 +388,30 @@
 }
 
 .claim-card-image {
-  width: 80px;
-  height: 120px;
+  width: 50px; /* Reduced from 80px to 50px (37% reduction) */
+  height: 75px; /* Reduced from 120px to 75px (37% reduction) */
   border: 2px solid #FFD700;
-  border-radius: 8px;
-  margin-bottom: 8px;
+  border-radius: 6px; /* Reduced from 8px to 6px */
+  margin-bottom: 4px; /* Reduced from 8px to 4px */
 }
 
 .claim-card-name {
   color: #FFD700;
-  font-size: 1.2vw;
+  font-size: 0.9vw; /* Reduced from 1.2vw to 0.9vw (25% reduction) */
   font-weight: bold;
   text-align: center;
 }
 
 .claim-card-selector {
-  padding: 8px 12px;
-  font-size: 1.1vw;
+  padding: 4px 8px; /* Reduced from 8px 12px */
+  font-size: 0.9vw; /* Reduced from 1.1vw to 0.9vw */
   font-weight: bold;
-  border-radius: 6px;
+  border-radius: 4px; /* Reduced from 6px to 4px */
   border: 2px solid #FFD700;
   background: #fff;
   color: #000;
   cursor: pointer;
-  min-width: 120px;
+  min-width: 80px; /* Reduced from 120px to 80px */
   text-align: center;
 }
 
@@ -405,42 +420,56 @@
   background: #e6ffe6;
 }
 
-/* Claim Waiting */
+/* Claim Waiting - Much more compact */
 .claim-waiting {
   width: 100%;
-  padding: 25px;
+  padding: 8px; /* Reduced from 12px to 8px */
   background-color: rgba(255, 193, 7, 0.15);
-  border-radius: 12px;
-  border: 3px solid #FFC107;
-  margin-bottom: 20px;
+  border-radius: 6px; /* Reduced from 8px to 6px */
+  border: 2px solid #FFC107;
+  margin-bottom: 8px; /* Reduced from 10px to 8px */
 }
 
 .claim-waiting-title {
   color: #FFC107;
-  font-size: 2.2vw;
+  font-size: 1.1vw; /* Reduced from 1.4vw to 1.1vw */
   font-weight: bold;
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 5px; /* Reduced from 8px to 5px */
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .claim-waiting-message {
   color: #FFF;
-  font-size: 1.6vw;
+  font-size: 0.9vw; /* Reduced from 1.1vw to 0.9vw */
   text-align: center;
   font-style: italic;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
-/* Game Table */
+/* Game Table Container with Question Result Sidebar */
 .game-table-container {
   width: 100%;
-  height: 60vh;
+  height: 35vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-bottom: 8%;
+  padding-bottom: 3%;
   position: relative;
+}
+
+.game-table-with-sidebar {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  width: 100%;
+  height: 100%;
+}
+
+.game-table-main {
+  flex: 2;
+  position: relative;
+  height: 100%;
 }
 
 .game-table-image {
@@ -464,59 +493,132 @@
   z-index: 100;
 }
 
-/* Claim Buttons */
+.question-result-sidebar {
+  flex: 1;
+  max-width: 300px;
+  height: 100%; /* Restored to 100% */
+  display: flex;
+  align-items: center; /* Restored to center */
+  justify-content: center;
+}
+
+/* Question Result Display - Fixed sidebar version */
+.question-result-fixed {
+  width: 100%;
+  max-width: 280px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  border: 2px solid;
+  background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.8));
+  margin-top: 60px; /* Add significant top margin to move result down */
+}
+
+.question-result-fixed.question-result-success {
+  border-color: #00FF00;
+  box-shadow: 0 4px 12px rgba(0,255,0,0.3);
+}
+
+.question-result-fixed.question-result-failure {
+  border-color: #FF6B6B;
+  box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+}
+
+.question-result-fixed .question-result-header {
+  font-size: 1.1vw;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+  color: #FFD700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  text-transform: uppercase;
+}
+
+.question-result-fixed .question-result-question {
+  font-size: 0.9vw;
+  text-align: center;
+  color: #FFF;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  margin-bottom: 8px;
+}
+
+.question-result-fixed .question-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.question-result-fixed .question-result-card-image {
+  width: 40px;
+  height: 60px;
+  border-radius: 4px;
+  border: 1px solid #FFD700;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.question-result-fixed .question-result-card-name {
+  font-size: 0.8vw;
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.question-result-fixed .question-result-outcome {
+  font-size: 1.0vw;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+/* Claim Buttons - More compact */
 .claim-buttons-container {
-  max-width: 80%;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1vw;
+  gap: 0.5vw; /* Reduced from 1vw to 0.5vw */
 }
 
 .claim-buttons-header {
-  color: #FFD700;
-  font-size: 2.2vw;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 0.5vw;
-  text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-  background: rgba(255, 215, 0, 0.1);
-  padding: 8px 16px;
-  border-radius: 12px;
-  border: 2px solid #FFD700;
+  display: none; /* Hide the yellow half-suit claims box */
 }
 
 .claim-buttons-instruction {
-  color: #FFF;
-  font-size: 1.3vw;
-  text-align: center;
-  margin-bottom: 1vw;
-  font-style: italic;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-  background: rgba(255, 255, 255, 0.1);
-  padding: 6px 12px;
-  border-radius: 8px;
+  display: none; /* Hide the instruction text */
+}
+
+.claim-buttons-warning {
+  display: none; /* Hide the red warning text box */
 }
 
 .claim-buttons-row {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: 1vw;
+  gap: 0.8vw; /* Reduced from 1vw to 0.8vw */
   width: 100%;
 }
 
 .claim-buttons-row-second {
-  margin-top: 1vw;
+  margin-top: 0.6vw; /* Reduced from 1vw to 0.6vw */
 }
 
 .claim-button {
-  width: 13vw;
-  height: 5vw;
-  font-size: 1.5vw;
+  width: 12vw; /* Reduced from 12vw to 10vw */
+  height: 3.2vw; /* Reduced from 4vw to 3.2vw */
+  font-size: 1.1vw; /* Reduced from 1.3vw to 1.1vw */
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 6px; /* Reduced from 8px to 6px */
   border: 2px solid #333;
   background: #fff;
   color: #222;
@@ -551,115 +653,133 @@
 
 .claim-buttons-warning {
   color: #FF6B6B;
-  font-size: 1.1vw;
+  font-size: 1.0vw; /* Reduced from 1.1vw to 1.0vw */
   text-align: center;
-  margin-top: 0.5vw;
+  margin-top: 0.3vw; /* Reduced from 0.5vw to 0.3vw */
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   background: rgba(255, 107, 107, 0.1);
-  padding: 4px 8px;
+  padding: 3px 6px; /* Reduced from 4px 8px */
   border-radius: 6px;
   border: 1px solid #FF6B6B;
 }
 
-/* Player Cards Section */
+/* Player Cards Section - Reduced padding */
 .player-cards-section {
   width: 100%;
-  padding-top: 6vh;
+  padding-top: 2vh; /* Reduced from 6vh to 2vh */
 }
 
-/* Game Buttons */
+/* Game Buttons - Much more compact */
 .game-buttons-container {
   /* No specific styles needed, will use inline for complex conditional styling */
 }
 
 .game-button-ask {
-  margin-right: 5%;
-  padding: 1% 2%;
-  font-size: 5vh;
+  margin-right: 2%; /* Reduced from 3% to 2% */
+  padding: 0.5% 1%; /* Reduced from 0.8% 1.5% */
+  font-size: 2.5vh; /* Reduced from 3.5vh to 2.5vh */
+  background-color: #007BFF;
+  color: #FFF;
+  border: 2px solid white;
+  font-weight: bold;
+  border-radius: 6px; /* Reduced from 8px */
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .game-button-delegate {
-  margin-left: 5%;
-  padding: 1% 2%;
-  font-size: 5vh;
+  margin-left: 2%; /* Reduced from 3% to 2% */
+  padding: 0.5% 1%; /* Reduced from 0.8% 1.5% */
+  font-size: 2.5vh; /* Reduced from 3.5vh to 2.5vh */
   background-color: #00FFFF;
   color: #000;
   border: 2px solid white;
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 6px; /* Reduced from 8px */
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .game-button-submit-claim {
-  padding: 2% 4%;
-  font-size: 6vh;
+  padding: 0.8% 1.5%; /* Reduced from 1.2% 2.5% */
+  font-size: 2.8vh; /* Reduced from 4vh to 2.8vh */
   color: #FFF;
-  border: 3px solid #FFF;
-  border-radius: 12px;
+  border: 2px solid #FFF; /* Reduced from 3px */
+  border-radius: 8px; /* Reduced from 12px */
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .claim-waiting-button {
-  padding: 2% 4%;
-  font-size: 4vh;
+  padding: 0.8% 1.5%; /* Reduced from 1.2% 2.5% */
+  font-size: 2.2vh; /* Reduced from 3vh to 2.2vh */
   background-color: rgba(255, 193, 7, 0.2);
   color: #FFC107;
-  border: 3px solid #FFC107;
-  border-radius: 12px;
+  border: 2px solid #FFC107; /* Reduced from 3px */
+  border-radius: 8px; /* Reduced from 12px */
   font-weight: bold;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
-/* Debug/Status Displays */
+/* Debug/Status Displays - More compact */
 .debug-selections {
-  margin-top: 20px;
-  padding: 15px;
+  margin-top: 12px; /* Reduced from 20px to 12px */
+  padding: 10px; /* Reduced from 15px to 10px */
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 6px; /* Reduced from 8px to 6px */
   color: #FFF;
-  font-size: 1.2vw;
+  font-size: 1.0vw; /* Reduced from 1.2vw to 1.0vw */
   text-align: center;
+  line-height: 1.3; /* Added for tighter text spacing */
 }
 
 .debug-ready {
   color: #00FF00;
   font-weight: bold;
-  margin-top: 8px;
+  margin-top: 5px; /* Reduced from 8px to 5px */
+  font-size: 0.9vw; /* Added smaller font size */
 }
 
 .claim-progress {
-  margin-top: 20px;
-  padding: 15px;
+  margin-top: 12px; /* Reduced from 20px to 12px */
+  padding: 10px; /* Reduced from 15px to 10px */
   background-color: rgba(255, 0, 0, 0.1);
-  border-radius: 8px;
+  border-radius: 6px; /* Reduced from 8px to 6px */
   border: 2px solid #FF0000;
   color: #FFF;
-  font-size: 1.3vw;
+  font-size: 1.1vw; /* Reduced from 1.3vw to 1.1vw */
   text-align: center;
+  line-height: 1.3; /* Added for tighter text spacing */
 }
 
 .claim-progress-title {
   color: #FF0000;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 5px; /* Reduced from 8px to 5px */
+  font-size: 1.0vw; /* Added smaller font size */
 }
 
 .claim-progress-processing {
   color: #FFD700;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 5px; /* Reduced from 8px to 5px */
+  font-size: 1.0vw; /* Added consistent font size */
 }
 
 .claim-progress-processing-detail {
-  font-size: 1.1vw;
+  font-size: 0.9vw; /* Reduced from 1.1vw to 0.9vw */
+  line-height: 1.2; /* Added for tighter spacing */
 }
 
 .claim-progress-ready {
   color: #00FF00;
   font-weight: bold;
-  margin-top: 8px;
+  margin-top: 5px; /* Reduced from 8px to 5px */
+  font-size: 0.9vw; /* Added smaller font size */
 }
 
 /* Question Result Display Styles */
@@ -789,5 +909,228 @@
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* Responsive Game Interface Layout */
+.game-interface-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  padding: 0 1%;
+}
+
+/* Side-by-side layout for question options and player selection on wider screens */
+@media (min-width: 1200px) {
+  .game-interface-row {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .question-options-container {
+    flex: 1;
+    min-width: 45%;
+    margin-bottom: 0; /* Remove bottom margin when side-by-side */
+  }
+  
+  .player-selection-container {
+    flex: 1;
+    min-width: 45%;
+    margin-bottom: 0; /* Remove bottom margin when side-by-side */
+  }
+  
+  /* More compact question cards when side-by-side */
+  .question-option-card {
+    width: 6%; /* Slightly larger when in narrower container */
+  }
+  
+  /* Adjust player selection buttons for side layout */
+  .player-selection-button {
+    min-width: 90px; /* Slightly smaller when side-by-side */
+    font-size: 1.1vw; /* Slightly smaller font */
+  }
+}
+
+/* Medium screens - partial horizontal optimization */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .current-player-cards {
+    max-width: 100%;
+    gap: 0.4vw;
+  }
+  
+  .player-card {
+    width: 5.2%;
+  }
+  
+  /* Stack question options and player selection but optimize spacing */
+  .question-options-container,
+  .player-selection-container {
+    margin-bottom: 10px;
+  }
+}
+
+/* Small screens - mobile optimization */
+@media (max-width: 767px) {
+  .current-player-cards {
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 100%;
+    gap: 2px;
+  }
+  
+  .player-card {
+    width: 15%; /* Larger cards on mobile for touch interaction */
+  }
+  
+  .current-player-label {
+    font-size: 4vw;
+    margin-right: 8px;
+  }
+  
+  /* Mobile-friendly button sizes */
+  .player-selection-button {
+    min-width: 80px;
+    font-size: 3.5vw;
+    padding: 10px 12px;
+  }
+  
+  .question-option-card {
+    width: 12%; /* Larger for touch interaction */
+  }
+  
+  /* Compact mobile layout */
+  .question-options-container,
+  .player-selection-container {
+    padding: 10px 8px;
+    margin-bottom: 8px;
+  }
+}
+
+/* Horizontal Debug Layout for wider screens */
+@media (min-width: 1200px) {
+  .debug-info-container {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .debug-selections,
+  .claim-progress {
+    flex: 1;
+    margin-top: 8px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .debug-info-container {
+    max-width: 30%;
+    margin: 0 auto;
+  }
+  
+  .debug-selections,
+  .claim-progress {
+    width: 100%;
+  }
+}
+
+/* Claim Result Display Styles */
+.claim-result-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* Changed from 2 columns to 3 columns */
+  gap: 8px; /* Reduced from 15px to 8px */
+  margin-top: 8px; /* Reduced from 15px to 8px */
+  max-height: 300px; /* Reduced from 400px to 300px */
+  overflow-y: auto;
+}
+
+.claim-result-card-item {
+  display: flex;
+  flex-direction: column; /* Stack card and details vertically */
+  align-items: center;
+  gap: 6px; /* Reduced from 15px to 6px */
+  padding: 6px; /* Reduced from 10px to 6px */
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px; /* Reduced from 8px to 6px */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.claim-result-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Reduced from 5px to 2px */
+  flex: 1;
+  text-align: center; /* Center align text */
+}
+
+.claim-result-correct {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Reduced from 8px to 4px */
+  font-weight: bold;
+  color: #00FF00;
+  font-size: 0.7em; /* Reduced from 0.9em to 0.7em */
+  justify-content: center; /* Center the content */
+}
+
+.claim-result-incorrect {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Reduced from 3px to 2px */
+  align-items: center; /* Center align items */
+}
+
+.claim-result-incorrect > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Reduced from 8px to 4px */
+  font-weight: bold;
+  font-size: 0.7em; /* Reduced from 0.9em to 0.7em */
+  justify-content: center; /* Center the content */
+}
+
+.claim-result-incorrect > div:last-child {
+  font-size: 0.6em; /* Smaller font for "Actually:" text */
+  text-align: center;
+}
+
+.claim-result-outcome {
+  text-align: center;
+  margin: 6px 0; /* Reduced from 10px 0 to 6px 0 */
+  padding: 4px; /* Reduced from 8px to 4px */
+  border-radius: 4px; /* Reduced from 6px to 4px */
+  background-color: rgba(0, 0, 0, 0.3);
+  font-size: 1.0em; /* Reduced slightly */
+}
+
+/* Make card images smaller in claim results */
+.claim-result-card-item .question-result-card-image {
+  width: 30px !important; /* Reduced from 40px to 30px */
+  height: 45px !important; /* Reduced from 60px to 45px */
+}
+
+.claim-result-card-item .question-result-card-name {
+  font-size: 0.6vw !important; /* Reduced font size */
+}
+
+/* Mobile responsiveness for claim results */
+@media (max-width: 767px) {
+  .claim-result-cards {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    max-height: 250px; /* Reduced height on mobile */
+  }
+  
+  .claim-result-card-item {
+    flex-direction: row; /* Horizontal layout on mobile */
+    text-align: left;
+    gap: 8px;
+  }
+  
+  .claim-result-card-item .question-result-card-image {
+    width: 25px !important;
+    height: 35px !important;
   }
 } 

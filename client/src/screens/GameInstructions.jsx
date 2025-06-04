@@ -27,7 +27,7 @@ const VietcongRules = () => (
         The player with the 3♠ starts the first round, and must play it as part of their opening combination.
       </li>
       <li>
-        Play proceeds clockwise. On your turn, you may either:
+        Play proceeds left to right. On your turn, you may either:
         <ul style={{textAlign: 'left'}}>
           <li>Play a higher combination of the same type as the previous play (a combination is higher if its highest card is higher), or</li>
           <li>Pass (if you pass, you cannot play again until the next round).</li>
@@ -40,7 +40,7 @@ const VietcongRules = () => (
         The first player to discard all their cards wins. Play continues for the 2nd and 3rd place.
       </li>
       <li>
-        In the case where the last player to not have passed played all their cards, the next player clockwise starts a new round. 
+        In the case where the last player to not have passed played all their cards, the next player to their right starts a new round. 
       </li>
     </ul>
 
@@ -124,6 +124,9 @@ const FishRules = () => (
       </li>
       <li>
         On their turn the player continues to ask until an opponent doesn't have the requested card (the player does not have to always ask the same opponent). Then the turn passes to the most recent player to be asked.
+      </li>
+      <li>
+        If on their turn, a player has no cards, they may delegate their turn to another player on their team. 
       </li>
     </ul>
 

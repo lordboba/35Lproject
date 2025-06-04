@@ -483,7 +483,7 @@ class FishGame(Game):
         cards.append(Card(0,Suit.DIAMOND))
 
         # Dealing Cards
-        # random.shuffle(cards)
+        random.shuffle(cards)
         owners: dict[str, Owner] = {players[i]: Owner(sorted(cards[i*9:(i+1)*9], key=self.get_card_value)) for i in range(6)}
         owners["suits_1"] = Owner([], False)
         owners["suits_2"] = Owner([], False)

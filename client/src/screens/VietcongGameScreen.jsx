@@ -199,27 +199,70 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
   );
 }
 
-function lastCombo(cards){
-  let cardlist = []
-  cards.forEach(cardname => {
-    cardlist.push(<img src={`/${cardname}icon.svg`} style={{width: "10%", display: "block"}} alt={cardname} key={cardname}/>)
-  })
-  return <div
-  style={{
-    width: '100%',
-    display: 'flex',
-    gap: '1vw',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    scrollbarWidth: 'thin', 
-    msOverflowStyle: 'auto' 
-  }}
-  >
-    {cardlist}
-  </div>
-}
 
+function lastCombo(cards){
+  const numCards = cards.length;
+  if (numCards === 0) {
+    return null; // Return null if there are no cards to display
+  }
+
+  const cardWidthVW = 8; // Max width of a single card in viewport width units
+  const defaultSpacingVW = 1; // Desired spacing between cards when not overlapping
+  const overlapPercentage = 0.44; // Factor by which cards overlap (e.g., 0.44 means 44% of card width)
+  const containerWidthThresholdVW = 50; // If total width of spaced cards exceeds this, they will overlap
+
+  // Calculate the total width the cards would occupy if laid out with default spacing
+  const totalSpacedWidthVW = (numCards * cardWidthVW) + (Math.max(0, numCards - 1) * defaultSpacingVW);
+
+  // Determine if overlapping is needed
+  const useOverlap = totalSpacedWidthVW > containerWidthThresholdVW;
+
+  let cardlist = []
+  cards.forEach((cardname, index) => {
+    let currentCardMarginLeftVW;
+
+    if (index === 0) {
+      currentCardMarginLeftVW = 0; // The first card has no left margin due to spacing/overlap
+    } else {
+      if (useOverlap) {
+        // Apply negative margin for overlapping effect
+        currentCardMarginLeftVW = -cardWidthVW * overlapPercentage;
+      } else {
+        // Apply positive margin for spacing
+        currentCardMarginLeftVW = defaultSpacingVW;
+      }
+    }
+
+    cardlist.push(<img
+      key={`${cardname}-${index}`} // Use cardname and index for a more robust unique key
+      src={`/${cardname}icon.svg`}
+      style={{
+        maxWidth: `${cardWidthVW}vw`,
+        height: "auto", // Maintain aspect ratio
+        objectFit: 'contain',
+        marginLeft: `${currentCardMarginLeftVW}vw`, // Dynamically set margin
+        zIndex: index, // Ensure cards stack correctly (higher index on top)
+        position: 'relative', // Necessary for z-index to take effect
+        boxShadow: '2px 2px 15px rgba(0,0,0,0.3)', // Retain existing shadow style
+      }}
+      alt={cardname}
+    />)
+  })
+
+  return (
+    <div style={{
+      width: '100%', // The container div takes the full width available to it
+      display: 'flex',
+      alignItems: 'center', // Vertically align cards in the center
+      justifyContent: 'center', // Horizontally center the group of cards
+      overflowX: 'hidden', // Prevent horizontal scrollbars
+      // The previous complex padding calculations are removed as justifyContent: 'center'
+      // effectively centers the flex items (the card images).
+    }}>
+      {cardlist}
+    </div>
+  );
+}
 function VietcongGameScreen() {
   // WebSocket and game state management
   const location = useLocation();

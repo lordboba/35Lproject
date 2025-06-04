@@ -680,9 +680,12 @@ class FishGame(Game):
                 was_successful_claim = self.has_cards(turn)
                 if not was_successful_claim:
                     suit_team = self.player_status[turn.player]%2+1
-                    for trans in turn.transactions:
-                        trans.success = False
-                    turn.transactions += [Transaction(trans.card,self.belongs_to[trans.card],f"suits_{suit_team}") for trans in turn.transactions]
+                    trans_len = len(turn.transactions)
+                    for i in range(trans_len):
+                        trans = turn.transactions[i]
+                        if self.belongs_to[trans.card] != trans.from_:
+                            trans.success = False
+                            turn.transactions.append(Transaction(trans.card,self.belongs_to[trans.card],f"suits_{suit_team}"))  
                 await self.update_fish_claims(turn.player, was_successful_claim)
                 await super().play_turn(turn)
                 self.last_turn = turn

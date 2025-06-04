@@ -158,6 +158,13 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
           )}
         </div>
         
+        {/* Current turn indicator above the card */}
+        {moving && (
+          <div className="player-current-turn">
+            CURRENT TURN
+          </div>
+        )}
+        
         <img
           src={"/backicon.svg"}
           alt="card back"
@@ -166,12 +173,6 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
         <span className="player-card-count">
           {cardCount}
         </span>
-  
-        {moving && (
-          <div className="player-current-turn">
-            CURRENT TURN
-          </div>
-        )}
       </div>
     );
   }
@@ -371,153 +372,9 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
 
   // Function to display claim assignment interface when gameState.status = 2 and current user is the claimant
   const renderClaimAssignmentInterface = () => {
-    if (!gameState || gameState?.status !== 2) {
-      return null;
-    }
-    
-    const currentUserId = getCurrentUserId();
-    
-    // Get unclaimed cards that need to be assigned
-    const unclaimedCards = gameState?.owners?.options?.cards || [];
-    const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
-    
-    // Check if all cards have been assigned
-    const unassignedCards = unclaimedCardStrings.filter(cardString => !claimAssignments[cardString]);
-    if (unassignedCards.length > 0) {
-      console.error(`Claim assignment validation error: Please assign all cards before submitting claim. Unassigned cards: ${unassignedCards.join(', ')}`);
-      return null;
-    }
-    
-    // Get current player's team number
-    const currentPlayerTeam = gameState?.player_status?.[currentUserId];
-    if (!currentPlayerTeam) {
-      console.error("Claim assignment validation error: Cannot determine your team number.");
-      return null;
-    }
-    
-    return (
-      <div style={{
-        width: '100%',
-        padding: '25px',
-        backgroundColor: 'rgba(255, 0, 0, 0.15)', // Light red background for claims
-        borderRadius: '12px',
-        border: '3px solid #FF0000',
-        marginBottom: '20px',
-      }}>
-        <div style={{
-          color: '#FF0000',
-          fontSize: '2.2vw',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginBottom: '15px',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-        }}>
-          Making Claim - Assign Cards To Teammates
-        </div>
-        
-        <div style={{
-          color: '#FFF',
-          fontSize: '1.4vw',
-          textAlign: 'center',
-          marginBottom: '20px',
-          fontStyle: 'italic',
-          textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-        }}>
-          Assign each unclaimed card to one of your teammates:
-        </div>
-        
-        {/* Cards in horizontal row with dropdowns */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: '20px',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          marginBottom: '20px',
-        }}>
-          {unclaimedCardStrings.map(cardString => {
-            const assignedPlayer = claimAssignments[cardString];
-            // Include current user + teammates in dropdown options
-            const allTeamOptions = [currentUserId, ...teammates];
-            
-            return (
-              <div key={`claim-${cardString}`} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '10px',
-              }}>
-                {/* Card display */}
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}>
-                  <img 
-                    src={`/${cardString}icon.svg`}
-                    style={{
-                      width: '80px',
-                      height: '120px',
-                      border: '2px solid #FFD700',
-                      borderRadius: '8px',
-                      marginBottom: '8px',
-                    }} 
-                    alt={cardString}
-                  />
-                  <span style={{
-                    color: '#FFD700',
-                    fontSize: '1.2vw',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                  }}>
-                    {cardString}
-                  </span>
-                </div>
-                
-                {/* Dropdown selector */}
-                <select
-                  value={assignedPlayer || ''}
-                  onChange={(e) => {
-                    const selectedValue = e.target.value;
-                    setClaimAssignments(prev => ({
-                      ...prev,
-                      [cardString]: selectedValue || null
-                    }));
-                  }}
-                  style={{
-                    padding: '8px 12px',
-                    fontSize: '1.1vw',
-                    fontWeight: 'bold',
-                    borderRadius: '6px',
-                    border: assignedPlayer ? '2px solid #00FF00' : '2px solid #FFD700',
-                    background: assignedPlayer ? '#e6ffe6' : '#fff',
-                    color: '#000',
-                    cursor: 'pointer',
-                    minWidth: '120px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <option value="" style={{ color: '#666' }}>
-                    Select Player
-                  </option>
-                  {allTeamOptions.map(userId => {
-                    const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
-                    const playerTeam = gameState?.player_status?.[userId];
-                    const isCurrentUser = userId === currentUserId;
-                    
-                    return (
-                      <option key={userId} value={userId}>
-                        {username} {isCurrentUser ? '(You)' : `(Team #${playerTeam})`}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
+    // This function is no longer needed as the claim interface is now handled 
+    // directly in the main component with much more compact CSS classes
+    return null;
   };
 
 function getClaimsArray(suits_1,suits_2){
@@ -850,17 +707,10 @@ function FishGameScreen() {
         const lastTurn = gameState.last_turn;
         console.log('Recent claim detected in last_turn:', lastTurn);
         
-        // Check if this was a recent claim by the current user
-        const currentUserId = getCurrentUserId();
-        if (lastTurn.player === currentUserId && lastTurn.success !== undefined) {
-          // Show detailed claim result notification
-          const claimResult = lastTurn.success ? 'SUCCESSFUL' : 'FAILED';
-          const claimColor = lastTurn.success ? '#00FF00' : '#FF0000';
-          
-          console.log(`Your recent claim was ${claimResult}:`, lastTurn);
-          
-          // You could add a toast notification here instead of alert
-          // For now, we'll log it for debugging
+        // Show claim result for all players to see
+        if (lastTurn.transactions && lastTurn.transactions.length > 0) {
+          console.log('Showing claim result:', lastTurn);
+          showQuestionResult(lastTurn); // Reuse the same function, component will handle the type
         }
       }
       
@@ -1137,16 +987,13 @@ function FishGameScreen() {
       console.log('Full Game State:', JSON.stringify(gameState, null, 2));
       console.log('=== END DEBUG ===');
       
-      // Check if it's the current user's turn
-      // Claims can be initiated at any time, not just during your turn
-      // if (gameState?.current_player !== currentUserId) {
-      //   showToast("It's not your turn! Cannot initiate claim.", "warning");
-      //   return;
-      // }
-      
       // Check game status
       if (gameState?.status !== 0) {
-        showToast(`Cannot initiate claim. Game status is ${gameState?.status} (expected 0 for normal play)`, "error");
+        if (gameState?.status === 2) {
+          showToast("Cannot initiate claim. Another claim is in progress.", "error");
+        } else {
+          showToast(`Cannot initiate claim. Game status is ${gameState?.status} (expected 0 for normal play)`, "error");
+        }
         return;
       }
       
@@ -1573,10 +1420,15 @@ function FishGameScreen() {
             gameState: gameState
           });
           
-          // Show delegation menu only when it's current player's turn, they have 0 cards, AND not in claim state
-          if (isCurrentPlayer && currentUserCardCount === 0 && gameState?.status !== 2) {
+          // Only show UI if it's the current player's turn and not in claim state
+          if (!isCurrentPlayer || gameState?.status === 2) {
+            return null;
+          }
+          
+          // Show delegation menu only when current player has 0 cards
+          if (currentUserCardCount === 0) {
             return (
-              <div style={{ width: "100%", padding: "0 2%" }}>
+              <div className="game-interface-container">
                 <div style={{
                   color: '#FFD700',
                   fontSize: '1.8vw',
@@ -1592,13 +1444,14 @@ function FishGameScreen() {
             );
           }
           
-          // Show question options when it's current player's turn, there are valid options, AND not in claim state
-          if (isCurrentPlayer && questionOptionStrings && questionOptionStrings.length > 0 && gameState?.status !== 2) {
+          // Show ask options when current player has cards and there are valid options
+          if (questionOptionStrings && questionOptionStrings.length > 0) {
             return (
-              <div style={{ width: "100%", padding: "0 2%" }}>
-                {questionOptionsFromCards(questionOptionStrings, selectedCards, setSelectedCards)}
-                {playerSelectionForQuestions(users, userDetails, currentUserId, selectedPlayerToAsk, setSelectedPlayerToAsk, gameState)}
-                {playerSelectionForDelegation(users, userDetails, currentUserId, selectedTeammate, setSelectedTeammate, gameState)}
+              <div className="game-interface-container">
+                <div className="game-interface-row">
+                  {questionOptionsFromCards(questionOptionStrings, selectedCards, setSelectedCards)}
+                  {playerSelectionForQuestions(users, userDetails, currentUserId, selectedPlayerToAsk, setSelectedPlayerToAsk, gameState)}
+                </div>
               </div>
             );
           }
@@ -1622,7 +1475,7 @@ function FishGameScreen() {
             });
             
             return (
-              <div style={{ width: "100%", padding: "0 2%" }}>
+              <div className="game-interface-container">
                 <div className="claim-interface">
                   <div className="claim-interface-title">
                     Making Claim - Assign Cards To Teammates
@@ -1632,7 +1485,7 @@ function FishGameScreen() {
                     Assign each unclaimed card to one of your teammates:
                   </div>
                   
-                  {/* Cards in horizontal row with dropdowns */}
+                  {/* Cards in responsive grid with dropdowns */}
                   <div className="claim-cards-container">
                     {unclaimedCardStrings.map(cardString => {
                       const assignedPlayer = claimAssignments[cardString];
@@ -1693,7 +1546,7 @@ function FishGameScreen() {
           if (gameState?.status === 2 && gameState?.current_player !== currentUserId) {
             const claimantName = userDetails[gameState?.current_player]?.name || `Player ${gameState?.current_player?.slice(-4)}`;
             return (
-              <div style={{ width: "100%", padding: "0 2%" }}>
+              <div className="game-interface-container">
                 <div className="claim-waiting">
                   <div className="claim-waiting-title">
                     Claim In Progress
@@ -1711,18 +1564,226 @@ function FishGameScreen() {
         })()}
 
         <div className="game-table-container">
-          <img
-            src={"/table.svg"}
-            alt="table"
-            className="game-table-image"
-          />
-          <div className="game-table-overlay">
-            {claimButtons(getClaimsArray(gameState?.owners?.["suits_1"]?.cards, gameState?.owners?.["suits_2"]?.cards), handleInitiateClaim)}
-          </div>
+          {questionResult ? (
+            <div className="game-table-with-sidebar">
+              <div className="game-table-main">
+                <img
+                  src={"/table.svg"}
+                  alt="table"
+                  className="game-table-image"
+                />
+                <div className="game-table-overlay">
+                  {claimButtons(getClaimsArray(gameState?.owners?.["suits_1"]?.cards, gameState?.owners?.["suits_2"]?.cards), handleInitiateClaim)}
+                </div>
+              </div>
+              <div className="question-result-sidebar">
+                {/* Question Result Display */}
+                {questionResult.lastTurn.type === 0 && (
+                  <div className={`question-result-fixed ${questionResult.lastTurn.transactions[0].success ? 'question-result-success' : 'question-result-failure'}`}>
+                    <div className="question-result-header">
+                      Question Result
+                    </div>
+                    
+                    <div className="question-result-details">
+                      <div className="question-result-question">
+                        <strong>{userDetails[questionResult.lastTurn.transactions[0].receiver]?.name || `Player ${questionResult.lastTurn.transactions[0].receiver.slice(-4)}`}</strong> asked <strong>{userDetails[questionResult.lastTurn.transactions[0].sender]?.name || `Player ${questionResult.lastTurn.transactions[0].sender.slice(-4)}`}</strong> for:
+                      </div>
+                      
+                      <div className="question-result-card">
+                        <img 
+                          src={`/${(() => {
+                            const card = questionResult.lastTurn.transactions[0].card;
+                            const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+                            const suits = ['','C', 'D', 'H', 'S'];
+                            if (card.rank == 0) {
+                              if (card.suit == 1 || card.suit == 4) {
+                                return "JB";
+                              } else if (card.suit == 2 || card.suit == 3) {
+                                return "JR";
+                              }
+                            }
+                            const rank = ranks[card.rank] || card.rank;
+                            const suit = suits[card.suit] || card.suit;
+                            return `${rank}${suit}`;
+                          })()}icon.svg`}
+                          className="question-result-card-image"
+                          alt="card"
+                        />
+                        <span className="question-result-card-name">
+                          {(() => {
+                            const card = questionResult.lastTurn.transactions[0].card;
+                            const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+                            const suits = ['','C', 'D', 'H', 'S'];
+                            if (card.rank == 0) {
+                              if (card.suit == 1 || card.suit == 4) {
+                                return "JB";
+                              } else if (card.suit == 2 || card.suit == 3) {
+                                return "JR";
+                              }
+                            }
+                            const rank = ranks[card.rank] || card.rank;
+                            const suit = suits[card.suit] || card.suit;
+                            return `${rank}${suit}`;
+                          })()}
+                        </span>
+                      </div>
+                      
+                      <div className="question-result-outcome" style={{ 
+                        color: questionResult.lastTurn.transactions[0].success ? '#00FF00' : '#FF6B6B' 
+                      }}>
+                        <strong>{userDetails[questionResult.lastTurn.transactions[0].sender]?.name || `Player ${questionResult.lastTurn.transactions[0].sender.slice(-4)}`} {questionResult.lastTurn.transactions[0].success ? 'HAS THE CARD!' : 'DOES NOT have the card'}</strong>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Claim Result Display */}
+                {questionResult.lastTurn.type === 1 && (
+                  <div className={`question-result-fixed ${questionResult.lastTurn.success ? 'question-result-success' : 'question-result-failure'}`}>
+                    <div className="question-result-header">
+                      Claim Result
+                    </div>
+                    
+                    <div className="question-result-details">
+                      <div className="question-result-question" style={{ fontSize: '0.8vw', marginBottom: '4px' }}>
+                        <strong>{userDetails[questionResult.lastTurn.player]?.name || `Player ${questionResult.lastTurn.player.slice(-4)}`}</strong> claimed:
+                      </div>
+                      
+                      <div className="claim-result-outcome" style={{ 
+                        color: questionResult.lastTurn.success ? '#00FF00' : '#FF6B6B',
+                        fontSize: '1.0em',
+                        fontWeight: 'bold',
+                        marginBottom: '8px'
+                      }}>
+                        {questionResult.lastTurn.success ? 'SUCCESS!' : 'FAILED!'}
+                      </div>
+                      
+                      {/* Display claimed cards */}
+                      <div className="claim-result-cards">
+                        {(() => {
+                          // Process transactions in the correct order as described
+                          const cardResults = {};
+                          
+                          console.log('=== CLAIM RESULT PROCESSING (CORRECTED) ===');
+                          console.log('All transactions:', questionResult.lastTurn.transactions);
+                          
+                          // Process all transactions in order
+                          questionResult.lastTurn.transactions.forEach((transaction, index) => {
+                            const cardString = (() => {
+                              const card = transaction.card;
+                              const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+                              const suits = ['','C', 'D', 'H', 'S'];
+                              if (card.rank == 0) {
+                                if (card.suit == 1 || card.suit == 4) {
+                                  return "JB";
+                                } else if (card.suit == 2 || card.suit == 3) {
+                                  return "JR";
+                                }
+                              }
+                              const rank = ranks[card.rank] || card.rank;
+                              const suit = suits[card.suit] || card.suit;
+                              return `${rank}${suit}`;
+                            })();
+                            
+                            console.log(`Transaction ${index}:`, {
+                              cardString,
+                              success: transaction.success,
+                              sender: transaction.sender,
+                              receiver: transaction.receiver
+                            });
+                            
+                            if (!transaction.success) {
+                              // False transaction: incorrect guess
+                              // Set isCorrect = false, guessedPlayer = sender, actualPlayer = null
+                              cardResults[cardString] = {
+                                card: transaction.card,
+                                cardString: cardString,
+                                guessedPlayer: transaction.sender,
+                                actualPlayer: null,
+                                isCorrect: false
+                              };
+                              console.log(`Card ${cardString}: Incorrect guess - guessed ${transaction.sender}`);
+                            } else {
+                              // True transaction: either actual player (for incorrect guess) or successful claim
+                              if (cardResults[cardString]) {
+                                // There's already an entry (from false transaction)
+                                // Only replace the actual player with the sender
+                                cardResults[cardString].actualPlayer = transaction.sender;
+                                console.log(`Card ${cardString}: Actually was with ${transaction.sender}`);
+                              } else {
+                                // No entry exists: this is a successful claim
+                                // Set isCorrect = true, guessedPlayer = sender, actualPlayer = sender
+                                cardResults[cardString] = {
+                                  card: transaction.card,
+                                  cardString: cardString,
+                                  guessedPlayer: transaction.sender,
+                                  actualPlayer: transaction.sender,
+                                  isCorrect: true
+                                };
+                                console.log(`Card ${cardString}: Successful claim from ${transaction.sender}`);
+                              }
+                            }
+                          });
+                          
+                          console.log('Final card results:', cardResults);
+                          console.log('=== END CLAIM RESULT PROCESSING ===');
+                          
+                          return Object.values(cardResults).map(cardResult => (
+                            <div key={cardResult.cardString} className="claim-result-card-item">
+                              <div className="question-result-card">
+                                <img 
+                                  src={`/${cardResult.cardString}icon.svg`}
+                                  className="question-result-card-image"
+                                  alt={cardResult.cardString}
+                                />
+                                <span className="question-result-card-name">{cardResult.cardString}</span>
+                              </div>
+                              
+                              <div className="claim-result-card-details">
+                                {cardResult.isCorrect ? (
+                                  // Successful claim
+                                  <div className="claim-result-correct">
+                                    <span style={{ color: '#00FF00' }}>✅</span> {userDetails[cardResult.guessedPlayer]?.name || `P${cardResult.guessedPlayer.slice(-2)}`}
+                                  </div>
+                                ) : (
+                                  // Failed claim
+                                  <div className="claim-result-incorrect">
+                                    <div style={{ color: '#FF6B6B' }}>
+                                      <span>❌</span> {userDetails[cardResult.guessedPlayer]?.name || `P${cardResult.guessedPlayer.slice(-2)}`}
+                                    </div>
+                                    {cardResult.actualPlayer && (
+                                      <div style={{ color: '#FFD700', fontSize: '0.6em' }}>
+                                        Actually: {userDetails[cardResult.actualPlayer]?.name || `P${cardResult.actualPlayer.slice(-2)}`}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <img
+                src={"/table.svg"}
+                alt="table"
+                className="game-table-image"
+              />
+              <div className="game-table-overlay">
+                {claimButtons(getClaimsArray(gameState?.owners?.["suits_1"]?.cards, gameState?.owners?.["suits_2"]?.cards), handleInitiateClaim)}
+              </div>
+            </>
+          )}
         </div>
         
-        {/* Question Result Display */}
-        {questionResult && (
+        {/* Old Question Result Display - Removed as it's now in sidebar */}
+        {false && questionResult && (
           <QuestionResult
             lastTurn={questionResult.lastTurn}
             userDetails={userDetails}
@@ -1749,6 +1810,8 @@ function FishGameScreen() {
                     cursor: allCardsAssigned && !isProcessingClaim ? 'pointer' : 'not-allowed',
                     boxShadow: allCardsAssigned && !isProcessingClaim ? '0 4px 8px rgba(255, 0, 0, 0.4)' : 'none',
                     opacity: isProcessingClaim ? 0.7 : 1,
+                    padding: '10px 20px', // Reduced padding
+                    fontSize: '1.2vw', // Reduced font size
                   };
                   
                   return (
@@ -1826,18 +1889,20 @@ function FishGameScreen() {
                 // Only show if there are selections to display
                 if (selectedCards.length > 0 || selectedPlayerToAsk) {
                   return (
-                    <div className="debug-selections">
-                      <div>
-                        <strong>Selected Card:</strong> {selectedCards.length > 0 ? selectedCards[0] : 'None'}
-                      </div>
-                      <div>
-                        <strong>Player to Ask:</strong> {selectedPlayerToAsk ? (userDetails[selectedPlayerToAsk]?.name || `Player ${selectedPlayerToAsk.slice(-4)}`) : 'None'}
-                      </div>
-                      {selectedCards.length === 1 && selectedPlayerToAsk && (
-                        <div className="debug-ready">
-                          Ready to ask!
+                    <div className="debug-info-container">
+                      <div className="debug-selections">
+                        <div>
+                          <strong>Selected Card:</strong> {selectedCards.length > 0 ? selectedCards[0] : 'None'}
                         </div>
-                      )}
+                        <div>
+                          <strong>Player to Ask:</strong> {selectedPlayerToAsk ? (userDetails[selectedPlayerToAsk]?.name || `Player ${selectedPlayerToAsk.slice(-4)}`) : 'None'}
+                        </div>
+                        {selectedCards.length === 1 && selectedPlayerToAsk && (
+                          <div className="debug-ready">
+                            Ready to ask!
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 }
@@ -1854,62 +1919,26 @@ function FishGameScreen() {
                 // Show delegation status when player has zero cards and it's their turn
                 if (isCurrentPlayer && currentUserCardCount === 0 && gameState?.status !== 2) {
                   return (
-                    <div className="debug-selections">
-                      <div>
-                        <strong>Status:</strong> You have no cards - delegation required
-                      </div>
-                      <div>
-                        <strong>Selected Teammate:</strong> {selectedTeammate ? (userDetails[selectedTeammate]?.name || `Player ${selectedTeammate.slice(-4)}`) : 'None'}
-                      </div>
-                      {selectedTeammate && (
-                        <div className="debug-ready">
-                          Ready to delegate!
+                    <div className="debug-info-container">
+                      <div className="debug-selections">
+                        <div>
+                          <strong>Status:</strong> You have no cards - delegation required
                         </div>
-                      )}
+                        <div>
+                          <strong>Selected Teammate:</strong> {selectedTeammate ? (userDetails[selectedTeammate]?.name || `Player ${selectedTeammate.slice(-4)}`) : 'None'}
+                        </div>
+                        {selectedTeammate && (
+                          <div className="debug-ready">
+                            Ready to delegate!
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 }
                 
                 return null;
               })()}
-              
-              {/* Display claim assignment progress during claim state */}
-              {gameState?.status === 2 && gameState?.current_player === getCurrentUserId() && (
-                <div className="claim-progress">
-                  <div className="claim-progress-title">
-                    Claim In Progress
-                  </div>
-                  {(() => {
-                    const unclaimedCards = gameState?.owners?.options?.cards || [];
-                    const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
-                    const assignedCount = unclaimedCardStrings.filter(cardString => claimAssignments[cardString]).length;
-                    
-                    if (isProcessingClaim) {
-                      return (
-                        <div>
-                          <div className="claim-progress-processing">
-                            Processing claim submission...
-                          </div>
-                          <div className="claim-progress-processing-detail">
-                            Please wait while the claim is being processed
-                          </div>
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <div>
-                        <strong>Progress:</strong> {assignedCount} / {unclaimedCardStrings.length} cards assigned
-                        {assignedCount === unclaimedCardStrings.length && (
-                          <div className="claim-progress-ready">
-                            All cards assigned - Ready to submit claim!
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
         </div>
         
         {/* Toast notification */}

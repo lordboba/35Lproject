@@ -668,6 +668,29 @@ function VietcongGameScreen() {
           </div>
         </div>
 
+        {/* Turn indicator - only show when it's current user's turn */}
+        {gameState?.current_player === getCurrentUserId() && (
+          <div style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "2vh"
+          }}>
+            <div style={{
+              color: 'var(--success-color)',
+              fontSize: '1.2vw',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+              backgroundColor: 'var(--current-turn-bg-color)',
+              borderRadius: '8px',
+              padding: '2px 6px',
+              border: '2px solid var(--current-turn-border-color)'
+            }}>
+              YOUR TURN
+            </div>
+          </div>
+        )}
 
       <div style={{width: "100%"}}>
         {currentPlayerCards(getCurrentUserCards(), selectedCards, setSelectedCards)}

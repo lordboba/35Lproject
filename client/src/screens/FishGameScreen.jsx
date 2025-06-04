@@ -1649,14 +1649,6 @@ function FishGameScreen() {
                         <strong>{userDetails[questionResult.lastTurn.player]?.name || `Player ${questionResult.lastTurn.player.slice(-4)}`}</strong> claimed:
                       </div>
                       
-                      <div className="claim-result-outcome" style={{ 
-                        color: questionResult.lastTurn.success ? '#00FF00' : '#FF6B6B',
-                        fontSize: '1.0em',
-                        fontWeight: 'bold',
-                        marginBottom: '8px'
-                      }}>
-                        {questionResult.lastTurn.success ? 'SUCCESS!' : 'FAILED!'}
-                      </div>
                       
                       {/* Display claimed cards */}
                       <div className="claim-result-cards">

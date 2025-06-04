@@ -80,7 +80,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
       </div>
       
       <img
-        src={"/public/backicon.svg"}
+        src={"/backicon.svg"}
         alt="card back"
         style={{
           width: '15vw',
@@ -199,27 +199,66 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
   );
 }
 
-function lastCombo(cards){
-  let cardlist = []
-  cards.forEach(cardname => {
-    cardlist.push(<img src={`/${cardname}icon.svg`} style={{width: "10%", display: "block"}} alt={cardname} key={cardname}/>)
-  })
-  return <div
-  style={{
-    width: '100%',
-    display: 'flex',
-    gap: '1vw',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    scrollbarWidth: 'thin', 
-    msOverflowStyle: 'auto' 
-  }}
-  >
-    {cardlist}
-  </div>
-}
 
+function lastCombo(cards){
+  const numCards = cards.length;
+  if (numCards === 0) {
+    return null; 
+  }
+
+  const cardWidthVW = 8; 
+  const defaultSpacingVW = 1; 
+  const overlapPercentage = 0.44;
+  const containerWidthThresholdVW = 50; 
+
+  const totalSpacedWidthVW = (numCards * cardWidthVW) + (Math.max(0, numCards - 1) * defaultSpacingVW);
+
+  const useOverlap = totalSpacedWidthVW > containerWidthThresholdVW;
+
+  let cardlist = []
+  cards.forEach((cardname, index) => {
+    let currentCardMarginLeftVW;
+
+    if (index === 0) {
+      currentCardMarginLeftVW = 0
+    } else {
+      if (useOverlap) {
+
+        currentCardMarginLeftVW = -cardWidthVW * overlapPercentage;
+      } else {
+        currentCardMarginLeftVW = defaultSpacingVW;
+      }
+    }
+
+    cardlist.push(<img
+      key={`${cardname}-${index}`} 
+      src={`/${cardname}icon.svg`}
+      style={{
+        maxWidth: `${cardWidthVW}vw`,
+        height: "auto", 
+        objectFit: 'contain',
+        marginLeft: `${currentCardMarginLeftVW}vw`,
+        zIndex: index, 
+        position: 'relative', 
+        boxShadow: '2px 2px 15px rgba(0,0,0,0.3)',
+      }}
+      alt={cardname}
+    />)
+  })
+
+  return (
+    <div style={{
+      width: '100%', 
+      display: 'flex',
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      overflowX: 'hidden',
+  
+    }}>
+      {cardlist}
+    </div>
+  );
+}
 function VietcongGameScreen() {
   // WebSocket and game state management
   const location = useLocation();
@@ -240,9 +279,7 @@ function VietcongGameScreen() {
   const [gameEnded, setGameEnded] = useState(false);
   
   const [games, setGames] = useState([]);
-  // Remove hardcoded lastPlayedCards - will get from gameState instead
 
-  // Get the current Firebase user
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setCurrentUser(user);

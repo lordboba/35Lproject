@@ -116,7 +116,7 @@ function ReplaySearch() {
     };
 
     const formatDate = (timestamp) => {
-        return new Date(timestamp).toLocaleString();
+        return new Date(timestamp * 1000).toLocaleString();
     };
 
     const getPlayerCount = (players) => {
@@ -315,21 +315,35 @@ function ReplaySearch() {
                                             <div style={{ marginTop: '10px', color: 'black'}}>
                                                 <strong>Player Results:</strong>
                                                 <div style={{ marginTop: '5px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                                    {Object.entries(replay.players)
-                                                     .sort(([, a], [, b]) => a - b)
-                                                     .map(([playerId, result]) => (
+                                                {Object.entries(replay.players)
+                                                .sort(([, a], [, b]) => a - b)
+                                                .map(([playerId, result]) => {
+                                                    const isFish = replay.type === 'fish';
+                                                    const label = isFish
+                                                        ? result === 1 ? 'Win' : 'Loss'
+                                                        : placeArr[result] || `${result}th`;
+
+                                                    const style = isFish
+                                                        ? {
+                                                            backgroundColor: result === 1 ? '#28a745' : '#dc3545',
+                                                            color: 'white'
+                                                        }
+                                                        : getPlaceColor(result);
+
+                                                    return (
                                                         <span
                                                             key={playerId}
                                                             style={{
-                                                                ...getPlaceColor(result),
+                                                                ...style,
                                                                 padding: '4px 8px',
                                                                 borderRadius: '4px',
                                                                 fontSize: '0.9em'
                                                             }}
                                                         >
-                                                            <b>{placeArr[result]}</b>: {playerId}
+                                                            <b>{label}</b>: {playerId}
                                                         </span>
-                                                    ))}
+                                                    );
+                                                })}
                                                 </div>
                                             </div>
                                         )}

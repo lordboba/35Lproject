@@ -4,6 +4,89 @@ import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { API_BASE_URL, getWebSocketURL } from '../config';
 
+// Toast notification component
+function Toast({ message, type, onClose }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 5000); // Auto-close after 5 seconds
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const getToastStyle = () => {
+    const baseStyle = {
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      padding: '16px 24px',
+      borderRadius: '8px',
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: '14px',
+      zIndex: 9999,
+      minWidth: '300px',
+      maxWidth: '500px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      border: '2px solid',
+      animation: 'slideInRight 0.3s ease-out',
+      cursor: 'pointer',
+    };
+
+    switch (type) {
+      case 'success':
+        return { ...baseStyle, backgroundColor: '#10b981', borderColor: '#059669' };
+      case 'error':
+        return { ...baseStyle, backgroundColor: '#ef4444', borderColor: '#dc2626' };
+      case 'warning':
+        return { ...baseStyle, backgroundColor: '#f59e0b', borderColor: '#d97706' };
+      case 'info':
+        return { ...baseStyle, backgroundColor: '#3b82f6', borderColor: '#2563eb' };
+      default:
+        return { ...baseStyle, backgroundColor: '#6b7280', borderColor: '#4b5563' };
+    }
+  };
+
+  return (
+    <>
+      <style>
+        {`
+          @keyframes slideInRight {
+            from {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+        `}
+      </style>
+      <div style={getToastStyle()} onClick={onClose}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{message}</span>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#fff',
+              fontSize: '18px',
+              cursor: 'pointer',
+              marginLeft: '12px',
+              padding: '0',
+              lineHeight: '1',
+            }}
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // Half suit enum constants
 const HalfSuit = {
   MIDDLE: 8,
@@ -456,7 +539,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     );
   }  
 
-  // Function to display claim assignment interface when gameState.status = 2
+  // Function to display claim assignment interface when gameState.status = 2 and current user is the claimant
   const renderClaimAssignmentInterface = () => {
     if (!gameState || gameState?.status !== 2) {
       return null;
@@ -471,15 +554,15 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     // Check if all cards have been assigned
     const unassignedCards = unclaimedCardStrings.filter(cardString => !claimAssignments[cardString]);
     if (unassignedCards.length > 0) {
-      alert(`Please assign all cards before submitting claim. Unassigned cards: ${unassignedCards.join(', ')}`);
-      return;
+      console.error(`Claim assignment validation error: Please assign all cards before submitting claim. Unassigned cards: ${unassignedCards.join(', ')}`);
+      return null;
     }
     
     // Get current player's team number
     const currentPlayerTeam = gameState?.player_status?.[currentUserId];
     if (!currentPlayerTeam) {
-      alert("Error: Cannot determine your team number. Please refresh the page and try again.");
-      return;
+      console.error("Claim assignment validation error: Cannot determine your team number.");
+      return null;
     }
     
     return (
@@ -644,12 +727,12 @@ function cardsToHalfSuit(cards) {
 }
 
 function claimButtons(claims, handleInitiateClaim) {
-  let names = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"]
+  let names = ["♣ 2-7", "♦ 2-7","♥ 2-7","♠ 2-7", "♣ 9-A",  "♦ 9-A", "♥ 9-A","♠ 9-A", "8 & Joker" ]
   
   // Function to render button text with colored suits
   const renderButtonText = (name, index) => {
-    if (index === 4) {
-      // Special styling for "8 & Joker"
+    if (index === 8) {
+      // Special styling for "8 & Joker" (index 8, not 4)
       return (
         <span style={{ 
           fontSize: '1.3vw', 
@@ -762,8 +845,8 @@ function claimButtons(claims, handleInitiateClaim) {
         width: '100%',
         marginTop: '1vw',
       }}>
-        {Array.from({ length: 5 }).map((_, j) => {
-          let i = j + 4; // This should be j + 4, not j + 5 to get the correct indices
+        {Array.from({ length: 4 }).map((_, j) => {
+          let i = j + 4;
           let style = {
             width: '13vw',
             height: '5vw',
@@ -796,6 +879,50 @@ function claimButtons(claims, handleInitiateClaim) {
             </button>
           );
         })}
+      </div>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: '1vw',
+        width: '100%',
+        marginTop: '1vw',
+      }}>
+        {/* 8 & Joker button as the final button */}
+        {(() => {
+          let i = 8;
+          let style = {
+            width: '13vw',
+            height: '5vw',
+            fontSize: '1.5vw',
+            fontWeight: 'bold',
+            borderRadius: '8px',
+            border: '2px solid #333',
+            background: '#fff',
+            color: '#222',
+            cursor: claims[i] === 0 ? 'pointer' : 'not-allowed',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+            transition: 'background 0.2s',
+          };
+          
+          if (claims[i] === 1) {
+            style.background = '#3b82f6'; // blue for team 1
+            style.color = '#fff';
+          } else if (claims[i] === 2) {
+            style.background = '#ef4444'; // red for team 2
+            style.color = '#fff';
+          }
+          return (
+            <button
+              key={i}
+              style={style}
+              disabled={claims[i] !== 0}
+              onClick={() => handleInitiateClaim(i)}
+            >
+              {renderButtonText(names[i], i)}
+            </button>
+          );
+        })()}
       </div>
       
       {/* Warning text at bottom */}
@@ -846,6 +973,19 @@ function FishGameScreen() {
 
     // Add state for delegation handling
     const [selectedTeammate, setSelectedTeammate] = useState(null);
+    
+    // Toast notification state
+    const [toast, setToast] = useState(null);
+    
+    // Helper function to show toast notifications
+    const showToast = (message, type = 'info') => {
+      setToast({ message, type, id: Date.now() });
+    };
+    
+    // Helper function to close toast
+    const closeToast = () => {
+      setToast(null);
+    };
     
     const [games, setGames] = useState([]);
     // Remove hardcoded lastPlayedCards - will get from gameState instead
@@ -1135,30 +1275,30 @@ function FishGameScreen() {
       console.log('=== END GAME STATE DEBUG ===');*/
       
       if (selectedCards.length !== 1) {
-        alert("Please select exactly one card to ask about!");
+        showToast("Please select exactly one card to ask about!", "warning");
         return;
       }
       
       if (!selectedPlayerToAsk) {
-        alert("Please select a player to ask!");
+        showToast("Please select a player to ask!", "warning");
         return;
       }
       
       const currentUserId = getCurrentUserId();
       if (!currentUserId) {
-        alert("User not authenticated!");
+        showToast("User not authenticated!", "error");
         return;
       }
       
       // Check if it's the current user's turn
       if (gameState?.current_player !== currentUserId) {
-        alert("It's not your turn!");
+        showToast("It's not your turn!", "warning");
         return;
       }
       
       const turnModel = generateQuestionTurnModel(selectedCards[0], selectedPlayerToAsk);
       if (!turnModel) {
-        alert("Failed to generate question!");
+        showToast("Failed to generate question!", "error");
         return;
       }
       
@@ -1181,21 +1321,22 @@ function FishGameScreen() {
           // Clear selections on successful question
           setSelectedCards([]);
           setSelectedPlayerToAsk(null);
+          showToast("Question asked successfully!", "success");
           console.log("Question asked successfully!");
         } else {
           const errorData = await response.json();
           console.error('API Error Response:', errorData);
-          alert(`Failed to ask question: ${errorData.detail || 'Unknown error'}`);
+          showToast(`Failed to ask question: ${errorData.detail || 'Unknown error'}`, "error");
         }
       } catch (error) {
         console.error('Error asking question:', error);
-        alert('Failed to ask question. Please try again.');
+        showToast('Failed to ask question. Please try again.', "error");
       }
     };
 
     // Function to handle initiating a claim
     const handleInitiateClaim = async (halfSuitIndex) => {
-      const halfSuitNames = ["♠ 2-7", "♥ 2-7", "♦ 2-7", "♣ 2-7", "8 & Joker", "♠ 9-A", "♥ 9-A", "♦ 9-A", "♣ 9-A"];
+      const halfSuitNames = ["♣ 2-7","♦ 2-7","♥ 2-7","♠ 2-7","♣ 9-A" , "♦ 9-A","♥ 9-A", "♠ 9-A" , "8 & Joker"];
       
       // Example cards for each half suit (required by backend for claim initiation)
       const halfSuitEx = [
@@ -1212,7 +1353,7 @@ function FishGameScreen() {
       
       const currentUserId = getCurrentUserId();
       if (!currentUserId) {
-        alert("User not authenticated!");
+        showToast("User not authenticated!", "error");
         return;
       }
       
@@ -1230,13 +1371,13 @@ function FishGameScreen() {
       // Check if it's the current user's turn
       // Claims can be initiated at any time, not just during your turn
       // if (gameState?.current_player !== currentUserId) {
-      //   alert("It's not your turn! Cannot initiate claim.");
+      //   showToast("It's not your turn! Cannot initiate claim.", "warning");
       //   return;
       // }
       
       // Check game status
       if (gameState?.status !== 0) {
-        alert(`Cannot initiate claim. Game status is ${gameState?.status} (expected 0 for normal play)`);
+        showToast(`Cannot initiate claim. Game status is ${gameState?.status} (expected 0 for normal play)`, "error");
         return;
       }
       
@@ -1311,12 +1452,12 @@ function FishGameScreen() {
             // Show success message based on parsed data if available
             if (responseData && responseData.success !== undefined) {
               if (responseData.success) {
-                alert("Claim Successful! Your team now owns this half-suit!");
+                showToast("Claim Successful! Your team now owns this half-suit!", "success");
               } else {
-                alert("Claim Failed! The opposing team now owns this half-suit.");
+                showToast("Claim Failed! The opposing team now owns this half-suit.", "error");
               }
             } else {
-              alert("Claim submitted! Check the game state for results.");
+              showToast("Claim submitted! Check the game state for results.", "info");
             }
             return;
           }
@@ -1342,35 +1483,35 @@ function FishGameScreen() {
               const errorMessages = responseData.detail.map(err => 
                 `${err.loc?.join?.('.') || 'Unknown field'}: ${err.msg || 'Invalid value'}`
               ).join('\n');
-              alert(`Claim validation errors:\n${errorMessages}`);
+              showToast(`Claim validation errors:\n${errorMessages}`, "error");
             } else {
-              alert(`Claim validation error: ${responseData?.detail || responseText || 'Invalid claim format'}`);
+              showToast(`Claim validation error: ${responseData?.detail || responseText || 'Invalid claim format'}`, "error");
             }
           } else if (response.status === 400) {
-            alert(`Claim error: ${responseData?.detail || responseText || 'Bad request'}`);
+            showToast(`Claim error: ${responseData?.detail || responseText || 'Bad request'}`, "error");
           } else if (response.status === 403) {
-            alert("Not authorized to make this claim. Make sure it's your team's turn to claim.");
+            showToast("Not authorized to make this claim. Make sure it's your team's turn to claim.", "error");
           } else if (response.status === 404) {
-            alert("Game not found. Please refresh the page and try again.");
+            showToast("Game not found. Please refresh the page and try again.", "error");
           } else {
-            alert(`Failed to submit claim: ${responseData?.detail || responseText || `Server error (${response.status})`}`);
+            showToast(`Failed to submit claim: ${responseData?.detail || responseText || `Server error (${response.status})`}`, "error");
           }
           
         } catch (error) {
           // Only a real error if it's not the "body stream already read" error
           if (!error.message.includes('body stream already read')) {
             console.error('Error processing claim response:', error);
-            alert(`Error processing server response: ${error.message}`);
+            showToast(`Error processing server response: ${error.message}`, "error");
           }
         }
       } catch (error) {
         console.error('Actual network error submitting claim:', error);
         // Only show network error for actual fetch failures
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
-          alert('Network error while submitting claim. Please check your connection and try again.');
+          showToast('Network error while submitting claim. Please check your connection and try again.', "error");
         } else if (!error.message.includes('body stream already read')) {
           // Don't show error for "body stream already read" as it's not a real error
-          alert(`Unexpected error while submitting claim: ${error.message}`);
+          showToast(`Unexpected error while submitting claim: ${error.message}`, "error");
         }
       } finally {
         // Always clear loading state
@@ -1382,7 +1523,7 @@ function FishGameScreen() {
     const handleSubmitClaim = async () => {
       const currentUserId = getCurrentUserId();
       if (!currentUserId) {
-        alert("User not authenticated!");
+        showToast("User not authenticated!", "error");
         return;
       }
       
@@ -1393,14 +1534,14 @@ function FishGameScreen() {
       // Check if all cards have been assigned
       const unassignedCards = unclaimedCardStrings.filter(cardString => !claimAssignments[cardString]);
       if (unassignedCards.length > 0) {
-        alert(`Please assign all cards before submitting claim. Unassigned cards: ${unassignedCards.join(', ')}`);
+        showToast(`Please assign all cards before submitting claim. Unassigned cards: ${unassignedCards.join(', ')}`, "warning");
         return;
       }
       
       // Get current player's team number
       const currentPlayerTeam = gameState?.player_status?.[currentUserId];
       if (!currentPlayerTeam) {
-        alert("Error: Cannot determine your team number. Please refresh the page and try again.");
+        showToast("Error: Cannot determine your team number. Please refresh the page and try again.", "error");
         return;
       }
       
@@ -1444,7 +1585,7 @@ function FishGameScreen() {
       
       if (invalidTransactions.length > 0) {
         console.error('Invalid transactions detected:', invalidTransactions);
-        alert('Error: Some card assignments are invalid. Please try again.');
+        showToast('Error: Some card assignments are invalid. Please try again.', "error");
         setIsProcessingClaim(false);
         return;
       }
@@ -1509,12 +1650,12 @@ function FishGameScreen() {
             // Show success message based on parsed data if available
             if (responseData && responseData.success !== undefined) {
               if (responseData.success) {
-                alert("Claim Successful! Your team now owns this half-suit!");
+                showToast("Claim Successful! Your team now owns this half-suit!", "success");
               } else {
-                alert("Claim Failed! The opposing team now owns this half-suit.");
+                showToast("Claim Failed! The opposing team now owns this half-suit.", "error");
               }
             } else {
-              alert("Claim submitted! Check the game state for results.");
+              showToast("Claim submitted! Check the game state for results.", "info");
             }
             return;
           }
@@ -1540,35 +1681,35 @@ function FishGameScreen() {
               const errorMessages = responseData.detail.map(err => 
                 `${err.loc?.join?.('.') || 'Unknown field'}: ${err.msg || 'Invalid value'}`
               ).join('\n');
-              alert(`Claim validation errors:\n${errorMessages}`);
+              showToast(`Claim validation errors:\n${errorMessages}`, "error");
             } else {
-              alert(`Claim validation error: ${responseData?.detail || responseText || 'Invalid claim format'}`);
+              showToast(`Claim validation error: ${responseData?.detail || responseText || 'Invalid claim format'}`, "error");
             }
           } else if (response.status === 400) {
-            alert(`Claim error: ${responseData?.detail || responseText || 'Bad request'}`);
+            showToast(`Claim error: ${responseData?.detail || responseText || 'Bad request'}`, "error");
           } else if (response.status === 403) {
-            alert("Not authorized to make this claim. Make sure it's your team's turn to claim.");
+            showToast("Not authorized to make this claim. Make sure it's your team's turn to claim.", "error");
           } else if (response.status === 404) {
-            alert("Game not found. Please refresh the page and try again.");
+            showToast("Game not found. Please refresh the page and try again.", "error");
           } else {
-            alert(`Failed to submit claim: ${responseData?.detail || responseText || `Server error (${response.status})`}`);
+            showToast(`Failed to submit claim: ${responseData?.detail || responseText || `Server error (${response.status})`}`, "error");
           }
           
         } catch (error) {
           // Only a real error if it's not the "body stream already read" error
           if (!error.message.includes('body stream already read')) {
             console.error('Error processing claim response:', error);
-            alert(`Error processing server response: ${error.message}`);
+            showToast(`Error processing server response: ${error.message}`, "error");
           }
         }
       } catch (error) {
         console.error('Actual network error submitting claim:', error);
         // Only show network error for actual fetch failures
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
-          alert('Network error while submitting claim. Please check your connection and try again.');
+          showToast('Network error while submitting claim. Please check your connection and try again.', "error");
         } else if (!error.message.includes('body stream already read')) {
           // Don't show error for "body stream already read" as it's not a real error
-          alert(`Unexpected error while submitting claim: ${error.message}`);
+          showToast(`Unexpected error while submitting claim: ${error.message}`, "error");
         }
       } finally {
         // Always clear loading state
@@ -1579,7 +1720,7 @@ function FishGameScreen() {
     const handleDelegateTurn = async () => {
       const currentUserId = getCurrentUserId();
       if (!selectedTeammate || !currentUserId) {
-        alert("Select a teammate to delegate to.");
+        showToast("Select a teammate to delegate to.", "warning");
         return;
       }
     
@@ -1603,13 +1744,14 @@ function FishGameScreen() {
     
         if (!res.ok) {
           const errData = await res.json();
-          alert("Delegation failed: " + (errData?.detail || "Unknown error"));
+          showToast("Delegation failed: " + (errData?.detail || "Unknown error"), "error");
         } else {
           setSelectedTeammate(null);
+          showToast("Turn successfully delegated!", "success");
         }
       } catch (err) {
         console.error("Error delegating turn:", err);
-        alert("Failed to delegate turn.");
+        showToast("Failed to delegate turn.", "error");
       }
     };    
 
@@ -1655,12 +1797,12 @@ function FishGameScreen() {
           return null;
         })()}
 
-        {/* Show claim assignment interface when gameState.status = 2 */}
+        {/* Show claim assignment interface when gameState.status = 2 and current user is the claimant */}
         {(() => {
           const currentUserId = getCurrentUserId();
           
-          // Show claim assignment interface when status = 2 (claim occurring)
-          if (gameState?.status === 2) {
+          // Show claim assignment interface when status = 2 (claim occurring) AND current user is the one making the claim
+          if (gameState?.status === 2 && gameState?.current_player === currentUserId) {
             const unclaimedCards = gameState?.owners?.options?.cards || [];
             const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
             const currentPlayerTeam = gameState?.player_status?.[currentUserId];
@@ -1797,6 +1939,44 @@ function FishGameScreen() {
             );
           }
           
+          // Show a message to other players when someone else is making a claim
+          if (gameState?.status === 2 && gameState?.current_player !== currentUserId) {
+            const claimantName = userDetails[gameState?.current_player]?.name || `Player ${gameState?.current_player?.slice(-4)}`;
+            return (
+              <div style={{ width: "100%", padding: "0 2%" }}>
+                <div style={{
+                  width: '100%',
+                  padding: '25px',
+                  backgroundColor: 'rgba(255, 193, 7, 0.15)',
+                  borderRadius: '12px',
+                  border: '3px solid #FFC107',
+                  marginBottom: '20px',
+                }}>
+                  <div style={{
+                    color: '#FFC107',
+                    fontSize: '2.2vw',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    marginBottom: '15px',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                  }}>
+                    Claim In Progress
+                  </div>
+                  
+                  <div style={{
+                    color: '#FFF',
+                    fontSize: '1.6vw',
+                    textAlign: 'center',
+                    fontStyle: 'italic',
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                  }}>
+                    {claimantName} is making a claim. Please wait...
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
           return null;
         })()}
 
@@ -1831,8 +2011,8 @@ function FishGameScreen() {
               const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
               const allCardsAssigned = unclaimedCardStrings.length > 0 && unclaimedCardStrings.every(cardString => claimAssignments[cardString]);
               
-              if (gameState?.status === 2) {
-                // Show submit claim button when in claim state
+              if (gameState?.status === 2 && gameState?.current_player === currentUserId) {
+                // Show submit claim button when current user is making the claim
                 return (
                   <button 
                     style={{ 
@@ -1854,8 +2034,25 @@ function FishGameScreen() {
                     {isProcessingClaim ? 'Processing Claim...' : 'Submit Claim'}
                   </button>
                 );
+              } else if (gameState?.status === 2 && gameState?.current_player !== currentUserId) {
+                // Show waiting message when someone else is making a claim
+                return (
+                  <div style={{
+                    padding: '2% 4%',
+                    fontSize: '4vh',
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    color: '#FFC107',
+                    border: '3px solid #FFC107',
+                    borderRadius: '12px',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                  }}>
+                    Waiting for claim to complete...
+                  </div>
+                );
               } else {
-                // Show regular ask/pass buttons for normal gameplay
+                // Show regular ask/delegate buttons for normal gameplay
                 return (
                   <>
                     <button 
@@ -1912,7 +2109,7 @@ function FishGameScreen() {
             )}
             
             {/* Display claim assignment progress during claim state */}
-            {gameState?.status === 2 && (
+            {gameState?.status === 2 && gameState?.current_player === getCurrentUserId() && (
               <div style={{
                 marginTop: '20px',
                 padding: '15px',
@@ -1958,6 +2155,15 @@ function FishGameScreen() {
               </div>
             )}
       </div>
+      
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={closeToast}
+        />
+      )}
       </>
   );
 }

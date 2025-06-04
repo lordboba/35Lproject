@@ -1397,8 +1397,19 @@ function FishGameScreen() {
 
     const handleDelegateTurn = async () => {
       const currentUserId = getCurrentUserId();
-      if (!selectedTeammate || !currentUserId) {
+    
+      console.debug("[DELEGATE] Attempting delegation");
+      console.debug("[DELEGATE] Selected teammate:", selectedTeammate);
+      console.debug("[DELEGATE] Current user ID:", currentUserId);
+      console.debug("[DELEGATE] Current player in game state:", gameState?.current_player);
+    
+      if (!selectedTeammate) {
         showToast("Select a teammate to delegate to.", "warning");
+        return;
+      }
+      if (!currentUserId || gameState?.current_player !== currentUserId) {
+        showToast("It's not your turn!", "warning");
+        console.warn("[DELEGATE] Delegation blocked - not user's turn");
         return;
       }
     
@@ -1413,6 +1424,8 @@ function FishGameScreen() {
         }]
       };
     
+      console.debug("[DELEGATE] Built turnModel:", JSON.stringify(turnModel, null, 2));
+    
       try {
         const res = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
           method: 'PATCH',
@@ -1421,14 +1434,21 @@ function FishGameScreen() {
         });
     
         if (!res.ok) {
-          const errData = await res.json();
+          let errData = "";
+          try {
+            errData = await res.json();
+          } catch (parseErr) {
+            console.error("[DELEGATE] Failed to parse error response JSON", parseErr);
+          }
+          console.error("[DELEGATE] Server rejected delegation:", errData);
           showToast("Delegation failed: " + (errData?.detail || "Unknown error"), "error");
         } else {
+          console.info("[DELEGATE] Delegation successful!");
           setSelectedTeammate(null);
           showToast("Turn successfully delegated!", "success");
         }
       } catch (err) {
-        console.error("Error delegating turn:", err);
+        console.error("[DELEGATE] Network or unexpected error:", err);
         showToast("Failed to delegate turn.", "error");
       }
     };    

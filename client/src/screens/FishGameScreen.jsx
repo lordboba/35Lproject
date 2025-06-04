@@ -32,6 +32,72 @@ function Toast({ message, type, onClose }) {
   );
 }
 
+// Question Result Display component
+function QuestionResult({ lastTurn, userDetails, onClose }) {
+  if (!lastTurn || lastTurn.type !== 0 || !lastTurn.transactions || lastTurn.transactions.length === 0) {
+    return null;
+  }
+
+  const transaction = lastTurn.transactions[0];
+  const askedPlayer = userDetails[transaction.sender]?.name || `Player ${transaction.sender.slice(-4)}`;
+  const askingPlayer = userDetails[transaction.receiver]?.name || `Player ${transaction.receiver.slice(-4)}`;
+  const cardString = transaction.card ? 
+    (() => {
+      const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+      const suits = ['','C', 'D', 'H', 'S'];
+      if (transaction.card.rank == 0) {
+        if (transaction.card.suit == 1 || transaction.card.suit == 4) {
+          return "JB";
+        } else if (transaction.card.suit == 2 || transaction.card.suit == 3) {
+          return "JR";
+        }
+      }
+      const rank = ranks[transaction.card.rank] || transaction.card.rank;
+      const suit = suits[transaction.card.suit] || transaction.card.suit;
+      return `${rank}${suit}`;
+    })() : 'Unknown Card';
+
+  const hasCard = transaction.success;
+  const resultClass = hasCard ? 'question-result-success' : 'question-result-failure';
+  const resultColor = hasCard ? '#00FF00' : '#FF6B6B';
+
+  return (
+    <div className={`question-result ${resultClass}`}>
+      <div className="question-result-content">
+        <div className="question-result-header">
+          Question Result
+        </div>
+        
+        <div className="question-result-details">
+          <div className="question-result-question">
+            <strong>{askingPlayer}</strong> asked <strong>{askedPlayer}</strong> for:
+          </div>
+          
+          <div className="question-result-card">
+            <img 
+              src={`/${cardString}icon.svg`}
+              className="question-result-card-image"
+              alt={cardString}
+            />
+            <span className="question-result-card-name">{cardString}</span>
+          </div>
+          
+          <div className="question-result-outcome" style={{ color: resultColor }}>
+            <strong>{askedPlayer} {hasCard ? 'HAS THE CARD!' : 'DOES NOT have the card'}</strong>
+          </div>
+        </div>
+        
+        <button
+          onClick={onClose}
+          className="question-result-close-btn"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // Half suit enum constants
 const HalfSuit = {
   MIDDLE: 8,
@@ -655,6 +721,9 @@ function FishGameScreen() {
     // Toast notification state
     const [toast, setToast] = useState(null);
     
+    // Question result state
+    const [questionResult, setQuestionResult] = useState(null);
+    
     // Helper function to show toast notifications
     const showToast = (message, type = 'info') => {
       setToast({ message, type, id: Date.now() });
@@ -663,6 +732,16 @@ function FishGameScreen() {
     // Helper function to close toast
     const closeToast = () => {
       setToast(null);
+    };
+    
+    // Helper function to show question result
+    const showQuestionResult = (lastTurn) => {
+      setQuestionResult({ lastTurn, id: Date.now() });
+    };
+    
+    // Helper function to close question result
+    const closeQuestionResult = () => {
+      setQuestionResult(null);
     };
     
     const [games, setGames] = useState([]);
@@ -752,6 +831,18 @@ function FishGameScreen() {
       if (isProcessingClaim && gameState.status === 0) {
         console.log('Claim processing completed, game returned to normal status');
         setIsProcessingClaim(false);
+      }
+      
+      // Check for recent question results in last_turn if available
+      if (gameState.last_turn && gameState.last_turn.type === 0) {
+        const lastTurn = gameState.last_turn;
+        console.log('Recent question detected in last_turn:', lastTurn);
+        
+        // Show question result for all players to see
+        if (lastTurn.transactions && lastTurn.transactions.length > 0) {
+          console.log('Showing question result:', lastTurn);
+          showQuestionResult(lastTurn);
+        }
       }
       
       // Check for recent claim results in last_turn if available
@@ -1469,14 +1560,37 @@ function FishGameScreen() {
           const questionOptions = gameState?.owners?.options?.cards || [];
           const questionOptionStrings = questionOptions.map(card => convertCardToString(card));
           
+          // Get current user's card count
+          const currentUserCardCount = gameState?.owners?.[currentUserId]?.cards?.length || 0;
+          
           console.log('Debug Options Display:', {
             currentUserId,
             currentPlayer: gameState?.current_player,
             isCurrentPlayer,
             questionOptions,
             questionOptionStrings,
+            currentUserCardCount,
             gameState: gameState
           });
+          
+          // Show delegation menu only when it's current player's turn, they have 0 cards, AND not in claim state
+          if (isCurrentPlayer && currentUserCardCount === 0 && gameState?.status !== 2) {
+            return (
+              <div style={{ width: "100%", padding: "0 2%" }}>
+                <div style={{
+                  color: '#FFD700',
+                  fontSize: '1.8vw',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                }}>
+                  You have no cards - Please delegate your turn
+                </div>
+                {playerSelectionForDelegation(users, userDetails, currentUserId, selectedTeammate, setSelectedTeammate, gameState)}
+              </div>
+            );
+          }
           
           // Show question options when it's current player's turn, there are valid options, AND not in claim state
           if (isCurrentPlayer && questionOptionStrings && questionOptionStrings.length > 0 && gameState?.status !== 2) {
@@ -1606,132 +1720,206 @@ function FishGameScreen() {
             {claimButtons(getClaimsArray(gameState?.owners?.["suits_1"]?.cards, gameState?.owners?.["suits_2"]?.cards), handleInitiateClaim)}
           </div>
         </div>
-           
-      <div className="player-cards-section">
-        {currentPlayerCards(getCurrentUserCards())}
-      </div>
+        
+        {/* Question Result Display */}
+        {questionResult && (
+          <QuestionResult
+            lastTurn={questionResult.lastTurn}
+            userDetails={userDetails}
+            onClose={closeQuestionResult}
+          />
+        )}
 
-      <div>
-            {/* Show different buttons based on game state */}
-            {(() => {
-              const currentUserId = getCurrentUserId();
-              const unclaimedCards = gameState?.owners?.options?.cards || [];
-              const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
-              const allCardsAssigned = unclaimedCardStrings.length > 0 && unclaimedCardStrings.every(cardString => claimAssignments[cardString]);
-              
-              if (gameState?.status === 2 && gameState?.current_player === currentUserId) {
-                // Show submit claim button when current user is making the claim
-                const buttonStyle = {
-                  backgroundColor: allCardsAssigned && !isProcessingClaim ? '#FF0000' : '#666',
-                  cursor: allCardsAssigned && !isProcessingClaim ? 'pointer' : 'not-allowed',
-                  boxShadow: allCardsAssigned && !isProcessingClaim ? '0 4px 8px rgba(255, 0, 0, 0.4)' : 'none',
-                  opacity: isProcessingClaim ? 0.7 : 1,
-                };
+        <div className="player-cards-section">
+          {currentPlayerCards(getCurrentUserCards())}
+        </div>
+
+        <div>
+              {/* Show different buttons based on game state */}
+              {(() => {
+                const currentUserId = getCurrentUserId();
+                const unclaimedCards = gameState?.owners?.options?.cards || [];
+                const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
+                const allCardsAssigned = unclaimedCardStrings.length > 0 && unclaimedCardStrings.every(cardString => claimAssignments[cardString]);
                 
-                return (
-                  <button 
-                    className="game-button-submit-claim"
-                    style={buttonStyle}
-                    onClick={handleSubmitClaim}
-                    disabled={!allCardsAssigned || isProcessingClaim}
-                  >
-                    {isProcessingClaim ? 'Processing Claim...' : 'Submit Claim'}
-                  </button>
-                );
-              } else if (gameState?.status === 2 && gameState?.current_player !== currentUserId) {
-                // Show waiting message when someone else is making a claim
-                return (
-                  <div className="claim-waiting-button">
-                    Waiting for claim to complete...
-                  </div>
-                );
-              } else {
-                // Show regular ask/delegate buttons for normal gameplay
-                return (
-                  <>
-                    <button 
-                      className="game-button-ask"
-                      onClick={handleAskQuestion}
-                      disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
-                    >
-                      Ask
-                    </button>
-                    <button 
-                      className="game-button-delegate"
-                      onClick={handleDelegateTurn}
-                      disabled={!selectedTeammate || gameState?.current_player !== getCurrentUserId()}
-                    >
-                      Delegate
-                    </button>
-                  </>
-                );
-              }
-            })()}
-            
-            {/* Display current selections for debugging/user feedback during regular play */}
-            {gameState?.status !== 2 && (selectedCards.length > 0 || selectedPlayerToAsk) && (
-              <div className="debug-selections">
-                <div>
-                  <strong>Selected Card:</strong> {selectedCards.length > 0 ? selectedCards[0] : 'None'}
-                </div>
-                <div>
-                  <strong>Player to Ask:</strong> {selectedPlayerToAsk ? (userDetails[selectedPlayerToAsk]?.name || `Player ${selectedPlayerToAsk.slice(-4)}`) : 'None'}
-                </div>
-                {selectedCards.length === 1 && selectedPlayerToAsk && (
-                  <div className="debug-ready">
-                    Ready to ask!
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Display claim assignment progress during claim state */}
-            {gameState?.status === 2 && gameState?.current_player === getCurrentUserId() && (
-              <div className="claim-progress">
-                <div className="claim-progress-title">
-                  Claim In Progress
-                </div>
-                {(() => {
-                  const unclaimedCards = gameState?.owners?.options?.cards || [];
-                  const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
-                  const assignedCount = unclaimedCardStrings.filter(cardString => claimAssignments[cardString]).length;
+                if (gameState?.status === 2 && gameState?.current_player === currentUserId) {
+                  // Show submit claim button when current user is making the claim
+                  const buttonStyle = {
+                    backgroundColor: allCardsAssigned && !isProcessingClaim ? '#FF0000' : '#666',
+                    cursor: allCardsAssigned && !isProcessingClaim ? 'pointer' : 'not-allowed',
+                    boxShadow: allCardsAssigned && !isProcessingClaim ? '0 4px 8px rgba(255, 0, 0, 0.4)' : 'none',
+                    opacity: isProcessingClaim ? 0.7 : 1,
+                  };
                   
-                  if (isProcessingClaim) {
+                  return (
+                    <button 
+                      className="game-button-submit-claim"
+                      style={buttonStyle}
+                      onClick={handleSubmitClaim}
+                      disabled={!allCardsAssigned || isProcessingClaim}
+                    >
+                      {isProcessingClaim ? 'Processing Claim...' : 'Submit Claim'}
+                    </button>
+                  );
+                } else if (gameState?.status === 2 && gameState?.current_player !== currentUserId) {
+                  // Show waiting message when someone else is making a claim
+                  return (
+                    <div className="claim-waiting-button">
+                      Waiting for claim to complete...
+                    </div>
+                  );
+                } else {
+                  // Show regular ask/delegate buttons for normal gameplay
+                  const currentUserCardCount = gameState?.owners?.[currentUserId]?.cards?.length || 0;
+                  
+                  // If current player has zero cards, only show delegate button
+                  if (currentUserCardCount === 0 && gameState?.current_player === currentUserId) {
                     return (
-                      <div>
-                        <div className="claim-progress-processing">
-                          Processing claim submission...
-                        </div>
-                        <div className="claim-progress-processing-detail">
-                          Please wait while the claim is being processed
-                        </div>
-                      </div>
+                      <button 
+                        className="game-button-delegate"
+                        onClick={handleDelegateTurn}
+                        disabled={!selectedTeammate}
+                        style={{
+                          backgroundColor: selectedTeammate ? '#00BFFF' : '#666',
+                          fontSize: '1.4vw',
+                          padding: '12px 24px',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        Delegate Turn
+                      </button>
                     );
                   }
                   
+                  // Otherwise show both ask and delegate buttons
                   return (
-                    <div>
-                      <strong>Progress:</strong> {assignedCount} / {unclaimedCardStrings.length} cards assigned
-                      {assignedCount === unclaimedCardStrings.length && (
-                        <div className="claim-progress-ready">
-                          All cards assigned - Ready to submit claim!
+                    <>
+                      <button 
+                        className="game-button-ask"
+                        onClick={handleAskQuestion}
+                        disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
+                      >
+                        Ask
+                      </button>
+                      <button 
+                        className="game-button-delegate"
+                        onClick={handleDelegateTurn}
+                        disabled={!selectedTeammate || gameState?.current_player !== getCurrentUserId()}
+                      >
+                        Delegate
+                      </button>
+                    </>
+                  );
+                }
+              })()}
+              
+              {/* Display current selections for debugging/user feedback during regular play */}
+              {(() => {
+                const currentUserId = getCurrentUserId();
+                const currentUserCardCount = gameState?.owners?.[currentUserId]?.cards?.length || 0;
+                
+                // Don't show debug selections if player has zero cards or during claims
+                if (gameState?.status === 2 || currentUserCardCount === 0) {
+                  return null;
+                }
+                
+                // Only show if there are selections to display
+                if (selectedCards.length > 0 || selectedPlayerToAsk) {
+                  return (
+                    <div className="debug-selections">
+                      <div>
+                        <strong>Selected Card:</strong> {selectedCards.length > 0 ? selectedCards[0] : 'None'}
+                      </div>
+                      <div>
+                        <strong>Player to Ask:</strong> {selectedPlayerToAsk ? (userDetails[selectedPlayerToAsk]?.name || `Player ${selectedPlayerToAsk.slice(-4)}`) : 'None'}
+                      </div>
+                      {selectedCards.length === 1 && selectedPlayerToAsk && (
+                        <div className="debug-ready">
+                          Ready to ask!
                         </div>
                       )}
                     </div>
                   );
-                })()}
-              </div>
-            )}
-      </div>
-      
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={closeToast}
-        />
-      )}
+                }
+                
+                return null;
+              })()}
+              
+              {/* Display delegation status when player has zero cards */}
+              {(() => {
+                const currentUserId = getCurrentUserId();
+                const currentUserCardCount = gameState?.owners?.[currentUserId]?.cards?.length || 0;
+                const isCurrentPlayer = gameState?.current_player === currentUserId;
+                
+                // Show delegation status when player has zero cards and it's their turn
+                if (isCurrentPlayer && currentUserCardCount === 0 && gameState?.status !== 2) {
+                  return (
+                    <div className="debug-selections">
+                      <div>
+                        <strong>Status:</strong> You have no cards - delegation required
+                      </div>
+                      <div>
+                        <strong>Selected Teammate:</strong> {selectedTeammate ? (userDetails[selectedTeammate]?.name || `Player ${selectedTeammate.slice(-4)}`) : 'None'}
+                      </div>
+                      {selectedTeammate && (
+                        <div className="debug-ready">
+                          Ready to delegate!
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                
+                return null;
+              })()}
+              
+              {/* Display claim assignment progress during claim state */}
+              {gameState?.status === 2 && gameState?.current_player === getCurrentUserId() && (
+                <div className="claim-progress">
+                  <div className="claim-progress-title">
+                    Claim In Progress
+                  </div>
+                  {(() => {
+                    const unclaimedCards = gameState?.owners?.options?.cards || [];
+                    const unclaimedCardStrings = unclaimedCards.map(card => convertCardToString(card));
+                    const assignedCount = unclaimedCardStrings.filter(cardString => claimAssignments[cardString]).length;
+                    
+                    if (isProcessingClaim) {
+                      return (
+                        <div>
+                          <div className="claim-progress-processing">
+                            Processing claim submission...
+                          </div>
+                          <div className="claim-progress-processing-detail">
+                            Please wait while the claim is being processed
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div>
+                        <strong>Progress:</strong> {assignedCount} / {unclaimedCardStrings.length} cards assigned
+                        {assignedCount === unclaimedCardStrings.length && (
+                          <div className="claim-progress-ready">
+                            All cards assigned - Ready to submit claim!
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+        </div>
+        
+        {/* Toast notification */}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={closeToast}
+          />
+        )}
       </>
   );
 }

@@ -194,7 +194,7 @@ function UserStats() {
                                                                         fontSize: '0.9em'
                                                                     }}
                                                                 >
-                                                                    <b>{label}</b>: {playerId}
+                                                                    <b>{label}</b>: {replay.player_names?.[playerId] || playerId}
                                                                 </span>
                                                             );
                                                         })}

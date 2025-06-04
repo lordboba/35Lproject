@@ -197,7 +197,6 @@ function currentPlayerCards(cards, selectedCards, setSelectedCards) {
   );
 }
 
-
 function lastCombo(cards){
   const numCards = cards.length;
   if (numCards === 0) {
@@ -257,19 +256,6 @@ function lastCombo(cards){
   </div>
 }
 
-  return (
-    <div style={{
-      width: '100%', 
-      display: 'flex',
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      overflowX: 'hidden',
-  
-    }}>
-      {cardlist}
-    </div>
-  );
-}
 function VietcongGameScreen() {
   // WebSocket and game state management
   const location = useLocation();

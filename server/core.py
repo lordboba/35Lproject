@@ -190,6 +190,7 @@ class ReplayModel(BaseModel):
     type: str = Field(...)
     name: str = Field(...)
     players: Dict[PyObjectId,int] = Field(default_factory=dict)
+    player_names: Dict[PyObjectId,str] = Field(default_factory=dict)
     game_states: List[GameStateModel] = Field(default_factory=list)
     timestamp: int = Field(...)
     model_config = ConfigDict(
@@ -205,6 +206,7 @@ class ReplaySummaryModel(BaseModel):
     type: str = Field(...)
     name: str = Field(...)
     players: Dict[str, int]  # Maps player names to their scores
+    player_names: Dict[str,str]
     timestamp: int
 
 class ReplaySearchModel(BaseModel):

@@ -600,6 +600,7 @@ async def search_replays(filters: ReplaySearchModel = Depends()):
         "type": 1,
         "name": 1,
         "players": 1,
+        "player_names": 1,
         "timestamp": 1,
     }
 

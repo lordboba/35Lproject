@@ -171,6 +171,23 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
         )}
       </div>
 
+      {moving && (
+        <div style={{
+          width: '80%',
+          color: 'var(--success-color)', // Use CSS variable
+          fontSize: '1.2vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+          backgroundColor: 'var(--current-turn-bg-color)', // Use CSS variable
+          borderRadius: '8px',
+          padding: '2px 6px',
+          border: '2px solid var(--current-turn-border-color)', // Use CSS variable
+        }}>
+          CURRENT TURN
+        </div>
+      )}
+
       <img
         src={"/backicon.svg"}
         alt="card back"
@@ -196,24 +213,6 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
       >
         {cardCount}
       </span>
-
-      {moving && (
-        <div style={{
-          width: '80%',
-          color: 'var(--success-color)', // Use CSS variable
-          fontSize: '1.2vw',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginTop: '0.5vh',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-          backgroundColor: 'var(--current-turn-bg-color)', // Use CSS variable
-          borderRadius: '8px',
-          padding: '2px 6px',
-          border: '2px solid var(--current-turn-border-color)', // Use CSS variable
-        }}>
-          CURRENT TURN
-        </div>
-      )}
     </div>
   );
 }

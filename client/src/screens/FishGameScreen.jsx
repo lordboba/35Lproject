@@ -420,6 +420,42 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     );
   }
 
+  function playerSelectionForDelegation(users, userDetails, currentUserId, selectedTeammate, setSelectedTeammate, gameState) {
+    if (!users || users.length === 0 || !gameState) return null;
+  
+    const currentTeam = gameState.player_status?.[currentUserId];
+    const teammates = users.filter(id => id !== currentUserId && gameState.player_status?.[id] === currentTeam);
+  
+    if (teammates.length === 0) return null;
+  
+    return (
+      <div style={{ marginTop: '2vh', padding: '20px', backgroundColor: 'rgba(0,255,255,0.1)', borderRadius: '10px', border: '2px solid cyan' }}>
+        <div style={{ color: 'cyan', fontSize: '1.8vw', textAlign: 'center', fontWeight: 'bold' }}>
+          Select a Teammate to Delegate Your Turn
+        </div>
+        <div style={{ display: 'flex', gap: '1vw', justifyContent: 'center', marginTop: '10px' }}>
+          {teammates.map(id => (
+            <button
+              key={id}
+              onClick={() => setSelectedTeammate(prev => prev === id ? null : id)}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '6px',
+                border: '2px solid cyan',
+                backgroundColor: selectedTeammate === id ? 'cyan' : 'transparent',
+                color: selectedTeammate === id ? 'black' : 'white',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              {userDetails[id]?.name || `Player ${id.slice(-4)}`}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }  
+
   // Function to display claim assignment interface when gameState.status = 2
   const renderClaimAssignmentInterface = () => {
     if (!gameState || gameState?.status !== 2) {
@@ -807,6 +843,9 @@ function FishGameScreen() {
     
     // Add state for game end handling
     const [gameEnded, setGameEnded] = useState(false);
+
+    // Add state for delegation handling
+    const [selectedTeammate, setSelectedTeammate] = useState(null);
     
     const [games, setGames] = useState([]);
     // Remove hardcoded lastPlayedCards - will get from gameState instead
@@ -1537,6 +1576,43 @@ function FishGameScreen() {
       }
     };
 
+    const handleDelegateTurn = async () => {
+      const currentUserId = getCurrentUserId();
+      if (!selectedTeammate || !currentUserId) {
+        alert("Select a teammate to delegate to.");
+        return;
+      }
+    
+      const turnModel = {
+        type: 2, // Delegation
+        player: currentUserId,
+        transactions: [{
+          sender: selectedTeammate,
+          receiver: currentUserId,
+          card: { rank: 1, suit: 1 }, // dummy card
+          success: true
+        }]
+      };
+    
+      try {
+        const res = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(turnModel)
+        });
+    
+        if (!res.ok) {
+          const errData = await res.json();
+          alert("Delegation failed: " + (errData?.detail || "Unknown error"));
+        } else {
+          setSelectedTeammate(null);
+        }
+      } catch (err) {
+        console.error("Error delegating turn:", err);
+        alert("Failed to delegate turn.");
+      }
+    };    
+
   
   return (
       <>
@@ -1571,6 +1647,7 @@ function FishGameScreen() {
               <div style={{ width: "100%", padding: "0 2%" }}>
                 {questionOptionsFromCards(questionOptionStrings, selectedCards, setSelectedCards)}
                 {playerSelectionForQuestions(users, userDetails, currentUserId, selectedPlayerToAsk, setSelectedPlayerToAsk, gameState)}
+                {playerSelectionForDelegation(users, userDetails, currentUserId, selectedTeammate, setSelectedTeammate, gameState)}
               </div>
             );
           }
@@ -1788,7 +1865,22 @@ function FishGameScreen() {
                     >
                       Ask
                     </button>
-                   
+                    <button 
+                      style={{ 
+                        marginLeft: '5%', 
+                        padding: '1% 2%', 
+                        fontSize: '5vh', 
+                        backgroundColor: '#00FFFF', 
+                        color: '#000',
+                        border: '2px solid white',
+                        fontWeight: 'bold',
+                        borderRadius: '8px'
+                      }}
+                      onClick={handleDelegateTurn}
+                      disabled={!selectedTeammate || gameState?.current_player !== getCurrentUserId()}
+                    >
+                      Delegate
+                    </button>
                   </>
                 );
               }

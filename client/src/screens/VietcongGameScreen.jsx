@@ -80,7 +80,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
       </div>
       
       <img
-        src={"/public/backicon.svg"}
+        src={"/backicon.svg"}
         alt="card back"
         style={{
           width: '15vw',

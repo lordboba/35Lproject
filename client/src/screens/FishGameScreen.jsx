@@ -873,7 +873,7 @@ function FishGameScreen() {
         // Fetch game details to get the name
         const fetchGameDetails = async () => {
           try {
-            const response = await fetch(`${API_BASE_URL}/games/${id}`);
+            const response = await fetch(`${API_BASE_URL}/games/${id}/get_game`);
             if (response.ok) {
               const gameData = await response.json();
               setGameName(gameData.name || '');

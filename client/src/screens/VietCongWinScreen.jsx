@@ -123,14 +123,14 @@ function VietCongWinScreen() {
           textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
           marginBottom: '0.5rem'
         }}>
-          🎴 VIET CONG GAME COMPLETE! 🎴
+           Vietcong Game Complete! 
         </h1>
         <div style={{
           fontSize: '1.5rem',
           color: '#FFF',
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
         }}>
-          {gameName || `Game ID: ${gameResults.gameId}`}
+          {gameName || ``}
         </div>
       </div>
 
@@ -232,34 +232,7 @@ function VietCongWinScreen() {
         })}
       </div>
 
-      {/* Game Summary */}
-      <div style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        border: '2px solid #666',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '2rem',
-        textAlign: 'center',
-        maxWidth: '600px'
-      }}>
-        <h3 style={{
-          color: '#FFD700',
-          fontSize: '1.5rem',
-          marginBottom: '1rem',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-        }}>
-          Game Summary
-        </h3>
-        <p style={{
-          fontSize: '1.1rem',
-          color: '#CCC',
-          lineHeight: '1.6',
-          margin: '0'
-        }}>
-          In Viet Cong, players compete to be the first to play all their cards. 
-          The game continues until only one player remains with cards, determining the final rankings.
-        </p>
-      </div>
+      
 
       {/* Back to Lobby Button */}
       <button

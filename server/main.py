@@ -27,11 +27,6 @@ async def handle_cloudfront_and_cors(request: Request, call_next):
     # Get the origin from the request
     origin = request.headers.get("origin", "*")
     
-    # Debug logging for CORS issues
-    print(f"Request: {request.method} {request.url}")
-    print(f"Origin: {origin}")
-    print(f"Headers: {dict(request.headers)}")
-    
     # Handle preflight OPTIONS requests explicitly
     if request.method == "OPTIONS":
         response = Response(status_code=200)
@@ -41,7 +36,6 @@ async def handle_cloudfront_and_cors(request: Request, call_next):
         response.headers["Access-Control-Max-Age"] = "86400"
         response.headers["Access-Control-Allow-Credentials"] = "false"
         response.headers["Vary"] = "Origin"
-        print(f"OPTIONS response headers: {dict(response.headers)}")
         return response
     
     # CloudFront forwarding headers
@@ -77,7 +71,6 @@ async def handle_cloudfront_and_cors(request: Request, call_next):
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
         response.headers["X-XSS-Protection"] = "1; mode=block"
     
-    print(f"Response headers: {dict(response.headers)}")
     return response
 
 app.include_router(users_router)
@@ -102,7 +95,6 @@ async def health_check():
 async def options_handler(request: Request):
     """Handle all OPTIONS requests for CORS preflight"""
     origin = request.headers.get("origin", "*")
-    print(f"Global OPTIONS handler for path: {request.url.path}, Origin: {origin}")
     
     response = Response(status_code=200)
     response.headers["Access-Control-Allow-Origin"] = origin
@@ -112,7 +104,6 @@ async def options_handler(request: Request):
     response.headers["Access-Control-Allow-Credentials"] = "false"
     response.headers["Vary"] = "Origin"
     
-    print(f"Global OPTIONS response headers: {dict(response.headers)}")
     return response
 
 if __name__ == "__main__":

@@ -80,7 +80,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
       </div>
       
       <img
-        src={"/src/assets/backicon.svg"}
+        src={"/public/backicon.svg"}
         alt="card back"
         style={{
           width: '15vw',
@@ -261,7 +261,7 @@ function VietcongGameScreen() {
       // Fetch game details to get the name
       const fetchGameDetails = async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/games/${id}`);
+          const response = await fetch(`${API_BASE_URL}/games/${id}/get_game`);
           if (response.ok) {
             const gameData = await response.json();
             setGameName(gameData.name || '');
@@ -424,7 +424,7 @@ function VietcongGameScreen() {
     if (!gameId || !currentUser) return;
     
     // Create WebSocket connection
-    const wsUrl = getWebSocketURL(`/game/ws/${gameId}/`);
+    const wsUrl = getWebSocketURL(`/game/ws/${gameId}`);
     console.log('Connecting to game WebSocket:', wsUrl);
     
     const ws = new WebSocket(wsUrl);

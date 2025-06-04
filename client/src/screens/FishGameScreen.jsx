@@ -3,6 +3,7 @@ import { useLocation, useOutletContext, useParams, useNavigate } from 'react-rou
 import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { API_BASE_URL, getWebSocketURL } from '../config';
+import './FishGameScreen.css';
 
 // Toast notification component
 function Toast({ message, type, onClose }) {
@@ -14,76 +15,20 @@ function Toast({ message, type, onClose }) {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const getToastStyle = () => {
-    const baseStyle = {
-      position: 'fixed',
-      top: '20px',
-      right: '20px',
-      padding: '16px 24px',
-      borderRadius: '8px',
-      color: '#fff',
-      fontWeight: 'bold',
-      fontSize: '14px',
-      zIndex: 9999,
-      minWidth: '300px',
-      maxWidth: '500px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-      border: '2px solid',
-      animation: 'slideInRight 0.3s ease-out',
-      cursor: 'pointer',
-    };
-
-    switch (type) {
-      case 'success':
-        return { ...baseStyle, backgroundColor: '#10b981', borderColor: '#059669' };
-      case 'error':
-        return { ...baseStyle, backgroundColor: '#ef4444', borderColor: '#dc2626' };
-      case 'warning':
-        return { ...baseStyle, backgroundColor: '#f59e0b', borderColor: '#d97706' };
-      case 'info':
-        return { ...baseStyle, backgroundColor: '#3b82f6', borderColor: '#2563eb' };
-      default:
-        return { ...baseStyle, backgroundColor: '#6b7280', borderColor: '#4b5563' };
-    }
-  };
+  const toastClassName = `toast toast-${type || 'default'}`;
 
   return (
-    <>
-      <style>
-        {`
-          @keyframes slideInRight {
-            from {
-              transform: translateX(100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateX(0);
-              opacity: 1;
-            }
-          }
-        `}
-      </style>
-      <div style={getToastStyle()} onClick={onClose}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>{message}</span>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#fff',
-              fontSize: '18px',
-              cursor: 'pointer',
-              marginLeft: '12px',
-              padding: '0',
-              lineHeight: '1',
-            }}
-          >
-            ×
-          </button>
-        </div>
+    <div className={toastClassName} onClick={onClose}>
+      <div className="toast-content">
+        <span>{message}</span>
+        <button
+          onClick={onClose}
+          className="toast-close-btn"
+        >
+          ×
+        </button>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -136,35 +81,12 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     }
     
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative',
-      }}>
+      <div className="player-container">
         {/* Username label above cards */}
-        <div style={{
-          color: isCurrentUser ? '#FFD700' : '#FFF', // Gold color for current user
-          fontSize: '1.2vw',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginBottom: '0.5vh',
-          minHeight: '2vh',
-          textShadow: isCurrentUser ? '2px 2px 4px rgba(0,0,0,0.8)' : 'none', // Shadow for current user
-          border: isCurrentUser ? '2px solid #FFD700' : 'none', // Border for current user
-          borderRadius: isCurrentUser ? '8px' : '0',
-          padding: isCurrentUser ? '4px 8px' : '0',
-          backgroundColor: isCurrentUser ? 'rgba(255, 215, 0, 0.2)' : 'transparent', // Semi-transparent background
-        }}>
+        <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}>
           {username}
           {statusText && (
-            <div style={{
-              color: statusColor,
-              fontSize: '0.9vw',
-              fontWeight: 'bold',
-              marginTop: '2px',
-              textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-            }}>
+            <div className="player-status" style={{ color: statusColor }}>
               {statusText}
             </div>
           )}
@@ -173,41 +95,14 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
         <img
           src={"/backicon.svg"}
           alt="card back"
-          style={{
-            width: '15vw',
-            height: '15vh',
-            display: 'block',
-          }}
+          className="player-card-back"
         />
-        <span
-          style={{
-            position: 'absolute',
-            top: '60%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
-            fontSize: '4vh',
-            fontWeight: 'bold',
-            pointerEvents: 'none',
-          }}
-        >
+        <span className="player-card-count">
           {cardCount}
         </span>
   
         {moving && (
-          <div style={{
-            width: '80%',
-            color: '#00FF00',
-            fontSize: '1.2vw',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            marginTop: '0.5vh',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-            backgroundColor: 'rgba(0, 255, 0, 0.1)',
-            borderRadius: '8px',
-            padding: '2px 6px',
-            border: '2px solid #00FF00',
-          }}>
+          <div className="player-current-turn">
             CURRENT TURN
           </div>
         )}
@@ -230,16 +125,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     });
     
     return (
-      <div style={{
-        maxWidth: '95%',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '0%',
-        alignItems: 'center',
-        overflowX: 'scroll',
-        scrollbarWidth: 'thin',
-        msOverflowStyle: 'auto'
-      }}>
+      <div className="players-container">
         {players}
       </div>
     );
@@ -252,41 +138,14 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
         <img 
           key={cardname}
           src={`/${cardname}icon.svg`}
-          style={{
-            width: "5.5%",
-            display: "flex", 
-            gap: "0px",
-            border: "2px solid rgba(255, 255, 255, 0.3)", // Subtle border for definition
-            borderRadius: "8px",
-            transition: "all 0.2s ease-in-out", // Smooth animation for hover
-            opacity: 0.9,
-          }} 
+          className="player-card"
           alt={cardname}
         />
       );
     });
     return (
-      <div style={{
-        maxWidth: '95%',
-        display: 'inline-flex',
-        gap: '0.5vw',
-        alignItems: 'center',
-        overflowX: 'auto',
-        scrollbarWidth: 'thin',
-        msOverflowStyle: 'auto',
-        justifyContent: 'center',
-        paddingTop: '10px',
-        paddingBottom: '10px',
-      }}>
-        <div style={{
-          color: '#FFF',
-          fontSize: '1.4vw',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginRight: '15px',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-          minWidth: 'fit-content',
-        }}>
+      <div className="current-player-cards">
+        <div className="current-player-label">
           Your Hand:
         </div>
         {cardlist}
@@ -296,12 +155,6 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
 
   // Function to display current player's cards as question options
   function questionOptionsFromCards(cardStrings, selectedCards, setSelectedCards) {
-    /*
-    console.log('questionOptionsFromCards called with:', {
-      cardStrings,
-      selectedCards
-    });*/
-
     if (!cardStrings || !Array.isArray(cardStrings) || cardStrings.length === 0) {
       console.log('questionOptionsFromCards returning null - no valid cards');
       return null;
@@ -311,68 +164,28 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     
     cardStrings.forEach(cardname => {
       const isSelected = selectedCards.includes(cardname);
+      const cardClassName = `question-option-card ${isSelected ? 'question-option-card-selected' : ''}`;
+      
       optionCards.push(
         <img 
           key={`option-${cardname}`}
           src={`/${cardname}icon.svg`}
-          style={{
-            width: "4%",
-            display: "flex", 
-            cursor: "pointer",
-            border: isSelected ? "3px solid #00FF00" : "3px solid #FFD700", // Green when selected, gold border normally
-            borderRadius: "8px",
-            transform: isSelected ? "translateY(-15px) scale(1.1)" : "translateY(0px)", // Move up and scale when selected
-            transition: "all 0.3s ease-in-out", // Smooth animation
-            boxShadow: isSelected ? "0 6px 12px rgba(0, 255, 0, 0.4)" : "0 2px 6px rgba(255, 215, 0, 0.3)", // Green/gold shadow
-            opacity: isSelected ? 1 : 0.9,
-          }} 
+          className={cardClassName}
           alt={cardname} 
           onClick={() => cardClicked(cardname, selectedCards, setSelectedCards)} 
         />
       );
     });
-    /*
-    console.log('questionOptionsFromCards rendering with', optionCards.length, 'cards');*/
 
     return (
-      <div style={{
-        width: '100%',
-        padding: '25px 15px 15px 15px', // Extra top padding for cards that move up
-        backgroundColor: 'rgba(255, 215, 0, 0.15)', // Light gold background
-        borderRadius: '12px',
-        border: '2px solid #FFD700',
-        marginBottom: '20px',
-      }}>
-        <div style={{
-          color: '#FFD700',
-          fontSize: '1.8vw',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginBottom: '15px', // More space before cards
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-        }}>
+      <div className="question-options-container">
+        <div className="question-options-title">
           Select a Card to Ask About
         </div>
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '8px',
-          alignItems: 'flex-end', // Align to bottom so cards can move up
-          justifyContent: 'center',
-          maxHeight: '30vh', // Increased height
-          overflowY: 'auto',
-          paddingTop: '20px', // Extra padding at top for movement
-          paddingBottom: '10px',
-        }}>
+        <div className="question-options-cards">
           {optionCards}
         </div>
-        <div style={{
-          color: '#FFF',
-          fontSize: '1.2vw',
-          textAlign: 'center',
-          marginTop: '8px',
-          fontStyle: 'italic',
-        }}>
+        <div className="question-options-instruction">
           You may only ask for cards from half-suits you already have at least one card from
         </div>
       </div>
@@ -399,21 +212,8 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     
     if (opponents.length === 0) {
       return (
-        <div style={{
-          width: '100%',
-          padding: '20px 15px',
-          backgroundColor: 'rgba(255, 193, 7, 0.15)', // Light yellow background
-          borderRadius: '12px',
-          border: '2px solid #FFC107',
-          marginBottom: '20px',
-        }}>
-          <div style={{
-            color: '#FFC107',
-            fontSize: '1.6vw',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-          }}>
+        <div className="player-selection-container player-selection-opponents">
+          <div className="player-selection-title player-selection-title-opponents">
             No opponents available to ask
           </div>
         </div>
@@ -421,31 +221,11 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     }
 
     return (
-      <div style={{
-        width: '100%',
-        padding: '20px 15px',
-        backgroundColor: 'rgba(0, 123, 255, 0.15)', // Light blue background
-        borderRadius: '12px',
-        border: '2px solid #007BFF',
-        marginBottom: '20px',
-      }}>
-        <div style={{
-          color: '#007BFF',
-          fontSize: '1.8vw',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginBottom: '15px',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-        }}>
+      <div className="player-selection-container player-selection-opponents">
+        <div className="player-selection-title player-selection-title-opponents">
           Select an Opponent to Ask
         </div>
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '12px',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
+        <div className="player-selection-buttons">
           {opponents.map(userId => {
             const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
             const playerTeam = gameState?.player_status?.[userId];
@@ -457,23 +237,17 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
             else if (playerTeam === 2) teamColor = '#ef4444'; // Red for team 2
             else if (playerTeam === 3) teamColor = '#10b981'; // Green for team 3
             
+            const buttonStyle = {
+              borderColor: isSelected ? '#00FF00' : teamColor,
+              backgroundColor: isSelected ? '#00FF00' : teamColor,
+              ...(isSelected ? {} : {})
+            };
+            
             return (
               <button
                 key={`player-select-${userId}`}
-                style={{
-                  padding: '12px 20px',
-                  fontSize: '1.4vw',
-                  fontWeight: 'bold',
-                  borderRadius: '8px',
-                  border: isSelected ? '3px solid #00FF00' : `3px solid ${teamColor}`,
-                  background: isSelected ? '#00FF00' : teamColor,
-                  color: isSelected ? '#000' : '#FFF',
-                  cursor: 'pointer',
-                  transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: isSelected ? '0 4px 8px rgba(0, 255, 0, 0.4)' : `0 2px 6px ${teamColor}33`,
-                  minWidth: '120px',
-                }}
+                className={`player-selection-button ${isSelected ? 'player-selection-button-selected' : ''}`}
+                style={buttonStyle}
                 onClick={() => {
                   if (selectedPlayerToAsk === userId) {
                     setSelectedPlayerToAsk(null); // Deselect if already selected
@@ -483,20 +257,14 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
                 }}
               >
                 {username}
-                <div style={{ fontSize: '0.8em', marginTop: '2px' }}>
+                <div className="player-team-info">
                   Team #{playerTeam}
                 </div>
               </button>
             );
           })}
         </div>
-        <div style={{
-          color: '#FFF',
-          fontSize: '1.2vw',
-          textAlign: 'center',
-          marginTop: '12px',
-          fontStyle: 'italic',
-        }}>
+        <div className="player-selection-instruction">
           Choose an opponent (different team) to ask about your selected card
         </div>
       </div>
@@ -512,23 +280,19 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     if (teammates.length === 0) return null;
   
     return (
-      <div style={{ marginTop: '2vh', padding: '20px', backgroundColor: 'rgba(0,255,255,0.1)', borderRadius: '10px', border: '2px solid cyan' }}>
-        <div style={{ color: 'cyan', fontSize: '1.8vw', textAlign: 'center', fontWeight: 'bold' }}>
+      <div className="player-selection-container player-selection-delegation">
+        <div className="player-selection-title player-selection-title-delegation">
           Select a Teammate to Delegate Your Turn
         </div>
-        <div style={{ display: 'flex', gap: '1vw', justifyContent: 'center', marginTop: '10px' }}>
+        <div className="player-selection-buttons">
           {teammates.map(id => (
             <button
               key={id}
               onClick={() => setSelectedTeammate(prev => prev === id ? null : id)}
+              className={`player-selection-button ${selectedTeammate === id ? 'player-selection-button-selected' : ''}`}
               style={{
-                padding: '10px 20px',
-                borderRadius: '6px',
-                border: '2px solid cyan',
+                borderColor: 'cyan',
                 backgroundColor: selectedTeammate === id ? 'cyan' : 'transparent',
-                color: selectedTeammate === id ? 'black' : 'white',
-                fontWeight: 'bold',
-                cursor: 'pointer'
               }}
             >
               {userDetails[id]?.name || `Player ${id.slice(-4)}`}
@@ -734,11 +498,7 @@ function claimButtons(claims, handleInitiateClaim) {
     if (index === 8) {
       // Special styling for "8 & Joker" (index 8, not 4)
       return (
-        <span style={{ 
-          fontSize: '1.3vw', 
-          fontWeight: 'bold',
-          textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
-        }}>
+        <span className="claim-joker-text">
           8's & Jokers
         </span>
       );
@@ -749,7 +509,7 @@ function claimButtons(claims, handleInitiateClaim) {
       const parts = name.split(' ');
       return (
         <span>
-          <span style={{ color: '#DC143C' }}>{parts[0]}</span> {parts[1]}
+          <span className="claim-suit-red">{parts[0]}</span> {parts[1]}
         </span>
       );
     } else {
@@ -758,77 +518,36 @@ function claimButtons(claims, handleInitiateClaim) {
   };
 
   return (
-    <div style={{
-      maxWidth: '80%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '1vw',
-    }}>
+    <div className="claim-buttons-container">
       {/* Header for claims section */}
-      <div style={{
-        color: '#FFD700',
-        fontSize: '2.2vw',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: '0.5vw',
-        textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
-        background: 'rgba(255, 215, 0, 0.1)',
-        padding: '8px 16px',
-        borderRadius: '12px',
-        border: '2px solid #FFD700',
-      }}>
+      <div className="claim-buttons-header">
          HALF-SUIT CLAIMS 
       </div>
       
       {/* Instructional text */}
-      <div style={{
-        color: '#FFF',
-        fontSize: '1.3vw',
-        textAlign: 'center',
-        marginBottom: '1vw',
-        fontStyle: 'italic',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-        background: 'rgba(255, 255, 255, 0.1)',
-        padding: '6px 12px',
-        borderRadius: '8px',
-      }}>
+      <div className="claim-buttons-instruction">
         Click any unclaimed half-suit to initiate a claim
       </div>
       
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: '1vw',
-        width: '100%',
-      }}>
+      <div className="claim-buttons-row">
         {Array.from({ length: 4 }).map((_, i) => {
-          let style = {
-            width: '13vw',
-            height: '5vw',
-            fontSize: '1.5vw',
-            fontWeight: 'bold',
-            borderRadius: '8px',
-            border: '2px solid #333',
-            background: '#fff',
-            color: '#222',
-            cursor: claims[i] === 0 ? 'pointer' : 'not-allowed',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-            transition: 'background 0.2s',
-          };
-          if (claims[i] === 1) {
-            style.background = '#3b82f6'; // blue for team 1
-            style.color = '#fff';
-          } else if (claims[i] === 2) {
-            style.background = '#ef4444'; // red for team 2
-            style.color = '#fff';
+          let className = 'claim-button';
+          
+          if (claims[i] === 0) {
+            // Default style for unclaimed
+          } else {
+            className += ' claim-button-disabled';
+            if (claims[i] === 1) {
+              className += ' claim-button-team1';
+            } else if (claims[i] === 2) {
+              className += ' claim-button-team2';
+            }
           }
+          
           return (
             <button
               key={i}
-              style={style}
+              className={className}
               disabled={claims[i] !== 0}
               onClick={() => handleInitiateClaim(i)}
             >
@@ -837,41 +556,26 @@ function claimButtons(claims, handleInitiateClaim) {
           );
         })}
       </div>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: '1vw',
-        width: '100%',
-        marginTop: '1vw',
-      }}>
+      <div className="claim-buttons-row claim-buttons-row-second">
         {Array.from({ length: 4 }).map((_, j) => {
           let i = j + 4;
-          let style = {
-            width: '13vw',
-            height: '5vw',
-            fontSize: '1.5vw',
-            fontWeight: 'bold',
-            borderRadius: '8px',
-            border: '2px solid #333',
-            background: '#fff',
-            color: '#222',
-            cursor: claims[i] === 0 ? 'pointer' : 'not-allowed',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-            transition: 'background 0.2s',
-          };
+          let className = 'claim-button';
           
-          if (claims[i] === 1) {
-            style.background = '#3b82f6'; // blue for team 1
-            style.color = '#fff';
-          } else if (claims[i] === 2) {
-            style.background = '#ef4444'; // red for team 2
-            style.color = '#fff';
+          if (claims[i] === 0) {
+            // Default style for unclaimed
+          } else {
+            className += ' claim-button-disabled';
+            if (claims[i] === 1) {
+              className += ' claim-button-team1';
+            } else if (claims[i] === 2) {
+              className += ' claim-button-team2';
+            }
           }
+          
           return (
             <button
               key={i}
-              style={style}
+              className={className}
               disabled={claims[i] !== 0}
               onClick={() => handleInitiateClaim(i)}
             >
@@ -880,42 +584,27 @@ function claimButtons(claims, handleInitiateClaim) {
           );
         })}
       </div>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: '1vw',
-        width: '100%',
-        marginTop: '1vw',
-      }}>
+      <div className="claim-buttons-row claim-buttons-row-second">
         {/* 8 & Joker button as the final button */}
         {(() => {
           let i = 8;
-          let style = {
-            width: '13vw',
-            height: '5vw',
-            fontSize: '1.5vw',
-            fontWeight: 'bold',
-            borderRadius: '8px',
-            border: '2px solid #333',
-            background: '#fff',
-            color: '#222',
-            cursor: claims[i] === 0 ? 'pointer' : 'not-allowed',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-            transition: 'background 0.2s',
-          };
+          let className = 'claim-button';
           
-          if (claims[i] === 1) {
-            style.background = '#3b82f6'; // blue for team 1
-            style.color = '#fff';
-          } else if (claims[i] === 2) {
-            style.background = '#ef4444'; // red for team 2
-            style.color = '#fff';
+          if (claims[i] === 0) {
+            // Default style for unclaimed
+          } else {
+            className += ' claim-button-disabled';
+            if (claims[i] === 1) {
+              className += ' claim-button-team1';
+            } else if (claims[i] === 2) {
+              className += ' claim-button-team2';
+            }
           }
+          
           return (
             <button
               key={i}
-              style={style}
+              className={className}
               disabled={claims[i] !== 0}
               onClick={() => handleInitiateClaim(i)}
             >
@@ -926,18 +615,7 @@ function claimButtons(claims, handleInitiateClaim) {
       </div>
       
       {/* Warning text at bottom */}
-      <div style={{
-        color: '#FF6B6B',
-        fontSize: '1.1vw',
-        textAlign: 'center',
-        marginTop: '0.5vw',
-        fontWeight: 'bold',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-        background: 'rgba(255, 107, 107, 0.1)',
-        padding: '4px 8px',
-        borderRadius: '6px',
-        border: '1px solid #FF6B6B',
-      }}>
+      <div className="claim-buttons-warning">
          Warning: Failed claims give the opposing team that half-suit!
       </div>
     </div>
@@ -1758,10 +1436,7 @@ function FishGameScreen() {
   
   return (
       <>
-        <div style={{
-               paddingBottom: "10px",
-               width: "100%",
-             }}>
+        <div className="game-container">
           {getAllPlayers(users, userDetails, gameState, getCurrentUserId())}
         </div>
 
@@ -1814,80 +1489,32 @@ function FishGameScreen() {
             
             return (
               <div style={{ width: "100%", padding: "0 2%" }}>
-                <div style={{
-                  width: '100%',
-                  padding: '25px',
-                  backgroundColor: 'rgba(255, 0, 0, 0.15)',
-                  borderRadius: '12px',
-                  border: '3px solid #FF0000',
-                  marginBottom: '20px',
-                }}>
-                  <div style={{
-                    color: '#FF0000',
-                    fontSize: '2.2vw',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    marginBottom: '15px',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                  }}>
+                <div className="claim-interface">
+                  <div className="claim-interface-title">
                     Making Claim - Assign Cards To Teammates
                   </div>
                   
-                  <div style={{
-                    color: '#FFF',
-                    fontSize: '1.4vw',
-                    textAlign: 'center',
-                    marginBottom: '20px',
-                    fontStyle: 'italic',
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                  }}>
+                  <div className="claim-interface-instruction">
                     Assign each unclaimed card to one of your teammates:
                   </div>
                   
                   {/* Cards in horizontal row with dropdowns */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    gap: '20px',
-                    justifyContent: 'center',
-                    flexWrap: 'wrap',
-                    marginBottom: '20px',
-                  }}>
+                  <div className="claim-cards-container">
                     {unclaimedCardStrings.map(cardString => {
                       const assignedPlayer = claimAssignments[cardString];
                       // Include current user + teammates in dropdown options
                       const allTeamOptions = [currentUserId, ...teammates];
                       
                       return (
-                        <div key={`claim-${cardString}`} style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '10px',
-                        }}>
+                        <div key={`claim-${cardString}`} className="claim-card-item">
                           {/* Card display */}
-                          <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                          }}>
+                          <div className="claim-card-display">
                             <img 
                               src={`/${cardString}icon.svg`}
-                              style={{
-                                width: '80px',
-                                height: '120px',
-                                border: '2px solid #FFD700',
-                                borderRadius: '8px',
-                                marginBottom: '8px',
-                              }} 
+                              className="claim-card-image"
                               alt={cardString}
                             />
-                            <span style={{
-                              color: '#FFD700',
-                              fontSize: '1.2vw',
-                              fontWeight: 'bold',
-                              textAlign: 'center',
-                            }}>
+                            <span className="claim-card-name">
                               {cardString}
                             </span>
                           </div>
@@ -1902,18 +1529,7 @@ function FishGameScreen() {
                                 [cardString]: selectedValue || null
                               }));
                             }}
-                            style={{
-                              padding: '8px 12px',
-                              fontSize: '1.1vw',
-                              fontWeight: 'bold',
-                              borderRadius: '6px',
-                              border: assignedPlayer ? '2px solid #00FF00' : '2px solid #FFD700',
-                              background: assignedPlayer ? '#e6ffe6' : '#fff',
-                              color: '#000',
-                              cursor: 'pointer',
-                              minWidth: '120px',
-                              textAlign: 'center',
-                            }}
+                            className={`claim-card-selector ${assignedPlayer ? 'claim-card-selector-assigned' : ''}`}
                           >
                             <option value="" style={{ color: '#666' }}>
                               Select Player
@@ -1944,32 +1560,12 @@ function FishGameScreen() {
             const claimantName = userDetails[gameState?.current_player]?.name || `Player ${gameState?.current_player?.slice(-4)}`;
             return (
               <div style={{ width: "100%", padding: "0 2%" }}>
-                <div style={{
-                  width: '100%',
-                  padding: '25px',
-                  backgroundColor: 'rgba(255, 193, 7, 0.15)',
-                  borderRadius: '12px',
-                  border: '3px solid #FFC107',
-                  marginBottom: '20px',
-                }}>
-                  <div style={{
-                    color: '#FFC107',
-                    fontSize: '2.2vw',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    marginBottom: '15px',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                  }}>
+                <div className="claim-waiting">
+                  <div className="claim-waiting-title">
                     Claim In Progress
                   </div>
                   
-                  <div style={{
-                    color: '#FFF',
-                    fontSize: '1.6vw',
-                    textAlign: 'center',
-                    fontStyle: 'italic',
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                  }}>
+                  <div className="claim-waiting-message">
                     {claimantName} is making a claim. Please wait...
                   </div>
                 </div>
@@ -1980,26 +1576,18 @@ function FishGameScreen() {
           return null;
         })()}
 
-        <div style={{width: "100%", height: "60vh", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "8%", position: "relative"}}>
+        <div className="game-table-container">
           <img
             src={"/table.svg"}
             alt="table"
-            style={{
-              width: "100%",
-              height: "90%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              zIndex: 0
-            }}
+            className="game-table-image"
           />
-          <div style={{width: "100%", height: "100%", position: "absolute", top: 0, left: 0, display: "flex", justifyContent: "center", alignItems: "center", zIndex:100}}>
+          <div className="game-table-overlay">
             {claimButtons(getClaimsArray(gameState?.owners?.["suits_1"]?.cards, gameState?.owners?.["suits_2"]?.cards), handleInitiateClaim)}
           </div>
         </div>
            
-     
-      <div style={{width: "100%", paddingTop: "6vh"}}>
+      <div className="player-cards-section">
         {currentPlayerCards(getCurrentUserCards())}
       </div>
 
@@ -2013,21 +1601,17 @@ function FishGameScreen() {
               
               if (gameState?.status === 2 && gameState?.current_player === currentUserId) {
                 // Show submit claim button when current user is making the claim
+                const buttonStyle = {
+                  backgroundColor: allCardsAssigned && !isProcessingClaim ? '#FF0000' : '#666',
+                  cursor: allCardsAssigned && !isProcessingClaim ? 'pointer' : 'not-allowed',
+                  boxShadow: allCardsAssigned && !isProcessingClaim ? '0 4px 8px rgba(255, 0, 0, 0.4)' : 'none',
+                  opacity: isProcessingClaim ? 0.7 : 1,
+                };
+                
                 return (
                   <button 
-                    style={{ 
-                      padding: '2% 4%', 
-                      fontSize: '6vh',
-                      backgroundColor: allCardsAssigned && !isProcessingClaim ? '#FF0000' : '#666',
-                      color: '#FFF',
-                      border: '3px solid #FFF',
-                      borderRadius: '12px',
-                      cursor: allCardsAssigned && !isProcessingClaim ? 'pointer' : 'not-allowed',
-                      fontWeight: 'bold',
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                      boxShadow: allCardsAssigned && !isProcessingClaim ? '0 4px 8px rgba(255, 0, 0, 0.4)' : 'none',
-                      opacity: isProcessingClaim ? 0.7 : 1,
-                    }}
+                    className="game-button-submit-claim"
+                    style={buttonStyle}
                     onClick={handleSubmitClaim}
                     disabled={!allCardsAssigned || isProcessingClaim}
                   >
@@ -2037,17 +1621,7 @@ function FishGameScreen() {
               } else if (gameState?.status === 2 && gameState?.current_player !== currentUserId) {
                 // Show waiting message when someone else is making a claim
                 return (
-                  <div style={{
-                    padding: '2% 4%',
-                    fontSize: '4vh',
-                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
-                    color: '#FFC107',
-                    border: '3px solid #FFC107',
-                    borderRadius: '12px',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                  }}>
+                  <div className="claim-waiting-button">
                     Waiting for claim to complete...
                   </div>
                 );
@@ -2056,23 +1630,14 @@ function FishGameScreen() {
                 return (
                   <>
                     <button 
-                      style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh' }}
+                      className="game-button-ask"
                       onClick={handleAskQuestion}
                       disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
                     >
                       Ask
                     </button>
                     <button 
-                      style={{ 
-                        marginLeft: '5%', 
-                        padding: '1% 2%', 
-                        fontSize: '5vh', 
-                        backgroundColor: '#00FFFF', 
-                        color: '#000',
-                        border: '2px solid white',
-                        fontWeight: 'bold',
-                        borderRadius: '8px'
-                      }}
+                      className="game-button-delegate"
                       onClick={handleDelegateTurn}
                       disabled={!selectedTeammate || gameState?.current_player !== getCurrentUserId()}
                     >
@@ -2085,15 +1650,7 @@ function FishGameScreen() {
             
             {/* Display current selections for debugging/user feedback during regular play */}
             {gameState?.status !== 2 && (selectedCards.length > 0 || selectedPlayerToAsk) && (
-              <div style={{
-                marginTop: '20px',
-                padding: '15px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                color: '#FFF',
-                fontSize: '1.2vw',
-                textAlign: 'center',
-              }}>
+              <div className="debug-selections">
                 <div>
                   <strong>Selected Card:</strong> {selectedCards.length > 0 ? selectedCards[0] : 'None'}
                 </div>
@@ -2101,7 +1658,7 @@ function FishGameScreen() {
                   <strong>Player to Ask:</strong> {selectedPlayerToAsk ? (userDetails[selectedPlayerToAsk]?.name || `Player ${selectedPlayerToAsk.slice(-4)}`) : 'None'}
                 </div>
                 {selectedCards.length === 1 && selectedPlayerToAsk && (
-                  <div style={{ color: '#00FF00', fontWeight: 'bold', marginTop: '8px' }}>
+                  <div className="debug-ready">
                     Ready to ask!
                   </div>
                 )}
@@ -2110,17 +1667,8 @@ function FishGameScreen() {
             
             {/* Display claim assignment progress during claim state */}
             {gameState?.status === 2 && gameState?.current_player === getCurrentUserId() && (
-              <div style={{
-                marginTop: '20px',
-                padding: '15px',
-                backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                borderRadius: '8px',
-                border: '2px solid #FF0000',
-                color: '#FFF',
-                fontSize: '1.3vw',
-                textAlign: 'center',
-              }}>
-                <div style={{ color: '#FF0000', fontWeight: 'bold', marginBottom: '8px' }}>
+              <div className="claim-progress">
+                <div className="claim-progress-title">
                   Claim In Progress
                 </div>
                 {(() => {
@@ -2131,10 +1679,10 @@ function FishGameScreen() {
                   if (isProcessingClaim) {
                     return (
                       <div>
-                        <div style={{ color: '#FFD700', fontWeight: 'bold', marginBottom: '8px' }}>
+                        <div className="claim-progress-processing">
                           Processing claim submission...
                         </div>
-                        <div style={{ fontSize: '1.1vw' }}>
+                        <div className="claim-progress-processing-detail">
                           Please wait while the claim is being processed
                         </div>
                       </div>
@@ -2145,7 +1693,7 @@ function FishGameScreen() {
                     <div>
                       <strong>Progress:</strong> {assignedCount} / {unclaimedCardStrings.length} cards assigned
                       {assignedCount === unclaimedCardStrings.length && (
-                        <div style={{ color: '#00FF00', fontWeight: 'bold', marginTop: '8px' }}>
+                        <div className="claim-progress-ready">
                           All cards assigned - Ready to submit claim!
                         </div>
                       )}

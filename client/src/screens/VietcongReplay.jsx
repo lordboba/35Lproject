@@ -93,37 +93,34 @@ function lastCombo(cards){
 function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null, handlePlayerClick) {
   const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
   let statusText = '';
-  let statusColor = '#FF6B6B';
+  let statusColor = 'var(--error-color)';
   let isFinished = false;
   if (playerStatus === -1) {
     statusText = 'PASSED';
-    statusColor = '#FF6B6B';
+    statusColor = 'var(--error-color)';
   } else if (playerStatus === 1) {
     statusText = '1st PLACE';
-    statusColor = '#FFD700';
+    statusColor = 'var(--first-place-color)'; // Use CSS variable (Gold)
     isFinished = true;
   } else if (playerStatus === 2) {
     statusText = '2nd PLACE';
-    statusColor = '#C0C0C0';
+    statusColor = 'var(--second-place-color)'; // Use text color for silver-like appearance
     isFinished = true;
   } else if (playerStatus === 3) {
     statusText = '3rd PLACE';
-    statusColor = '#CD7F32';
+    statusColor = 'var(--third-place-color)'; // Use text color for bronze-like appearance
     isFinished = true;
   }
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignContent: 'center',
-        position: 'relative',
-        paddingLeft: '4%',
-        paddingRight: '4%',
-        cursor: 'pointer',
-      }}
-      onClick={() => handlePlayerClick(userId)}
-    >
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      position: 'relative',
+      paddingLeft: '4%',
+      paddingRight: '4%',
+      cursor: 'pointer',
+    }} onClick={() => handlePlayerClick(userId)}>
       <div style={{
         color: isCurrentUser ? 'var(--highlight-color)' : 'var(--text-color)',
         fontSize: '1.2vw',
@@ -131,9 +128,10 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
         textAlign: 'center',
         marginBottom: '0.5vh',
         minHeight: '2vh',
-        textShadow: isCurrentUser ? '1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000' : 'none',
+        textShadow: isCurrentUser ? '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' : 'none',
         border: isCurrentUser ? '2px solid var(--player-border-color)' : 'none',
         borderRadius: isCurrentUser ? '8px' : '0',
+        padding: isCurrentUser ? '4px 8px' : '0',
         backgroundColor: isCurrentUser ? 'var(--player-bg-color)' : 'transparent',
       }}>
         {username}
@@ -143,7 +141,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
             fontSize: '0.9vw',
             fontWeight: 'bold',
             marginTop: '2px',
-            textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+            textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000',
           }}>
             {statusText}
           </div>
@@ -156,7 +154,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
           fontSize: '1.2vw',
           fontWeight: 'bold',
           textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+          textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000',
           backgroundColor: 'var(--current-turn-bg-color)',
           borderRadius: '8px',
           padding: '2px 6px',
@@ -172,6 +170,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
           height: '15vh',
           display: 'block',
           borderRadius: '8px',
+          border: '1px solid var(--card-border-color)',
           opacity: (playerStatus === -1 || isFinished) ? 0.6 : 1,
         }}
       />
@@ -451,7 +450,7 @@ function VietcongReplay() {
           <option value={500}>Fast (0.5s)</option>
           <option value={250}>Very Fast (0.25s)</option>
         </select>
-        <span style={{ color: '#FFF', fontSize: '2vh' }}>
+        <span style={{ color: 'var(--text-color)', fontSize: '2vh' }}>
           Turn: {currentTurnIndex} / {replayData.game_states.length - 1}
         </span>
       </div>

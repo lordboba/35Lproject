@@ -31,15 +31,15 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
     statusColor = 'var(--error-color)';
   } else if (playerStatus === 1) {
     statusText = '1st PLACE';
-    statusColor = 'var(--highlight-color)'; // Use CSS variable (Gold)
+    statusColor = 'var(--first-place-color)'; // Use CSS variable (Gold)
     isFinished = true;
   } else if (playerStatus === 2) {
     statusText = '2nd PLACE';
-    statusColor = 'var(--text-color)'; // Use text color for silver-like appearance
+    statusColor = 'var(--second-place-color)'; // Use text color for silver-like appearance
     isFinished = true;
   } else if (playerStatus === 3) {
     statusText = '3rd PLACE';
-    statusColor = 'var(--text-color)'; // Use text color for bronze-like appearance
+    statusColor = 'var(--third-place-color)'; // Use text color for bronze-like appearance
     isFinished = true;
   }
 
@@ -54,17 +54,17 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
     }}>
       {/* Username label above cards */}
       <div style={{
-        color: isCurrentUser ? 'var(--highlight-color)' : 'var(--text-color)', // Use CSS variables
+        color: isCurrentUser ? 'var(--highlight-color)' : 'var(--text-color)',
         fontSize: '1.2vw',
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: '0.5vh',
         minHeight: '2vh',
-        textShadow: isCurrentUser ? '1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000' : 'none',
-        border: isCurrentUser ? '2px solid var(--player-border-color)' : 'none', // Use CSS variable
+        textShadow: isCurrentUser ? '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' : 'none',
+        border: isCurrentUser ? '2px solid var(--player-border-color)' : 'none',
         borderRadius: isCurrentUser ? '8px' : '0',
         padding: isCurrentUser ? '4px 8px' : '0',
-        backgroundColor: isCurrentUser ? 'var(--player-bg-color)' : 'transparent', // Use CSS variable
+        backgroundColor: isCurrentUser ? 'var(--player-bg-color)' : 'transparent',
       }}>
         {username}
         {statusText && (
@@ -73,7 +73,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
             fontSize: '0.9vw',
             fontWeight: 'bold',
             marginTop: '2px',
-            textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+            textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000',
           }}>
             {statusText}
           </div>
@@ -83,15 +83,15 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
       {moving && (
         <div style={{
           width: '80%',
-          color: 'var(--success-color)', // Use CSS variable
+          color: 'var(--success-color)',
           fontSize: '1.2vw',
           fontWeight: 'bold',
           textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-          backgroundColor: 'var(--current-turn-bg-color)', // Use CSS variable
+          textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000',
+          backgroundColor: 'var(--current-turn-bg-color)',
           borderRadius: '8px',
           padding: '2px 6px',
-          border: '2px solid var(--current-turn-border-color)', // Use CSS variable
+          border: '2px solid var(--current-turn-border-color)',
         }}>
           CURRENT TURN
         </div>

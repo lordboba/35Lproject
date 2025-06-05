@@ -131,27 +131,22 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     let statusColor = '#FF6B6B'; // Default red color
     let isFinished = false;
     
-    if (playerStatus === -1) {
-      statusText = 'CLAIMING';
-      statusColor = '#FF6B6B';
-    } else if (playerStatus === 1) {
+    if (playerStatus === 1) {
       statusText = 'Team #1';
       statusColor = '#3b82f6'; // Blue for team 1
     } else if (playerStatus === 2) {
       statusText = 'Team #2';
       statusColor = '#ef4444'; // Red for team 2
-    } else if (playerStatus === 3) {
-      statusText = 'Team #3';
-      statusColor = '#10b981'; // Green for team 3
-    }
+    } 
     
     return (
       <div className="player-container">
         {/* Username label above cards */}
-        <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}>
+        <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}
+        >
           {username}
           {statusText && (
-            <div className="player-status" style={{ color: statusColor }}>
+            <div className="player-status" style={{ color: statusColor, textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>
               {statusText}
             </div>
           )}
@@ -159,7 +154,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
         
         {/* Current turn indicator above the card */}
         {moving && (
-          <div className="player-current-turn">
+          <div className="player-current-turn" style={{ textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>
             CURRENT TURN
           </div>
         )}

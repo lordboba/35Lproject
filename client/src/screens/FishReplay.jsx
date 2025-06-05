@@ -156,8 +156,14 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
   }
   return (
     <div className="player-container" onClick={() => handlePlayerClick(userId)} style={{ cursor: 'pointer' }}>
-      <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}>{username}{statusText && (<div className="player-status" style={{ color: statusColor }}>{statusText}</div>)}</div>
-      {moving && (<div className="player-current-turn">CURRENT TURN</div>)}
+      <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}
+      >
+        {username}
+        {statusText && (
+          <div className="player-status" style={{ color: statusColor, textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>{statusText}</div>
+        )}
+      </div>
+      {moving && (<div className="player-current-turn" style={{ textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>CURRENT TURN</div>)}
       <img src={"/backicon.svg"} alt="card back" className="player-card-back" />
       <span className="player-card-count">{cardCount}</span>
     </div>
@@ -490,7 +496,7 @@ function FishReplay() {
           <option value={500}>Fast (0.5s)</option>
           <option value={250}>Very Fast (0.25s)</option>
         </select>
-        <span style={{ color: '#FFF', fontSize: '2vh' }}>Turn: {currentTurnIndex} / {replayData.game_states.length - 1}</span>
+        <span style={{ color: 'var(--text-color)', fontSize: '2vh' }}>Turn: {currentTurnIndex} / {replayData.game_states.length - 1}</span>
       </div>
     </>
   );

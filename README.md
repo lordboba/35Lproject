@@ -28,4 +28,3 @@ And you should have a local version of the backend running!
     The Firebase API key is necessary for the application to connect to Firebase services.
 
 And you should have a local version of the frontend running!
-

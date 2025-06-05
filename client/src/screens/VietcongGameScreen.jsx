@@ -703,7 +703,7 @@ function VietcongGameScreen() {
 
       <div>
             <button
-              style={{ marginRight: '5%', padding: '1% 2%', fontSize: '5vh',
+              style={{ marginRight: '5%', padding: '1vw 2vw', fontSize: '5vh',
                        backgroundColor: 'var(--primary-color)', color: 'var(--button-text-color)', border: '1px solid var(--card-border-color)', borderRadius: '8px' }}
               onClick={handlePlayCards}
               disabled={selectedCards.length === 0 || gameState?.current_player !== getCurrentUserId()}

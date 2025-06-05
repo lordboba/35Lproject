@@ -123,7 +123,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     }
   }
   
-  function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null) {
+  function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null, status = 0) {
     const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
     
     // Determine what status text to show based on player status
@@ -171,7 +171,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
           )}
           {moving && (
             <div className="player-current-turn" style={{ textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000', marginTop: '2px' }}>
-              CURRENT TURN
+              {status === 2 ? 'CLAIMING' : 'CURRENT TURN'}
             </div>
           )}
         </div>
@@ -199,7 +199,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
       const cardCount = gameState?.owners?.[userId]?.cards?.length || 0;
       const isCurrentUser = userId === currentUserId;
       const playerStatus = gameState?.player_status?.[userId] || null;
-      players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, playerStatus));
+      players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, playerStatus, gameState.status));
     });
     
     return (

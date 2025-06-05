@@ -133,7 +133,7 @@ function QuestionResultSidebar({ lastTurn, userDetails }) {
 }
 
 // Player display (from FishGameScreen)
-function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null, handlePlayerClick, showWinLoss = false) {
+function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null, handlePlayerClick, showWinLoss = false, status = 0) {
   const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
   let statusText = '';
   let statusColor = '#FF6B6B';
@@ -185,7 +185,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
         )}
         {moving && (
           <div className="player-current-turn" style={{ textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000', marginTop: '2px' }}>
-            CURRENT TURN
+            {status === 2 ? 'CLAIMING' : 'CURRENT TURN'}
           </div>
         )}
       </div>
@@ -204,7 +204,7 @@ function getAllPlayers(users, userDetails, gameState, mainPlayerId, handlePlayer
     const cardCount = gameState?.owners?.[userId]?.cards?.length || 0;
     const isMainReplayPlayer = userId === mainPlayerId;
     const playerStatus = gameState?.player_status?.[userId] ?? null;
-    players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isMainReplayPlayer, playerStatus, handlePlayerClick, showWinLoss));
+    players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isMainReplayPlayer, playerStatus, handlePlayerClick, showWinLoss, gameState.status));
   });
   return <div className="players-container">{players}</div>;
 }

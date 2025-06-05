@@ -157,13 +157,38 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
   return (
     <div className="player-container" onClick={() => handlePlayerClick(userId)} style={{ cursor: 'pointer' }}>
       <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}
+        style={{
+          fontSize: '1.2vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: '0.5vh',
+          minHeight: '2vh',
+          height: '4.5vw', // Reserve space for username, status, and current turn
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }}
       >
-        {username}
+        <span style={{
+          color: isCurrentUser ? 'var(--highlight-color)' : 'var(--text-color)',
+          textShadow: isCurrentUser ? '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' : 'none',
+          border: isCurrentUser ? '2px solid var(--player-border-color)' : 'none',
+          borderRadius: isCurrentUser ? '8px' : '0',
+          padding: isCurrentUser ? '4px 8px' : '0',
+          backgroundColor: isCurrentUser ? 'var(--player-bg-color)' : 'transparent',
+        }}>{username}</span>
         {statusText && (
-          <div className="player-status" style={{ color: statusColor, textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>{statusText}</div>
+          <div className="player-status" style={{ color: statusColor, textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>
+            {statusText}
+          </div>
+        )}
+        {moving && (
+          <div className="player-current-turn" style={{ textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000', marginTop: '2px' }}>
+            CURRENT TURN
+          </div>
         )}
       </div>
-      {moving && (<div className="player-current-turn" style={{ textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>CURRENT TURN</div>)}
       <img src={"/backicon.svg"} alt="card back" className="player-card-back" />
       <span className="player-card-count">{cardCount}</span>
     </div>

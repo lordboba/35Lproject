@@ -13,6 +13,7 @@ To run this project, you need to have Node.js, npm, and python3 installed on you
 3. To run the backend, follow these steps:
     ```bash
     chmod +x backend
+    export VITE_API_URL=http://localhost:8000
     export MONGODB_URL=[INSERT MONGODB URL]
     ./backend
     ```

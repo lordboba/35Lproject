@@ -1643,6 +1643,7 @@ function FishGameScreen() {
                       </div>
 
                       {/* Display claimed cards */}
+
                       <div className="claim-result-cards">
                         {(() => {
                           // Process transactions in the correct order as described

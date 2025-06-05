@@ -1588,46 +1588,25 @@ function FishGameScreen() {
                       <div className="question-result-question">
                         <strong>{userDetails[questionResult.lastTurn.transactions[0].receiver]?.name || `Player ${questionResult.lastTurn.transactions[0].receiver.slice(-4)}`}</strong> asked <strong>{userDetails[questionResult.lastTurn.transactions[0].sender]?.name || `Player ${questionResult.lastTurn.transactions[0].sender.slice(-4)}`}</strong> for:
                       </div>
-                      
-                      <div className="question-result-card">
-                        <img 
-                          src={`/${(() => {
-                            const card = questionResult.lastTurn.transactions[0].card;
-                            const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-                            const suits = ['','C', 'D', 'H', 'S'];
-                            if (card.rank == 0) {
-                              if (card.suit == 1 || card.suit == 4) {
-                                return "JB";
-                              } else if (card.suit == 2 || card.suit == 3) {
-                                return "JR";
-                              }
+                      <img 
+                        src={`/${(() => {
+                          const card = questionResult.lastTurn.transactions[0].card;
+                          const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+                          const suits = ['','C', 'D', 'H', 'S'];
+                          if (card.rank == 0) {
+                            if (card.suit == 1 || card.suit == 4) {
+                              return "JB";
+                            } else if (card.suit == 2 || card.suit == 3) {
+                              return "JR";
                             }
-                            const rank = ranks[card.rank] || card.rank;
-                            const suit = suits[card.suit] || card.suit;
-                            return `${rank}${suit}`;
-                          })()}icon.svg`}
-                          className="question-result-card-image"
-                          alt="card"
-                        />
-                        <span className="question-result-card-name">
-                          {(() => {
-                            const card = questionResult.lastTurn.transactions[0].card;
-                            const ranks = ['','A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-                            const suits = ['','C', 'D', 'H', 'S'];
-                            if (card.rank == 0) {
-                              if (card.suit == 1 || card.suit == 4) {
-                                return "JB";
-                              } else if (card.suit == 2 || card.suit == 3) {
-                                return "JR";
-                              }
-                            }
-                            const rank = ranks[card.rank] || card.rank;
-                            const suit = suits[card.suit] || card.suit;
-                            return `${rank}${suit}`;
-                          })()}
-                        </span>
-                      </div>
-                      
+                          }
+                          const rank = ranks[card.rank] || card.rank;
+                          const suit = suits[card.suit] || card.suit;
+                          return `${rank}${suit}`;
+                        })()}icon.svg`}
+                        className="question-result-card-image"
+                        alt="card"
+                      />
                       <div className="question-result-outcome" style={{ 
                         color: questionResult.lastTurn.transactions[0].success ? '#00FF00' : '#FF6B6B' 
                       }}>

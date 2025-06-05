@@ -46,10 +46,7 @@ function QuestionResultSidebar({ lastTurn, userDetails }) {
           <div className="question-result-question">
             <strong>{userDetails[t.receiver]?.name || `Player ${t.receiver?.slice(-4)}`}</strong> asked <strong>{userDetails[t.sender]?.name || `Player ${t.sender?.slice(-4)}`}</strong> for:
           </div>
-          <div className="question-result-card">
-            <img src={`/${cardString}icon.svg`} className="question-result-card-image" alt={cardString} />
-            <span className="question-result-card-name">{cardString}</span>
-          </div>
+          <img src={`/${cardString}icon.svg`} className="question-result-card-image" alt={cardString} />
           <div className="question-result-outcome" style={{ color: t.success ? '#00FF00' : '#FF6B6B' }}>
             <strong>{userDetails[t.sender]?.name || `Player ${t.sender?.slice(-4)}`} {t.success ? 'HAS THE CARD!' : 'DOES NOT have the card'}</strong>
           </div>

@@ -80,8 +80,14 @@ function UserStats() {
     };
     const placeArr = ["0th", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
-    const viewReplay = (replayId) => {
-        navigate(`/app/replay?id=${replayId}`);
+    const viewReplay = (replayId, type) => {
+        if (type === 'fish') {
+            navigate(`/app/fish-replay?id=${replayId}`);
+        } else if (type === 'vietcong') {
+            navigate(`/app/vietcong-replay?id=${replayId}`);
+        } else {
+            navigate(`/app/replay?id=${replayId}`);
+        }
     };
 
     const formatDate = (timestamp) => new Date(timestamp * 1000).toLocaleString();
@@ -204,7 +210,7 @@ function UserStats() {
                                     </div>
 
                                     <button
-                                        onClick={() => viewReplay(replay._id)}
+                                        onClick={() => viewReplay(replay._id, replay.type)}
                                         style={{
                                             padding: '8px 16px',
                                             backgroundColor: '#28a745',

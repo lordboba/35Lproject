@@ -123,7 +123,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     }
   }
   
-  function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null) {
+  function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurrentUser = false, playerStatus = null, status = 0) {
     const username = userDetails[userId]?.name || `Player ${userId.slice(-4)}`;
     
     // Determine what status text to show based on player status
@@ -131,38 +131,50 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     let statusColor = '#FF6B6B'; // Default red color
     let isFinished = false;
     
-    if (playerStatus === -1) {
-      statusText = 'CLAIMING';
-      statusColor = '#FF6B6B';
-    } else if (playerStatus === 1) {
+    if (playerStatus === 1) {
       statusText = 'Team #1';
       statusColor = '#3b82f6'; // Blue for team 1
     } else if (playerStatus === 2) {
       statusText = 'Team #2';
       statusColor = '#ef4444'; // Red for team 2
-    } else if (playerStatus === 3) {
-      statusText = 'Team #3';
-      statusColor = '#10b981'; // Green for team 3
-    }
+    } 
     
     return (
       <div className="player-container">
         {/* Username label above cards */}
-        <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}>
-          {username}
+        <div className={`player-info ${isCurrentUser ? 'player-info-current' : 'player-info-other'}`}
+          style={{
+            fontSize: '1.2vw',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: '0.5vh',
+            minHeight: '2vh',
+            height: '4.5vw', // Reserve space for username, status, and current turn
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <span style={{
+            color: isCurrentUser ? 'var(--highlight-color)' : 'var(--text-color)',
+            textShadow: isCurrentUser ? '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' : 'none',
+            border: isCurrentUser ? '2px solid var(--player-border-color)' : 'none',
+            borderRadius: isCurrentUser ? '8px' : '0',
+            padding: isCurrentUser ? '4px 8px' : '0',
+            backgroundColor: isCurrentUser ? 'var(--player-bg-color)' : 'transparent',
+          }}>{username}</span>
           {statusText && (
-            <div className="player-status" style={{ color: statusColor }}>
+            <div className="player-status" style={{ color: statusColor, textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000' }}>
               {statusText}
             </div>
           )}
+          {moving && (
+            <div className="player-current-turn" style={{ textShadow: '0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 1px #000', marginTop: '2px' }}>
+              {status === 2 ? 'CLAIMING' : 'CURRENT TURN'}
+            </div>
+          )}
         </div>
-        
-        {/* Current turn indicator above the card */}
-        {moving && (
-          <div className="player-current-turn">
-            CURRENT TURN
-          </div>
-        )}
         
         <img
           src={"/backicon.svg"}
@@ -187,7 +199,7 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
       const cardCount = gameState?.owners?.[userId]?.cards?.length || 0;
       const isCurrentUser = userId === currentUserId;
       const playerStatus = gameState?.player_status?.[userId] || null;
-      players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, playerStatus));
+      players.push(otherPlayer(userId, userDetails, isCurrentPlayer, cardCount, isCurrentUser, playerStatus, gameState.status));
     });
     
     return (

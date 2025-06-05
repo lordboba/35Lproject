@@ -18,6 +18,8 @@ import ReplaySearch from './screens/ReplaySearch';
 import Replay from './screens/Replay';
 import FishWinScreen from './screens/FishWinScreen';
 import VietCongWinScreen from './screens/VietCongWinScreen';
+import FishReplay from './screens/FishReplay';
+import VietcongReplay from './screens/VietcongReplay';
 import { API_BASE_URL } from './config';
 
 function ProtectedLayout({ onSignOut, backendUser }) {
@@ -184,6 +186,8 @@ function App() {
         <Route path="replay" element={<Replay />} />
         <Route path="fish-win" element={<FishWinScreen />} />
         <Route path="vietcong-win" element={<VietCongWinScreen />} />
+        <Route path="fish-replay" element={<FishReplay />} />
+        <Route path="vietcong-replay" element={<VietcongReplay />} />
       </Route>
     </Routes>
   );

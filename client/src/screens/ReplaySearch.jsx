@@ -111,8 +111,14 @@ function ReplaySearch() {
         setError(null);
     };
 
-    const viewReplay = (replayId) => {
-        navigate(`/app/replay?id=${replayId}`);
+    const viewReplay = (replayId, type) => {
+        if (type === 'fish') {
+            navigate(`/app/fish-replay?id=${replayId}`);
+        } else if (type === 'vietcong') {
+            navigate(`/app/vietcong-replay?id=${replayId}`);
+        } else {
+            navigate(`/app/replay?id=${replayId}`);
+        }
     };
 
     const formatDate = (timestamp) => {
@@ -350,7 +356,7 @@ function ReplaySearch() {
                                     </div>
 
                                     <button
-                                        onClick={() => viewReplay(replay._id)}
+                                        onClick={() => viewReplay(replay._id, replay.type)}
                                         style={{
                                             padding: '8px 16px',
                                             backgroundColor: '#28a745',

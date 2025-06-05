@@ -1165,11 +1165,6 @@ function FishGameScreen() {
         return `${cardString} → ${playerName}${isCurrentUser ? ' (You)' : ''}`;
       }).join('\n');
       
-      const confirmMessage = `Are you sure you want to submit this claim?\n\n${assignmentSummary}\n\nRemember: If any assignment is wrong, you lose the claim!`;
-      if (!window.confirm(confirmMessage)) {
-        return;
-      }
-      
       // Build transactions array for the claim
       const transactions = unclaimedCards.map(card => {
         const cardString = convertCardToString(card);

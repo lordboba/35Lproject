@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../config'; // Assuming you still need API_BASE_URL for fetching replays
 
+import './Vietcong.css'
+
 // Helper function to handle card display logic.
 function currentPlayerCards(cards) {
   let cardlist = [];
@@ -136,23 +138,24 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
         flexDirection: 'column',
         alignContent: 'center',
         position: 'relative',
+        paddingLeft: '4%',
+        paddingRight: '4%',
         cursor: 'pointer', // Make it clear it's clickable
       }}
       onClick={() => handlePlayerClick(userId)} // Add onClick event
     >
       {/* Username label above cards */}
       <div style={{
-        color: isCurrentUser ? '#FFD700' : '#FFF', // Gold color for the player whose hand is shown
+        color: isCurrentUser ? 'var(--highlight-color)' : 'var(--text-color)', // Gold color for the player whose hand is shown
         fontSize: '1.2vw',
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: '0.5vh',
         minHeight: '2vh',
-        textShadow: isCurrentUser ? '2px 2px 4px rgba(0,0,0,0.8)' : 'none',
-        border: isCurrentUser ? '2px solid #FFD700' : 'none',
+        textShadow: isCurrentUser ? '1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000' : 'none',
+        border: isCurrentUser ? '2px solid var(--player-border-color)' : 'none', // Use CSS variable
         borderRadius: isCurrentUser ? '8px' : '0',
-        padding: isCurrentUser ? '4px 8px' : '0',
-        backgroundColor: isCurrentUser ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
+        backgroundColor: isCurrentUser ? 'var(--player-bg-color)' : 'transparent', // Use CSS variable
       }}>
         {username}
         {statusText && (
@@ -168,14 +171,31 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
         )}
       </div>
 
+      {moving && (
+        <div style={{
+          width: '80%',
+          color: 'var(--success-color)', // Use CSS variable
+          fontSize: '1.2vw',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+          backgroundColor: 'var(--current-turn-bg-color)', // Use CSS variable
+          borderRadius: '8px',
+          padding: '2px 6px',
+          border: '2px solid var(--current-turn-border-color)', // Use CSS variable
+        }}>
+          CURRENT TURN
+        </div>
+      )}
+
       <img
         src={"/backicon.svg"}
         alt="card back"
         style={{
-          width: '15vw',
           height: '15vh',
           display: 'block',
-          opacity: (playerStatus === -1 || isFinished) ? 0.6 : 1, // Make card slightly transparent if passed or finished
+          borderRadius: '8px',
+          opacity: (playerStatus === -1 || isFinished) ? 0.6 : 1,
         }}
       />
       <span
@@ -184,32 +204,15 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
           top: '60%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          color: 'white',
+          color: 'var(--card-count-text-color)', // Use CSS variable
           fontSize: '4vh',
           fontWeight: 'bold',
           pointerEvents: 'none',
+          textShadow: '2px 0 var(--card-count-shadow-color), -2px 0 var(--card-count-shadow-color), 0 2px var(--card-count-shadow-color), 0 -2px var(--card-count-shadow-color), 1px 1px var(--card-count-shadow-color), -1px -1px var(--card-count-shadow-color), 1px -1px var(--card-count-shadow-color), -1px 1px var(--card-count-shadow-color)'
         }}
       >
         {cardCount}
       </span>
-
-      {moving && (
-        <div style={{
-          width: '80%',
-          color: '#00FF00',
-          fontSize: '1.2vw',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginTop: '0.5vh',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-          backgroundColor: 'rgba(0, 255, 0, 0.1)',
-          borderRadius: '8px',
-          padding: '2px 6px',
-          border: '2px solid #00FF00',
-        }}>
-          CURRENT TURN
-        </div>
-      )}
     </div>
   );
 }
@@ -218,7 +221,7 @@ function otherPlayer(userId, userDetails, moving = false, cardCount = 13, isCurr
 // Now accepts a handlePlayerClick prop
 function getAllPlayers(users, userDetails, gameState, mainPlayerId, handlePlayerClick) {
   if (!users || users.length === 0 || !gameState) {
-    return <div style={{ color: '#FFF' }}>Loading players...</div>;
+    return <div style={{color: 'var(--text-color)'}}>Loading players...</div>; // Use CSS variable
   }
 
   let players = [];
@@ -309,6 +312,16 @@ function Replay() {
 
   // Fetch replay data on component mount
   useEffect(() => {
+    const applySystemTheme = () => {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    };
+
+    applySystemTheme();
+
     // Determine the replay ID. Prefer useParams, but fallback to query param for robustness.
     const id = replayId || new URLSearchParams(location.search).get('id');
 

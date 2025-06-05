@@ -46,6 +46,17 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const applySystemTheme = () => {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    };
+
+    // Apply theme on initial load
+    applySystemTheme();
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {

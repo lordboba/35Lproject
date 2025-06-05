@@ -1,5 +1,19 @@
+:root {
+  /* Light mode defaults */
+  --background-color: #f0f0f0;
+  --text-color: black;
+}
+
+[data-theme='dark'] {
+  /* Dark mode overrides */
+  --background-color: #242424;
+  --text-color: white;
+}
+
 #root {
   width: 100%;
+  background-color: var(--background-color);
+  color: var(--text-color);
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;

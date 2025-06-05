@@ -79,7 +79,6 @@ function QuestionResult({ lastTurn, userDetails, onClose }) {
               className="question-result-card-image"
               alt={cardString}
             />
-            <span className="question-result-card-name">{cardString}</span>
           </div>
           
           <div className="question-result-outcome" style={{ color: resultColor }}>
@@ -212,9 +211,6 @@ function cardClicked(cardname, selectedCards, setSelectedCards) {
     });
     return (
       <div className="current-player-cards">
-        <div className="current-player-label">
-          Your Hand:
-        </div>
         {cardlist}
       </div>
     );
@@ -1501,9 +1497,6 @@ function FishGameScreen() {
                               className="claim-card-image"
                               alt={cardString}
                             />
-                            <span className="claim-card-name">
-                              {cardString}
-                            </span>
                           </div>
                           
                           {/* Dropdown selector */}
@@ -1648,16 +1641,7 @@ function FishGameScreen() {
                       <div className="question-result-question" style={{ fontSize: '0.8vw', marginBottom: '4px' }}>
                         <strong>{userDetails[questionResult.lastTurn.player]?.name || `Player ${questionResult.lastTurn.player.slice(-4)}`}</strong> claimed:
                       </div>
-                      
-                      <div className="claim-result-outcome" style={{ 
-                        color: questionResult.lastTurn.success ? '#00FF00' : '#FF6B6B',
-                        fontSize: '1.0em',
-                        fontWeight: 'bold',
-                        marginBottom: '8px'
-                      }}>
-                        {questionResult.lastTurn.success ? 'SUCCESS!' : 'FAILED!'}
-                      </div>
-                      
+
                       {/* Display claimed cards */}
                       <div className="claim-result-cards">
                         {(() => {
@@ -1730,15 +1714,12 @@ function FishGameScreen() {
                           
                           return Object.values(cardResults).map(cardResult => (
                             <div key={cardResult.cardString} className="claim-result-card-item">
-                              <div className="question-result-card">
-                                <img 
-                                  src={`/${cardResult.cardString}icon.svg`}
-                                  className="question-result-card-image"
-                                  alt={cardResult.cardString}
-                                />
-                                <span className="question-result-card-name">{cardResult.cardString}</span>
-                              </div>
-                              
+                              <img
+                                src={`/${cardResult.cardString}icon.svg`}
+                                className="question-result-card-image"
+                                alt={cardResult.cardString}
+                              />
+
                               <div className="claim-result-card-details">
                                 {cardResult.isCorrect ? (
                                   // Successful claim
@@ -1853,24 +1834,30 @@ function FishGameScreen() {
                       </button>
                     );
                   }
-                  
+
+                  const isHandEmpty = getCurrentUserCards().length === 0;
+
                   // Otherwise show both ask and delegate buttons
                   return (
                     <>
-                      <button 
-                        className="game-button-ask"
-                        onClick={handleAskQuestion}
-                        disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
-                      >
-                        Ask
-                      </button>
-                      <button 
-                        className="game-button-delegate"
-                        onClick={handleDelegateTurn}
-                        disabled={!selectedTeammate || gameState?.current_player !== getCurrentUserId()}
-                      >
-                        Delegate
-                      </button>
+                      {!isHandEmpty && (
+                        <button
+                          className="game-button-ask"
+                          onClick={handleAskQuestion}
+                          disabled={selectedCards.length !== 1 || !selectedPlayerToAsk || gameState?.current_player !== getCurrentUserId()}
+                        >
+                          Ask
+                        </button>
+                      )}
+                      {isHandEmpty && (
+                        <button
+                          className="game-button-delegate"
+                          onClick={handleDelegateTurn}
+                          disabled={!selectedTeammate || gameState?.current_player !== getCurrentUserId()}
+                        >
+                          Delegate
+                        </button>
+                      )}
                     </>
                   );
                 }
@@ -1911,34 +1898,6 @@ function FishGameScreen() {
               })()}
               
               {/* Display delegation status when player has zero cards */}
-              {(() => {
-                const currentUserId = getCurrentUserId();
-                const currentUserCardCount = gameState?.owners?.[currentUserId]?.cards?.length || 0;
-                const isCurrentPlayer = gameState?.current_player === currentUserId;
-                
-                // Show delegation status when player has zero cards and it's their turn
-                if (isCurrentPlayer && currentUserCardCount === 0 && gameState?.status !== 2) {
-                  return (
-                    <div className="debug-info-container">
-                      <div className="debug-selections">
-                        <div>
-                          <strong>Status:</strong> You have no cards - delegation required
-                        </div>
-                        <div>
-                          <strong>Selected Teammate:</strong> {selectedTeammate ? (userDetails[selectedTeammate]?.name || `Player ${selectedTeammate.slice(-4)}`) : 'None'}
-                        </div>
-                        {selectedTeammate && (
-                          <div className="debug-ready">
-                            Ready to delegate!
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-                
-                return null;
-              })()}
         </div>
         
         {/* Toast notification */}

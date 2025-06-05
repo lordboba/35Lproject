@@ -1,3 +1,23 @@
+:root {
+  /* Light mode defaults */
+  --background-color: #f0f0f0;
+  --text-color: #000;
+  --primary-color: #1a1a1a;
+  --button-text-color: #ffffff;
+  --card-count-text-color: black;
+  --card-count-shadow-color: #FEDE62;
+}
+
+[data-theme='dark'] {
+  /* Dark mode overrides */
+  --background-color: #242424;
+  --text-color: #fafaeb;
+  --primary-color: #1a1a1a;
+  --button-text-color: #ffffff;
+  --card-count-text-color: black;
+  --card-count-shadow-color: #FEDE62;
+}
+
 /* Toast Notification Styles */
 .toast {
   position: fixed;
@@ -118,10 +138,11 @@
   top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: white;
-  font-size: 3vh; /* Reduced from 4vh to 3vh */
+  color: var(--card-count-text-color);
+  font-size: 4vh;
   font-weight: bold;
   pointer-events: none;
+  text-shadow: 2px 0 var(--card-count-shadow-color), -2px 0 var(--card-count-shadow-color), 0 2px var(--card-count-shadow-color), 0 -2px var(--card-count-shadow-color), 1px 1px var(--card-count-shadow-color), -1px -1px var(--card-count-shadow-color), 1px -1px var(--card-count-shadow-color), -1px 1px var(--card-count-shadow-color);
 }
 
 .player-current-turn {
@@ -145,9 +166,6 @@
   flex-direction: row;
   gap: 0.2vw; /* Added small gap between players */
   align-items: center;
-  overflow-x: scroll;
-  scrollbar-width: thin;
-  -ms-overflow-style: auto;
   justify-content: center; /* Center the players when they fit */
 }
 
@@ -161,11 +179,8 @@
   max-width: 98%; /* Increased from 95% to use more space */
   display: inline-flex;
   gap: 0.3vw; /* Reduced from 0.5vw for tighter spacing */
+  justify-content: center;
   align-items: center;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  -ms-overflow-style: auto;
-  justify-content: flex-start; /* Changed from center to flex-start for left alignment */
   padding-top: 8px; /* Reduced from 10px */
   padding-bottom: 8px; /* Reduced from 10px */
   flex-wrap: wrap; /* Allow wrapping for smaller screens */
@@ -218,8 +233,6 @@
   justify-content: center;
   max-height: 20vh; /* Reduced from 30vh to 20vh */
   overflow-y: auto;
-  padding-top: 12px; /* Reduced from 20px to 12px */
-  padding-bottom: 8px; /* Reduced from 10px to 8px */
 }
 
 .question-option-card {
@@ -456,6 +469,7 @@
   align-items: center;
   padding-bottom: 3%;
   position: relative;
+  margin-top: 20px;
 }
 
 .game-table-with-sidebar {
@@ -464,6 +478,8 @@
   gap: 15px;
   width: 100%;
   height: 100%;
+  justify-content: 'center';
+  align-content: 'center';
 }
 
 .game-table-main {
@@ -474,7 +490,7 @@
 
 .game-table-image {
   width: 100%;
-  height: 90%;
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
@@ -513,7 +529,6 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   border: 2px solid;
   background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.8));
-  margin-top: 60px; /* Add significant top margin to move result down */
 }
 
 .question-result-fixed.question-result-success {
@@ -614,9 +629,9 @@
 }
 
 .claim-button {
-  width: 12vw; /* Reduced from 12vw to 10vw */
+  width: 10vw; /* Reduced from 12vw to 10vw */
   height: 3.2vw; /* Reduced from 4vw to 3.2vw */
-  font-size: 1.1vw; /* Reduced from 1.3vw to 1.1vw */
+  font-size: 1vw; /* Reduced from 1.3vw to 1.1vw */
   font-weight: bold;
   border-radius: 6px; /* Reduced from 8px to 6px */
   border: 2px solid #333;
@@ -646,9 +661,8 @@
 }
 
 .claim-joker-text {
-  font-size: 1.3vw;
+  font-size: 1.0vw;
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .claim-buttons-warning {
@@ -667,7 +681,9 @@
 /* Player Cards Section - Reduced padding */
 .player-cards-section {
   width: 100%;
-  padding-top: 2vh; /* Reduced from 6vh to 2vh */
+  align-content: 'center';
+  justify-content: 'center';
+  margin-bottom: 2%;
 }
 
 /* Game Buttons - Much more compact */
@@ -676,11 +692,10 @@
 }
 
 .game-button-ask {
-  margin-right: 2%; /* Reduced from 3% to 2% */
-  padding: 0.5% 1%; /* Reduced from 0.8% 1.5% */
-  font-size: 2.5vh; /* Reduced from 3.5vh to 2.5vh */
-  background-color: #007BFF;
-  color: #FFF;
+  padding: 0.8% 1.5%; /* Reduced from 0.8% 1.5% */
+  font-size: 3.5vh; /* Reduced from 3.5vh to 2.5vh */
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
   border: 2px solid white;
   font-weight: bold;
   border-radius: 6px; /* Reduced from 8px */
@@ -689,11 +704,10 @@
 }
 
 .game-button-delegate {
-  margin-left: 2%; /* Reduced from 3% to 2% */
-  padding: 0.5% 1%; /* Reduced from 0.8% 1.5% */
-  font-size: 2.5vh; /* Reduced from 3.5vh to 2.5vh */
-  background-color: #00FFFF;
-  color: #000;
+  padding: 0.8% 1.5%; /* Reduced from 0.8% 1.5% */
+  font-size: 3.5vh; /* Reduced from 3.5vh to 2.5vh */
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
   border: 2px solid white;
   font-weight: bold;
   border-radius: 6px; /* Reduced from 8px */
@@ -829,7 +843,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
   width: 100%;
 }
 
@@ -919,6 +932,7 @@
   gap: 15px;
   width: 100%;
   padding: 0 1%;
+  margin-top: 2%;
 }
 
 /* Side-by-side layout for question options and player selection on wider screens */
@@ -959,10 +973,12 @@
   .current-player-cards {
     max-width: 100%;
     gap: 0.4vw;
+    align-items: 'center';
+    justify-content: 'center';
   }
   
   .player-card {
-    width: 5.2%;
+    width: 5.5%;
   }
   
   /* Stack question options and player selection but optimize spacing */
@@ -1133,4 +1149,10 @@
     width: 25px !important;
     height: 35px !important;
   }
-} 
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}

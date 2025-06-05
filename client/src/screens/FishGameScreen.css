@@ -6,6 +6,7 @@
   --button-text-color: #ffffff;
   --card-count-text-color: black;
   --card-count-shadow-color: #FEDE62;
+  --card-border-color: #000000;
 }
 
 [data-theme='dark'] {
@@ -16,6 +17,7 @@
   --button-text-color: #ffffff;
   --card-count-text-color: black;
   --card-count-shadow-color: #FEDE62;
+  --card-border-color: #ffffff;
 }
 
 /* Toast Notification Styles */
@@ -109,7 +111,7 @@
 
 .player-info-current {
   color: #FFD700;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 1px 0 var(--card-count-text-color), -1px 0 var(--card-count-text-color), 0 1px var(--card-count-text-color), 0 -1px var(--card-count-text-color), 1px 1px var(--card-count-text-color), -1px -1px var(--card-count-text-color), 1px -1px var(--card-count-text-color), -1px 1px var(--card-count-text-color);
   border: 2px solid #FFD700;
   border-radius: 6px; /* Reduced from 8px to 6px */
   padding: 3px 6px; /* Reduced from 4px 8px to 3px 6px */
@@ -117,7 +119,7 @@
 }
 
 .player-info-other {
-  color: #FFF;
+  color: var(--text-color);
 }
 
 .player-status {
@@ -128,9 +130,10 @@
 }
 
 .player-card-back {
-  width: 10vw; /* Reduced from 15vw to 10vw */
   height: 10vh; /* Reduced from 15vh to 10vh */
   display: block;
+  border-radius: 8px;
+  border: 1px solid var(--card-border-color);
 }
 
 .player-card-count {
@@ -152,7 +155,7 @@
   font-weight: bold;
   text-align: center;
   margin-top: 0.3vh; /* Reduced from 0.5vh to 0.3vh */
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 1px 0 var(--card-count-text-color), -1px 0 var(--card-count-text-color), 0 1px var(--card-count-text-color), 0 -1px var(--card-count-text-color), 1px 1px var(--card-count-text-color), -1px -1px var(--card-count-text-color), 1px -1px var(--card-count-text-color), -1px 1px var(--card-count-text-color);
   background-color: rgba(0, 255, 0, 0.1);
   border-radius: 6px; /* Reduced from 8px to 6px */
   padding: 1px 4px; /* Reduced from 2px 6px to 1px 4px */
@@ -164,7 +167,7 @@
   max-width: 98%;
   display: flex;
   flex-direction: row;
-  gap: 0.1vw; /* Added small gap between players */
+  gap: 5%; /* Added small gap between players */
   align-items: center;
   justify-content: center; /* Center the players when they fit */
 }
@@ -200,8 +203,9 @@
   width: 5%; /* Reduced from 5.5% to fit more cards */
   display: flex;
   gap: 0px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--card-border-color);
   border-radius: 8px;
+  padding: 1px;
   transition: all 0.2s ease-in-out;
   opacity: 0.9;
 }

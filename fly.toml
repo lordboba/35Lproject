@@ -1,9 +1,8 @@
-app = "REPLACE_WITH_FLY_APP_NAME"
+app = "35lproject"
 primary_region = "iad"
 
 [build]
 builder = "paketobuildpacks/builder:base"
-buildpacks = ["gcr.io/paketo-buildpacks/python"]
 
 [env]
 PORT = "8080"

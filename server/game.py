@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from enum import Enum
-from core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel
-from core import user_collection
+try:
+    from .core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel, user_collection
+except ImportError:  # Allows running directly from server/
+    from core import CardModel, TurnModel, TransactionModel, OwnerModel, GameStateModel, user_collection  # type: ignore
 from bson import ObjectId
 import random
 
@@ -711,4 +713,3 @@ class FishGame(Game):
                 return True
 
         return False
-

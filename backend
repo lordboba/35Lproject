@@ -1,6 +1,10 @@
 #!/bin/bash
+set -euo pipefail
 
-cd server
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SERVER_DIR="$ROOT_DIR/server"
+
+cd "$SERVER_DIR"
 
 if [ ! -d ".venv" ]; then
     echo "Creating virtual environment..."
@@ -14,7 +18,8 @@ echo "Installing/updating dependencies..."
 pip install -r requirements.txt
 
 echo "Starting backend server..."
-python3 main.py
+cd "$ROOT_DIR"
+python3 -m server.main
 
 # Deactivate when script exits (optional)
 # deactivate

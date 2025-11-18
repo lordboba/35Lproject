@@ -1,10 +1,13 @@
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Depends
 from typing import List, Dict
-from core import GameModel, GameCreateModel, UserModel, GameCollection
-from fastapi import Body
 from bson import ObjectId
-import game_manager
-from game_manager import get_tracker
+
+try:
+    from .core import GameModel, GameCreateModel
+    from .game_manager import get_tracker
+except ImportError:  # Allows running directly from server/
+    from core import GameModel, GameCreateModel  # type: ignore
+    from game_manager import get_tracker  # type: ignore
 
 # Create router
 router = APIRouter(
@@ -65,7 +68,10 @@ async def add_user_to_game(game_id: str, user_id: str):
     game_type = game_manager.game_log.game_type
     
     # Get the max players for this game type
-    from game import GAME_RULES
+    try:
+        from .game import GAME_RULES
+    except ImportError:  # pragma: no cover - fallback for script execution
+        from game import GAME_RULES  # type: ignore
     max_players = GAME_RULES.get(game_type, {}).get("max_players", 4)
     
     # Check if the game is already full

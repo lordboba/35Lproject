@@ -1,11 +1,37 @@
-from game import *
+try:
+    from .game import *
+    from . import game
+    from .core import (
+        CardModel,
+        TransactionModel,
+        TurnModel,
+        ReplayModel,
+        replay_collection,
+        GameModel,
+        GameCollection,
+        GameStateModel,
+        user_collection,
+        game_collection,
+    )
+except ImportError:  # Allows running directly from server/
+    from game import *  # type: ignore
+    import game  # type: ignore
+    from core import (  # type: ignore
+        CardModel,
+        TransactionModel,
+        TurnModel,
+        ReplayModel,
+        replay_collection,
+        GameModel,
+        GameCollection,
+        GameStateModel,
+        user_collection,
+        game_collection,
+    )
 import time
 from fastapi import WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
-from core import CardModel, TransactionModel, TurnModel, ReplayModel, replay_collection, GameModel, GameCollection, GameStateModel, user_collection
 from bson import ObjectId
-import game
-from core import game_collection
 import traceback
 from websockets.exceptions import ConnectionClosedOK
 

@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Body, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from users_api import router as users_router
-from games_api import router as games_router
-from game_manager import GameTracker
-from game import TransactionModel
-from fastapi import Body
+try:
+    from .users_api import router as users_router
+    from .games_api import router as games_router
+except ImportError:  # Allows running as a script inside server/
+    from users_api import router as users_router  # type: ignore
+    from games_api import router as games_router  # type: ignore
 import uvicorn
 import os
 
@@ -108,4 +109,4 @@ async def options_handler(request: Request):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=False)

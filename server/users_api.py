@@ -3,33 +3,56 @@ from bson import ObjectId
 import re
 from pymongo import ReturnDocument
 import time
-from game_manager import GameTracker, get_tracker
 import asyncio
 from typing import List
 from starlette.websockets import WebSocketState
 
-from core import (
-    user_collection,
-    game_collection,
-    replay_collection,
-    UserModel,
-    UpdateUserModel,
-    FirebaseUserRegistrationRequest,
-    CheckUsernameResponse,
-    CompleteRegistrationRequest,
-    UserCollectionModel,
-    GameModel,
-    GameCreateModel,
-    GameCollection,
-    TurnModel,
-    ReplaySummaryModel,
-    ReplaySearchModel,
-    ReplayModel,
-    ReplayCollectionModel,
-    UserSearchModel
-)
-
-from game import Card, Transaction, Turn, GAME_RULES
+try:
+    from .game_manager import GameTracker, get_tracker
+    from .core import (
+        user_collection,
+        game_collection,
+        replay_collection,
+        UserModel,
+        UpdateUserModel,
+        FirebaseUserRegistrationRequest,
+        CheckUsernameResponse,
+        CompleteRegistrationRequest,
+        UserCollectionModel,
+        GameModel,
+        GameCreateModel,
+        GameCollection,
+        TurnModel,
+        ReplaySummaryModel,
+        ReplaySearchModel,
+        ReplayModel,
+        ReplayCollectionModel,
+        UserSearchModel,
+    )
+    from .game import Card, Transaction, Turn, GAME_RULES
+except ImportError:  # Allows running directly from server/
+    from game_manager import GameTracker, get_tracker  # type: ignore
+    from core import (  # type: ignore
+        user_collection,
+        game_collection,
+        replay_collection,
+        UserModel,
+        UpdateUserModel,
+        FirebaseUserRegistrationRequest,
+        CheckUsernameResponse,
+        CompleteRegistrationRequest,
+        UserCollectionModel,
+        GameModel,
+        GameCreateModel,
+        GameCollection,
+        TurnModel,
+        ReplaySummaryModel,
+        ReplaySearchModel,
+        ReplayModel,
+        ReplayCollectionModel,
+        UserSearchModel,
+    )
+    from game import Card, Transaction, Turn, GAME_RULES  # type: ignore
 
 router = APIRouter()
 
